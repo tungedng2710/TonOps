@@ -23,6 +23,7 @@ class Project(AttributedDocument):
             "path",
             ("company", "name"),
             ("company", "basename"),
+            ("company", "visibility", "user"),
             ("company", "parent", "system_tags", "featured", "last_update"),
             {
                 "name": "%s.project.main_text_index" % Database.backend,
@@ -42,6 +43,8 @@ class Project(AttributedDocument):
     )
     basename = StrippedStringField(required=True)
     description = StringField()
+    # Legacy projects without this field retain company-wide visibility.
+    visibility = StringField(choices=("private", "public"))
     created = DateTimeField(required=True)
     tags = SafeSortedListField(StringField(required=True))
     system_tags = SafeSortedListField(StringField(required=True))

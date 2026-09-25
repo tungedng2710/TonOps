@@ -218,11 +218,15 @@ class ProjectBLL:
         system_tags: Sequence[str] = None,
         default_output_destination: str = None,
         parent_creation_params: dict = None,
+        visibility: str = None,
     ) -> str:
         """
         Create a new project.
         Returns project ID
         """
+        from apiserver.bll.iam import enabled as iam_enabled
+        if visibility is None and iam_enabled():
+            visibility = "private"
         if _get_project_depth(name) > max_depth:
             raise errors.bad_request.ProjectPathExceedsMax(max_depth=max_depth)
 
@@ -247,12 +251,15 @@ class ProjectBLL:
             name=name,
             basename=_get_basename_from_name(name),
             description=description,
+            visibility=visibility,
             tags=tags,
             system_tags=system_tags,
             default_output_destination=default_output_destination,
             created=now,
             last_update=now,
         )
+        if parent_creation_params is None and iam_enabled():
+            parent_creation_params = {"description": "", "visibility": "private"}
         parent = _ensure_project(
             company=company,
             user=user,

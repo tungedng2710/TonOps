@@ -1,17 +1,12 @@
-import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, inject, signal} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {selectCurrentUser} from '@common/core/reducers/users-reducer';
-import {updateCurrentUser} from '@common/core/actions/users.actions';
-import {GetCurrentUserResponseUserObject} from '~/business-logic/model/users/getCurrentUserResponseUserObject';
-import {addMessage} from '@common/core/actions/layout.actions';
-import {ConfigurationService} from '@common/shared/services/configuration.service';
-import {InlineEditComponent} from '@common/shared/ui-components/inputs/inline-edit/inline-edit.component';
-import {IdBadgeComponent} from '@common/shared/components/id-badge/id-badge.component';
-import {setAllProjectUsers} from '@common/core/actions/projects.actions';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
+import {selectCurrentUser} from '@common/core/reducers/users-reducer';
+import {fetchCurrentUser} from '@common/core/actions/users.actions';
+import {ApiUsersService} from '~/business-logic/api-services/users.service';
 import {ApiIamService} from '~/business-logic/api-services/iam.service';
 
 @Component({
@@ -19,25 +14,26 @@ import {ApiIamService} from '~/business-logic/api-services/iam.service';
   templateUrl: './profile-name.component.html',
   styleUrls: ['./profile-name.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InlineEditComponent,
-    IdBadgeComponent,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule
-  ]
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule]
 })
 export class ProfileNameComponent {
   private store = inject(Store);
-  protected readonly config = inject(ConfigurationService);
+  private users = inject(ApiUsersService);
   private iam = inject(ApiIamService);
-
   currentUser = this.store.selectSignal(selectCurrentUser);
-  active = signal(false);
   iamEnabled = signal(false);
+  saving = signal(false);
+  profileMessage = signal('');
+  profileError = signal('');
   passwordMessage = signal('');
   passwordError = signal('');
+  profileForm = new FormGroup({
+    name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]),
+    given_name: new FormControl('', [Validators.maxLength(120)]),
+    family_name: new FormControl('', [Validators.maxLength(120)]),
+    avatar: new FormControl('', [Validators.maxLength(2048), Validators.pattern(/^(https?:\/\/.*)?$/)]),
+    bio: new FormControl('', [Validators.maxLength(1000)])
+  });
   passwordForm = new FormGroup({
     current: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required, Validators.minLength(12)]),
@@ -45,23 +41,41 @@ export class ProfileNameComponent {
   });
 
   constructor() {
+    effect(() => {
+      const user = this.currentUser();
+      if (user && !this.profileForm.dirty) {
+        this.profileForm.patchValue({name: user.name ?? '', given_name: user.given_name ?? '', family_name: user.family_name ?? '', avatar: user.avatar ?? '', bio: user.bio ?? ''}, {emitEvent: false});
+      }
+    });
     this.iam.status().subscribe({
       next: result => this.iamEnabled.set(result.enabled),
       error: () => this.iamEnabled.set(false)
     });
   }
 
-
-  nameChange(updatedUserName: string, currentUser: GetCurrentUserResponseUserObject) {
-    const user = {name: updatedUserName, user: currentUser.id};
-    this.store.dispatch(updateCurrentUser({user}));
-    this.store.dispatch(setAllProjectUsers({users: []}));
-  }
-  copyToClipboard() {
-    this.store.dispatch(addMessage('success', 'Copied to clipboard'));
+  saveProfile() {
+    const user = this.currentUser();
+    if (!user?.id || this.profileForm.invalid || this.saving()) return;
+    this.saving.set(true);
+    this.profileMessage.set('');
+    this.profileError.set('');
+    const {name, given_name, family_name, avatar, bio} = this.profileForm.getRawValue();
+    this.users.usersUpdate({user: user.id, name: name.trim(), given_name: given_name.trim(), family_name: family_name.trim(), avatar: avatar.trim(), bio: bio.trim()}).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.profileForm.markAsPristine();
+        this.profileMessage.set('Profile saved.');
+        this.store.dispatch(fetchCurrentUser());
+      },
+      error: error => {
+        this.saving.set(false);
+        this.profileError.set(error?.error?.meta?.result_msg ?? 'Unable to save profile.');
+      }
+    });
   }
 
   changePassword() {
+    if (this.passwordForm.invalid) return;
     const value = this.passwordForm.getRawValue();
     this.passwordMessage.set('');
     this.passwordError.set('');

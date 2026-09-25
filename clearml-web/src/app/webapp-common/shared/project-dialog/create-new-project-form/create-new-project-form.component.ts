@@ -18,6 +18,7 @@ import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {OutputDestPattern} from '@common/shared/project-dialog/project-dialog.component';
 import {MatButton} from '@angular/material/button';
 import {MatError} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
 import {minLengthTrimmed} from '@common/shared/validators/minLengthTrimmed';
 
 export interface NewProjectResults {
@@ -26,6 +27,7 @@ export interface NewProjectResults {
   default_output_destination?: string;
   system_tags?: string[];
   parent?: string;
+  visibility?: 'private' | 'public';
 }
 
 @Component({
@@ -40,7 +42,8 @@ export interface NewProjectResults {
     PaginatedEntitySelectorComponent,
     ReactiveFormsModule,
     MatButton,
-    MatError
+    MatError,
+    MatSelectModule
   ]
 })
 export class CreateNewProjectFormComponent {
@@ -52,6 +55,7 @@ export class CreateNewProjectFormComponent {
   projectForm = this.formBuilder.group({
     name: ['', [Validators.required, minLengthTrimmed(1)]],
     description: [''],
+    visibility: ['private' as 'private' | 'public'],
     default_output_destination: [null, [Validators.pattern(OutputDestPattern)]],
     system_tags: [[]],
     parent: [null as string, [Validators.required]]
@@ -121,4 +125,3 @@ export class CreateNewProjectFormComponent {
     this.filterSearchChanged.emit({value, loadMore});
   }
 }
-

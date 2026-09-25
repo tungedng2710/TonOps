@@ -101,7 +101,23 @@ class AuthHandler:
             log.error("Error getting token")
             abort(401)
 
-        self._validate_and_get_token_info(token)
+        return self._validate_and_get_token_info(token)
+
+    def authorize_file(self, request: Request, path: str, mode: str = "read"):
+        """Ask the API server about each file, using the requesting user's token."""
+        token = self.get_token(request)
+        response = self.session._send_request(
+            service="projects",
+            action="authorize_file",
+            method="post",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"path": path, "host": request.host, "mode": mode},
+            refresh_token_if_unauthorized=False,
+        )
+        if not response or response.status_code != 200:
+            abort(403)
+        if not response.json().get("data", {}).get("allowed"):
+            abort(403)
 
     @staticmethod
     def get_token(request: Request) -> Optional[str]:

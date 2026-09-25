@@ -49,6 +49,7 @@ import {updateProject as dialogUpdateProject} from '@common/shared/project-dialo
 import {TooltipDirective} from '@common/shared/ui-components/indicators/tooltip/tooltip.directive';
 import {isReadOnly} from '@common/shared/utils/is-read-only';
 import {ProjectSettingsStore} from '~/features/dashboard-search/project-settings-dashboard-search-permissions.store';
+import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 
 export interface ProjectSettingsDialogConfig {
   project: Project;
@@ -79,6 +80,7 @@ export interface ProjectSettingsDialogConfig {
 })
 export class ProjectSettingsDialogComponent {
   protected store = inject(Store);
+  protected currentUser = this.store.selectSignal(selectCurrentUser);
   private settingsStore = inject(ProjectSettingsStore);
   private dialogRef = inject(MatDialogRef);
   protected readonly data: ProjectSettingsDialogConfig = inject(MAT_DIALOG_DATA);
@@ -112,7 +114,8 @@ export class ProjectSettingsDialogComponent {
   protected storeSettings = this.store.selectSignal(selectSelectedExperimentSettings(this.data.project.id));
   protected settings = linkedSignal(() => ({...this.defaultSettings, ...this.storeSettings()}));
   protected settingsGroupBy = computed(() => this.settings().groupBy);
-  protected readonlyProject = computed(() => isReadOnly(this.data.project) || this.settingsStore.isReadOnly());
+  protected readonlyProject = computed(() => isReadOnly(this.data.project) || this.settingsStore.isReadOnly() ||
+    (!!this.data.project.visibility && this.data.project.user !== this.currentUser()?.id && this.currentUser()?.role !== 'admin'));
 
 
   protected scalarsWithoutSummary = computed(() => this.settingsStore.scalars().map(variant => variant.metric === singleValueChartTitle ? {...variant, variant: null} : variant))
@@ -213,10 +216,11 @@ export class ProjectSettingsDialogComponent {
     this.project = this.convertFormToProject(projectForm);
   }
 
-  private convertFormToProject(projectForm: { parent: string; name: string; description?: string; system_tags?: string[]; default_output_destination?: string }): ProjectsCreateRequest {
+  private convertFormToProject(projectForm: { parent: string; name: string; description?: string; system_tags?: string[]; default_output_destination?: string; visibility?: 'private' | 'public' }): ProjectsCreateRequest {
     return {
       name: `${projectForm.parent === 'Projects root' ? '' : projectForm.parent + '/'}${projectForm.name}`,
       ...(projectForm.description && {description: projectForm.description}),
+      visibility: projectForm.visibility,
       ...(projectForm.system_tags && {system_tags: projectForm.system_tags}),
       default_output_destination: projectForm.default_output_destination
     };
@@ -277,4 +281,3 @@ export class ProjectSettingsDialogComponent {
     }
   }
 }
-

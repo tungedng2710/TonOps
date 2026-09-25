@@ -10,6 +10,7 @@ import {ProjectLocationPipe} from '@common/shared/pipes/project-location.pipe';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {debounceTime, skip} from 'rxjs/operators';
 import {MatError} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
 import {minLengthTrimmed} from '@common/shared/validators/minLengthTrimmed';
 
 
@@ -20,6 +21,7 @@ import {minLengthTrimmed} from '@common/shared/validators/minLengthTrimmed';
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         MatError,
+        MatSelectModule,
         MatInputModule,
         MatProgressSpinnerModule,
         ReactiveFormsModule
@@ -35,7 +37,8 @@ export class EditProjectFormComponent {
     name: ['', [Validators.required, minLengthTrimmed(1), Validators.pattern(/^[^\/]*$/)]],
     parent: [{value: null as string, disabled: true}],
     default_output_destination: [{value: null as string, disabled: false}, [Validators.pattern(OutputDestPattern)]],
-    system_tags: [[]]
+    system_tags: [[]],
+    visibility: ['private' as 'private' | 'public']
   });
 
   public loading: boolean;
@@ -63,6 +66,7 @@ export class EditProjectFormComponent {
       this.projectForm.controls.name.setValue(this.project()?.basename ?? '');
       this.projectForm.controls.parent.setValue(this.parentProjectPath());
       this.projectForm.controls.default_output_destination.setValue(this.project()?.default_output_destination);
+      this.projectForm.controls.visibility.setValue(this.project()?.visibility ?? 'public');
       if (this.isReadOnly()) {
         this.projectForm.disable();
       } else {
@@ -88,4 +92,3 @@ export class EditProjectFormComponent {
     });
   }
 }
-

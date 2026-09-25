@@ -284,6 +284,11 @@ class ServiceRepo(object):
             # In case call does not require authorization, parsing the identity.company might raise an exception
             company = cls._get_company(call, endpoint)
 
+            # Local IAM project access also applies to direct task/model API
+            # calls; those services otherwise authorize at company scope.
+            from apiserver.bll.project.access import authorize_entity_call
+            authorize_entity_call(call, endpoint.name, company)
+
             with translate_errors_context():
                 ret = endpoint.func(call, company, call.data_model)
 

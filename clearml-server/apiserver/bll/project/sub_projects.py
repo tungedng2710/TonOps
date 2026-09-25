@@ -57,6 +57,9 @@ def _ensure_project(
         return project
 
     now = datetime.utcnow()
+    if creation_params is None:
+        from apiserver.bll.iam import enabled as iam_enabled
+        creation_params = {"description": "", "visibility": "private"} if iam_enabled() else None
     project = Project(
         id=database.utils.id(),
         user=user,

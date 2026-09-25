@@ -26,6 +26,7 @@ from apiserver.services.models import conform_model_data
 from apiserver.services.utils import process_include_subprojects, sort_tags_response
 from apiserver.bll.organization import OrgBLL
 from apiserver.bll.project import ProjectBLL
+from apiserver.bll.project.access import constrain_project_filter, readable_project_ids, restricted
 from apiserver.bll.task import TaskBLL, ChangeStatusRequest
 from apiserver.database.model import EntityVisibility
 from apiserver.database.model.project import Project
@@ -181,6 +182,7 @@ def get_all_ex(call: APICall, company_id, request: GetAllRequest):
     call_data = call.data
     call_data["type"] = TaskType.report
     process_include_subprojects(call_data)
+    constrain_project_filter(call_data, company_id, call.identity)
     # bring projects one level down in case not the .reports project was passed
     if "project" in call_data:
         project_ids = call_data["project"]
@@ -194,6 +196,8 @@ def get_all_ex(call: APICall, company_id, request: GetAllRequest):
         if not project_ids:
             return {"tasks": []}
         call_data["project"] = list(project_ids)
+
+    constrain_project_filter(call_data, company_id, call.identity)
 
     ret_params = {}
     tasks = Task.get_many_with_join(
@@ -231,6 +235,7 @@ def get_task_data(call: APICall, company_id, request: GetTasksDataRequest):
 
     call_data = escape_execution_parameters(call.data)
     process_include_subprojects(call_data)
+    constrain_project_filter(call_data, company_id, call.identity)
 
     ret_params = {}
     tasks = entity_cls.get_many_with_join(
@@ -430,5 +435,8 @@ def delete(call: APICall, company_id, request: DeleteReportRequest):
 
 @endpoint("reports.get_tags")
 def get_tags(call: APICall, company_id: str, _):
-    tags = Task.objects(company=company_id, type=TaskType.report).distinct(field="tags")
+    query = Task.objects(company=company_id, type=TaskType.report)
+    if restricted(call.identity):
+        query = query.filter(project__in=readable_project_ids(company_id, call.identity))
+    tags = query.distinct(field="tags")
     call.result.data = sort_tags_response({"tags": tags})

@@ -23,6 +23,7 @@ export interface GetCurrentUserResponseUserObject {
     family_name?: string;
     role?: string;
     avatar?: string;
+    bio?: string;
     company?: GetCurrentUserResponseUserObjectCompany;
     email?: string;
     /**

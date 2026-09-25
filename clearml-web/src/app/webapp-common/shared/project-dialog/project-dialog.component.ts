@@ -103,6 +103,7 @@ export class ProjectDialogComponent {
     return {
       name: `${projectForm.parent === 'Projects root' ? '' : projectForm.parent + '/'}${projectForm.name}`,
       ...(projectForm.description && {description: projectForm.description}),
+      visibility: projectForm.visibility ?? 'private',
       ...(projectForm.system_tags && {system_tags: projectForm.system_tags}),
       default_output_destination: projectForm.default_output_destination
     };

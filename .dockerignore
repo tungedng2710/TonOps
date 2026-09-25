@@ -1,0 +1,17 @@
+.git
+.env
+.env.*
+!.env.example
+docker-data
+brand_assets
+examples
+clearml
+clearml_iam_agent_prompt.md
+clearml-web/node_modules
+clearml-web/.angular
+clearml-web/build
+clearml-web/dist
+clearml-server/apiserver/tests
+clearml-server/docs
+**/__pycache__
+**/*.pyc

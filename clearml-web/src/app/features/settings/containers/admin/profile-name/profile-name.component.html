@@ -1,57 +1,51 @@
-@if (currentUser()) {
+@if (currentUser(); as user) {
   <div class="profile-page">
-  <div class="header d-flex align-items-center justify-content-center w-100 flex-column">
-    <div class="d-flex align-items-center flex-column">
-      <div class="user-icon"></div>
-      <sm-inline-edit
-        class="dark profile-name me-2"
-        [class.edit]="active()"
-        [originalText]="currentUser().name"
-        [minLength]="2"
-        [required]="true"
-        [editable]="true"
-        (inlineActiveStateChanged)="active.set($event)"
-        (textChanged)="nameChange($event, currentUser())">
-        <div class="d-flex-center">
-          <div class="me-2">{{ currentUser().name }}</div>
-          <sm-id-badge caption="Copy user ID" [short]="true" [id]="currentUser().id" (copied)="copyToClipboard()"></sm-id-badge>
-        </div>
-      </sm-inline-edit>
-    </div>
-    @if (currentUser().email) {
-      <div class="d-flex flex-column align-items-center">
-        <div class="profile-label">EMAIL ADDRESS</div>
-        <div class="d-flex align-items-center">
-          <span class="me-2">{{ currentUser().email }}</span>
-        </div>
+    <header class="profile-header">
+      @if (user.avatar) {
+        <img class="avatar" [src]="user.avatar" alt="Your avatar">
+      } @else {
+        <div class="avatar avatar-placeholder" aria-hidden="true">{{ (user.name || '?').charAt(0).toUpperCase() }}</div>
+      }
+      <div><h1>{{ user.name }}</h1><p>{{ user.email || user.id }}</p></div>
+    </header>
+
+    <form class="profile-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <h2>Personal information</h2>
+      <mat-form-field appearance="outline">
+        <mat-label>Display name</mat-label>
+        <input matInput formControlName="name" autocomplete="name">
+        @if (profileForm.controls.name.invalid) { <mat-error>Enter a name of 2 to 120 characters.</mat-error> }
+      </mat-form-field>
+      <div class="name-fields">
+        <mat-form-field appearance="outline"><mat-label>Given name</mat-label><input matInput formControlName="given_name" autocomplete="given-name"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Family name</mat-label><input matInput formControlName="family_name" autocomplete="family-name"></mat-form-field>
       </div>
-    }
-  </div>
-  @if (iamEnabled()) {
-    <form class="password-form" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-      <h2>Change password</h2>
       <mat-form-field appearance="outline">
-        <mat-label>Current password</mat-label>
-        <input matInput type="password" formControlName="current" autocomplete="current-password">
-        @if (passwordForm.controls.current.hasError('required')) { <mat-error>Current password is required.</mat-error> }
+        <mat-label>Avatar URL</mat-label>
+        <input matInput formControlName="avatar" placeholder="https://example.com/avatar.png">
+        <mat-hint>Use an image URL available to people who can see your profile.</mat-hint>
+        @if (profileForm.controls.avatar.invalid) { <mat-error>Enter an HTTP or HTTPS URL.</mat-error> }
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label>New password</mat-label>
-        <input matInput type="password" formControlName="password" autocomplete="new-password">
-        <mat-hint>Use at least 12 characters.</mat-hint>
-        @if (passwordForm.controls.password.hasError('required')) { <mat-error>New password is required.</mat-error> }
-        @if (passwordForm.controls.password.hasError('minlength')) { <mat-error>New password must contain at least 12 characters.</mat-error> }
+        <mat-label>Bio</mat-label>
+        <textarea matInput formControlName="bio" rows="4"></textarea>
+        <mat-hint align="end">{{ profileForm.controls.bio.value?.length || 0 }}/1000</mat-hint>
       </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Confirm new password</mat-label>
-        <input matInput type="password" formControlName="confirm" autocomplete="new-password">
-        @if (passwordForm.controls.confirm.hasError('required')) { <mat-error>Please confirm the new password.</mat-error> }
-      </mat-form-field>
-      @if (passwordError()) { <div class="password-error">{{passwordError()}}</div> }
-      @if (passwordMessage()) { <div class="password-success">{{passwordMessage()}}</div> }
-      <button mat-flat-button color="primary" type="submit" [disabled]="passwordForm.invalid">Change password</button>
-      @if (passwordForm.invalid) { <div class="password-help">Complete all fields with a new password of at least 12 characters to enable this button.</div> }
+      @if (profileError()) { <p class="form-error" role="alert">{{ profileError() }}</p> }
+      @if (profileMessage()) { <p class="form-success" role="status">{{ profileMessage() }}</p> }
+      <button mat-flat-button type="submit" [disabled]="profileForm.invalid || !profileForm.dirty || saving()">Save profile</button>
     </form>
-  }
+
+    @if (iamEnabled()) {
+      <form class="profile-card" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        <h2>Change password</h2>
+        <mat-form-field appearance="outline"><mat-label>Current password</mat-label><input matInput type="password" formControlName="current" autocomplete="current-password"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>New password</mat-label><input matInput type="password" formControlName="password" autocomplete="new-password"><mat-hint>Use at least 12 characters.</mat-hint></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Confirm new password</mat-label><input matInput type="password" formControlName="confirm" autocomplete="new-password"></mat-form-field>
+        @if (passwordError()) { <p class="form-error" role="alert">{{ passwordError() }}</p> }
+        @if (passwordMessage()) { <p class="form-success" role="status">{{ passwordMessage() }}</p> }
+        <button mat-flat-button type="submit" [disabled]="passwordForm.invalid">Change password</button>
+      </form>
+    }
   </div>
 }

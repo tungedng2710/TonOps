@@ -33,6 +33,7 @@ export interface Project {
      * Project description
      */
     description?: string;
+    visibility?: 'private' | 'public';
     /**
      * Associated user id
      */

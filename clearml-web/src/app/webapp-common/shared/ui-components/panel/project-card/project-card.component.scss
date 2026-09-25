@@ -74,3 +74,11 @@ hr {
 .info-icon {
   vertical-align: middle;
 }
+.visibility-label {
+  font-size: 11px;
+  text-transform: capitalize;
+  color: var(--color-outline);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 4px;
+  padding: 2px 6px;
+}

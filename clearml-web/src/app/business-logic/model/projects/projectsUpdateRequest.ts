@@ -25,6 +25,7 @@ export interface ProjectsUpdateRequest {
      * Project description
      */
     description?: string;
+    visibility?: 'private' | 'public';
     /**
      * User-defined tags
      */

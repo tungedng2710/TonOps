@@ -47,4 +47,11 @@
       </mat-error>
     }
   </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Visibility</mat-label>
+    <mat-select formControlName="visibility">
+      <mat-option value="private">Private — only you and administrators</mat-option>
+      <mat-option value="public">Public — other signed-in users can view</mat-option>
+    </mat-select>
+  </mat-form-field>
 </form>

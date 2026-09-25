@@ -76,6 +76,7 @@ from apiserver.bll.event import EventBLL
 from apiserver.bll.model import ModelBLL
 from apiserver.bll.organization import OrgBLL, Tags
 from apiserver.bll.project import ProjectBLL
+from apiserver.bll.project.access import constrain_project_filter
 from apiserver.bll.queue import QueueBLL
 from apiserver.bll.task import (
     TaskBLL,
@@ -243,6 +244,7 @@ def get_all_ex(call: APICall, company_id, request: GetAllReq):
     conform_tag_fields(call, call.data)
     call_data = escape_execution_parameters(call.data)
     process_include_subprojects(call_data)
+    constrain_project_filter(call_data, company_id, call.identity)
     ret_params = {}
     tasks = Task.get_many_with_join(
         company=company_id,
@@ -274,6 +276,7 @@ def get_all(call: APICall, company_id, _):
     conform_tag_fields(call, call.data)
     call_data = escape_execution_parameters(call.data)
     process_include_subprojects(call_data)
+    constrain_project_filter(call_data, company_id, call.identity)
 
     ret_params = {}
     tasks = Task.get_many(

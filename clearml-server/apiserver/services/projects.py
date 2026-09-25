@@ -1,4 +1,6 @@
 from typing import Sequence, Optional, Tuple
+import re
+from urllib.parse import quote, unquote, urlsplit
 
 import attr
 from mongoengine import Q
@@ -24,6 +26,7 @@ from apiserver.apimodels.projects import (
 )
 from apiserver.bll.organization import OrgBLL, Tags
 from apiserver.bll.project import ProjectBLL, ProjectQueries
+from apiserver.bll.project.access import readable_query, require_project_path_write, require_read, require_write, restricted
 from apiserver.bll.project.project_bll import pipeline_tag, reports_tag
 from apiserver.bll.project.project_cleanup import (
     delete_project,
@@ -50,12 +53,52 @@ org_bll = OrgBLL()
 project_bll = ProjectBLL()
 project_queries = ProjectQueries()
 
+
+@endpoint("projects.authorize_file", validate_schema=True)
+def authorize_file(call: APICall, company: str, _):
+    """Authorize a fileserver URL against a registered task artifact or model."""
+    if not restricted(call.identity):
+        return {"allowed": True}
+
+    path = unquote(call.data["path"]).lstrip("/")
+    host = call.data["host"].lower()
+    write = call.data.get("mode") == "write"
+    if not path or len(path) > 4096 or not host:
+        return {"allowed": False}
+
+    def matches(uri):
+        parsed = urlsplit(uri or "")
+        return parsed.netloc.lower() == host and unquote(parsed.path).lstrip("/") == path
+
+    # ClearML output paths include the task ID in the task directory name.
+    candidate_ids = set(re.findall(r"\.([a-f0-9]{32})(?:/|$)", path))
+    for task in Task.objects(id__in=candidate_ids, company=company).only("project", "user"):
+        project = Project.objects(id=task.project, company=company).first()
+        if (project and (project.user == call.identity.user or (not write and project.visibility != "private"))) or (
+            not project and task.user == call.identity.user
+        ):
+            return {"allowed": True}
+    model_urls = [
+        f"{scheme}://{host}/{escaped}"
+        for scheme in ("http", "https")
+        for escaped in (path, quote(path, safe="/'-._~"))
+    ]
+    for model in Model.objects(company=company, uri__in=model_urls).only("project", "user", "uri"):
+        if matches(model.uri):
+            project = Project.objects(id=model.project, company=company).first()
+            if (project and (project.user == call.identity.user or (not write and project.visibility != "private"))) or (
+                not project and model.user == call.identity.user
+            ):
+                return {"allowed": True}
+    return {"allowed": False}
+
 create_fields = {
     "name": None,
     "description": None,
     "tags": list,
     "system_tags": list,
     "default_output_destination": None,
+    "visibility": None,
 }
 
 
@@ -68,6 +111,7 @@ def get_by_id(call: APICall, company: str, request: ProjectRequest):
         project = Project.objects(query).first()
         if not project:
             raise errors.bad_request.InvalidProjectId(id=project_id)
+        require_read(project, call.identity)
 
         project_dict = project.to_proper_dict()
         conform_output_tags(call, project_dict)
@@ -178,7 +222,8 @@ def get_all_ex(call: APICall, company_id: str, request: ProjectsGetRequest):
     projects: Sequence[dict] = Project.get_many_with_join(
         company=company_id,
         query_dict=data,
-        query=_hidden_query(search_hidden=request.search_hidden, ids=requested_ids),
+        query=_hidden_query(search_hidden=request.search_hidden, ids=requested_ids)
+        & (readable_query(call.identity) if restricted(call.identity) else Q()),
         allow_public=allow_public,
         ret_params=ret_params,
     )
@@ -269,7 +314,7 @@ def get_all(call: APICall, company: str, _):
         query_dict=data,
         query=_hidden_query(
             search_hidden=data.get("search_hidden"), ids=data.get("id")
-        ),
+        ) & (readable_query(call.identity) if restricted(call.identity) else Q()),
         parameters=data,
         allow_public=True,
         ret_params=ret_params,
@@ -290,13 +335,20 @@ def create(call: APICall, company: str, _):
         fields = parse_from_call(call.data, create_fields, Project.get_fields())
         conform_tag_fields(call, fields, validate=True)
 
-        return IdResponse(
-            id=ProjectBLL.create(
-                user=identity.user,
-                company=company,
-                **fields,
-            )
+        visibility = fields.pop("visibility", "private")
+        if visibility not in ("private", "public"):
+            raise errors.bad_request.FieldsValueError("visibility must be private or public")
+        parent_name = fields["name"].rsplit("/", 1)[0] if "/" in fields["name"] else ""
+        require_project_path_write(parent_name, company, identity)
+
+        project_id = ProjectBLL.create(
+            user=identity.user,
+            company=company,
+            visibility=visibility,
+            parent_creation_params={"description": "", "visibility": "private"},
+            **fields,
         )
+        return IdResponse(id=project_id)
 
 
 @endpoint("projects.update", response_data_model=UpdateResponse)
@@ -312,6 +364,12 @@ def update(call: APICall, company: str, request: ProjectRequest):
     fields = parse_from_call(
         call.data, create_fields, Project.get_fields(), discard_none_values=False
     )
+    project = Project.objects(id=request.project, company=company).first()
+    if not project:
+        raise errors.bad_request.InvalidProjectId(id=request.project)
+    require_write(project, call.identity)
+    if "visibility" in fields and fields["visibility"] not in ("private", "public"):
+        raise errors.bad_request.FieldsValueError("visibility must be private or public")
     conform_tag_fields(call, fields, validate=True)
     updated = ProjectBLL.update(company=company, project_id=request.project, **fields)
     conform_output_tags(call, fields)

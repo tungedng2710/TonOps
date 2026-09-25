@@ -33,4 +33,5 @@ export interface UsersUpdateRequest {
      * Avatar URL
      */
     avatar?: string;
+    bio?: string;
 }

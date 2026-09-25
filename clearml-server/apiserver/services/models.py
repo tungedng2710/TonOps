@@ -31,6 +31,7 @@ from apiserver.bll.event import EventBLL
 from apiserver.bll.model import ModelBLL, Metadata
 from apiserver.bll.organization import OrgBLL, Tags
 from apiserver.bll.project import ProjectBLL
+from apiserver.bll.project.access import constrain_project_filter
 from apiserver.bll.task import TaskBLL
 from apiserver.bll.task.task_cleanup import (
     schedule_for_delete,
@@ -131,6 +132,7 @@ def get_all_ex(call: APICall, company_id, request: ModelsGetRequest):
     conform_tag_fields(call, call.data)
     call_data = Metadata.escape_query_parameters(call.data)
     process_include_subprojects(call_data)
+    constrain_project_filter(call_data, company_id, call.identity)
     ret_params = {}
     models = Model.get_many_with_join(
         company=company_id,
@@ -172,6 +174,7 @@ def get_all(call: APICall, company_id, _):
     conform_tag_fields(call, call.data)
     call_data = Metadata.escape_query_parameters(call.data)
     process_include_subprojects(call_data)
+    constrain_project_filter(call_data, company_id, call.identity)
     ret_params = {}
     models = Model.get_many(
         company=company_id,

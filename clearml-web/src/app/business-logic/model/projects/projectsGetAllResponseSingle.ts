@@ -27,6 +27,7 @@ export interface ProjectsGetAllResponseSingle {
      * Project description
      */
     description?: string;
+    visibility?: 'private' | 'public';
     /**
      * Associated user id
      */

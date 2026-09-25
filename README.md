@@ -1,94 +1,44 @@
-# Run the local ClearML IAM fork
+# ClearML with local IAM
 
-This starts MongoDB, Redis, Elasticsearch, the API server, file server, async
-delete worker, and the locally built ClearML Web application. Docker data is
-persisted under `/opt/clearml` by the upstream Compose configuration.
+This repository contains a ClearML OSS fork with local user management, profile editing, and project visibility. The root [Dockerfile](Dockerfile) builds the checked-in Angular app and packages the checked-in API and fileserver code into one image. [Compose](compose.yaml) runs that image with MongoDB, Redis, Elasticsearch, and an async file deletion worker.
 
-## 1. Build the web application
+## Start with Docker Compose
 
-```bash
-conda activate tungn197
-cd /root/tungn197/mlops/clearml-web
-corepack pnpm@10.18.3 install --frozen-lockfile
-corepack pnpm@10.18.3 run build
-corepack pnpm@10.18.3 run build-widgets
-```
-
-For an air-gapped host, the Docker images and pnpm packages must already exist in
-an internal registry/cache.
-
-## 2. Configure the first administrator
-
-Create a password file without placing the password in shell history:
+Docker Compose and at least 4 GB of available memory are recommended. Elasticsearch also needs `vm.max_map_count` of at least `262144` on Linux.
 
 ```bash
-sudo install -d -m 700 /opt/clearml/config
-sudo install -d -m 755 /opt/clearml/logs /opt/clearml/data/fileserver \
-  /opt/clearml/data/mongo_4/db /opt/clearml/data/mongo_4/configdb \
-  /opt/clearml/data/elastic_7 /opt/clearml/data/redis /opt/clearml/agent
-# Elasticsearch runs as uid 1000 inside its container.
-sudo chown -R 1000:0 /opt/clearml/data/elastic_7
-sudoedit /opt/clearml/config/iam-admin-password
-sudo chmod 600 /opt/clearml/config/iam-admin-password
-
-export CLEARML_IAM_ENABLED=true
-export CLEARML_IAM_BOOTSTRAP_ADMIN_USERNAME=admin
-export CLEARML_IAM_BOOTSTRAP_ADMIN_PASSWORD_FILE=/opt/clearml/config/iam-admin-password
+cp .env.example .env
+mkdir -p docker-data/config docker-data/data/elastic_7
+sudo chown -R 1000:0 docker-data/data/elastic_7
+printf 'Choose a strong temporary password: '
+read -rs CLEARML_BOOTSTRAP_PASSWORD; printf '\n'
+printf '%s' "$CLEARML_BOOTSTRAP_PASSWORD" > docker-data/config/iam-admin-password
+unset CLEARML_BOOTSTRAP_PASSWORD
+chmod 600 docker-data/config/iam-admin-password
+docker compose up -d --build
 ```
 
-Bootstrap is idempotent and only creates an administrator when none exists.
+The password file is read only by the API container. IAM creates the `admin` account only if no administrator already exists. Log in, change its password, then remove `docker-data/config/iam-admin-password` and clear `CLEARML_IAM_BOOTSTRAP_ADMIN_USERNAME` and `CLEARML_IAM_BOOTSTRAP_ADMIN_PASSWORD_FILE` from `.env`. Keep `CLEARML_IAM_ENABLED=true`.
 
-## 3. Start the complete stack
+| Service | URL |
+| --- | --- |
+| Web app | <http://localhost:7861> |
+| API | <http://localhost:7862> |
+| Files | <http://localhost:7863> |
+
+Set `CLEARML_WEB_PORT`, `CLEARML_API_PORT`, and `CLEARML_FILES_PORT` in `.env` to change host ports. Set `CLEARML_FILES_HOST` to the URL that SDK clients use for the fileserver, so artifact cleanup recognizes it. The web app proxies `/api` and `/files` to the corresponding containers.
+
+Data is stored under `CLEARML_DATA_ROOT` (default `./docker-data`) and survives `docker compose down`. For a host using the older `/opt/clearml` layout, set `CLEARML_DATA_ROOT=/opt/clearml` before starting this Compose stack. Stop the older stack first because it uses the same host ports. Do not run `docker compose down -v` when you want to retain data.
+
+## Operate
 
 ```bash
-conda activate tungn197
-cd /root/tungn197/mlops/clearml-server
-docker compose \
-  -f docker/compose.yaml \
-  -f docker/compose.iam-local.yaml \
-  up -d mongo redis elasticsearch fileserver apiserver async_delete webserver
+docker compose ps
+docker compose logs -f apiserver
+docker compose up -d --build             # Rebuild after source changes
+docker compose down                       # Stop without deleting data
 ```
 
-The override mounts this checkout's IAM backend modules and Angular build into
-the standard ClearML containers. Check startup with:
+Or run `./scripts/restart-tonops.sh` to rebuild, restart, and wait for the web, API, and fileserver endpoints.
 
-```bash
-docker compose -f docker/compose.yaml -f docker/compose.iam-local.yaml ps
-docker compose -f docker/compose.yaml -f docker/compose.iam-local.yaml logs -f apiserver
-curl http://localhost:7862/debug.ping
-```
-
-Open:
-
-- Web application: <http://localhost:7861>
-- API server: <http://localhost:7862>
-- File server: <http://localhost:7863>
-
-For remote access, replace `localhost` with the server address. The public
-firewall must allow TCP ports 7861 (web), 7862 (API), and 7863 (files).
-
-Log in as `admin`, change the temporary password, and confirm that **Settings →
-User Management** is visible. After bootstrap succeeds, remove the secret and
-unset only the bootstrap variables; keep `CLEARML_IAM_ENABLED=true` whenever the
-stack is recreated.
-
-```bash
-sudo rm /opt/clearml/config/iam-admin-password
-unset CLEARML_IAM_BOOTSTRAP_ADMIN_USERNAME
-unset CLEARML_IAM_BOOTSTRAP_ADMIN_PASSWORD_FILE
-```
-
-## Stop or restart
-
-Rebuild the UI, recreate all TonOps services, wait for readiness, and print the
-final service state with:
-
-```bash
-cd /root/tungn197/mlops
-./scripts/restart-tonops.sh
-```
-
-Use `--skip-build` when the frontend has not changed, or `--no-recreate` to
-restart the existing containers without recreating them. The script activates
-the `tungn197` Conda environment and keeps IAM and self-signup enabled by default.
-Persistent data under `/opt/clearml/data` is not removed.
+The image build needs access to the pinned Node, ClearML server, and package images and the packages in `pnpm-lock.yaml`. For an isolated network, preload those images and provide an internal npm registry or a populated pnpm store. Runtime has no external authentication dependency. Local fileserver authentication remains enabled so project file access is checked. See [project visibility](clearml-server/docs/iam/project-visibility.md) for storage limits and [IAM deployment](clearml-server/docs/iam/deployment.md) for bootstrap and migration details.

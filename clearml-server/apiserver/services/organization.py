@@ -20,6 +20,7 @@ from apiserver.apimodels.organization import (
 from apiserver.bll.model import Metadata
 from apiserver.bll.organization import OrgBLL, Tags
 from apiserver.bll.project import ProjectBLL, ProjectWorkloads
+from apiserver.bll.project.access import constrain_project_filter, readable_project_ids, restricted
 from apiserver.config_repo import config
 from apiserver.database.model import User, AttributedDocument, EntityVisibility
 from apiserver.database.model.model import Model
@@ -47,6 +48,9 @@ conf = config.get("services.organization")
 @endpoint("organization.get_tags", request_data_model=TagsRequest)
 def get_tags(call: APICall, company, request: TagsRequest):
     filter_dict = get_tags_filter_dictionary(request.filter)
+    projects = readable_project_ids(company, call.identity) if restricted(call.identity) else None
+    if projects == []:
+        return {"tags": [], "system_tags": []}
     ret = defaultdict(set)
     for entity in Tags.Model, Tags.Task:
         tags = org_bll.get_tags(
@@ -54,6 +58,7 @@ def get_tags(call: APICall, company, request: TagsRequest):
             entity,
             include_system=request.include_system,
             filter_=filter_dict,
+            projects=projects,
         )
         for field, vals in tags.items():
             ret[field] |= vals
@@ -121,6 +126,16 @@ def get_entities_count(call: APICall, company, request: EntitiesCountRequest):
                 data["id"] = ids
             elif not data.get("user"):
                 data["user"] = request.active_users
+
+        if restricted(call.identity):
+            if entity_cls is Project:
+                allowed = set(readable_project_ids(company, call.identity))
+                requested = data.get("id")
+                if requested:
+                    allowed &= {requested} if isinstance(requested, str) else set(requested)
+                data["id"] = list(allowed) or ["__no_accessible_project__"]
+            else:
+                constrain_project_filter(data, company, call.identity)
 
         query = Q()
         if (
@@ -220,9 +235,11 @@ def _get_download_getter_fn(
 
     if entity_type == EntityType.task:
         call_data = escape_execution_parameters(call_data)
+        constrain_project_filter(call_data, company, call.identity)
         get_fn = get_task_data
     elif entity_type == EntityType.model:
         call_data = Metadata.escape_query_parameters(call_data)
+        constrain_project_filter(call_data, company, call.identity)
         get_fn = get_model_data
     else:
         raise errors.bad_request.ValidationError(
@@ -413,9 +430,15 @@ def download_for_get_all(call: APICall, company, request: DownloadForGetAllReque
 
 @endpoint("organization.get_project_workloads")
 def get_project_workloads(call: APICall, company, request: GetProjectWorkloadsRequest):
+    projects = request.projects
+    if restricted(call.identity):
+        allowed = set(readable_project_ids(company, call.identity))
+        projects = list(allowed & set(projects)) if projects else list(allowed)
+        if not projects:
+            projects = ["__no_accessible_project__"]
     call.result.data = ProjectWorkloads.get_project_workloads(
         company,
-        project_ids=request.projects,
+        project_ids=projects,
         from_date_str=request.from_date,
         to_date_str=request.to_date,
         include_development=request.include_development,

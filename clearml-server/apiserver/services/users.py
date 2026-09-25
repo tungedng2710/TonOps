@@ -132,6 +132,7 @@ create_fields = {
     "family_name": None,
     "given_name": None,
     "avatar": None,
+    "bio": None,
     "company": Company,
     "preferences": dict,
 }
@@ -174,6 +175,22 @@ def update_user(user_id, company_id, data: dict) -> Tuple[int, dict]:
 @endpoint("users.update", response_data_model=UpdateResponse)
 def update(call, company_id, request: UserRequest):
     user_id = request.user
+    if user_id != call.identity.user and call.identity.role not in (Role.admin, Role.root, Role.system):
+        raise errors.bad_request.InvalidUserId("cannot update another user's profile")
+    if "name" in call.data:
+        name = (call.data["name"] or "").strip()
+        if not 2 <= len(name) <= 120:
+            raise errors.bad_request.FieldsValueError("name must be 2-120 characters")
+        call.data["name"] = name
+    for field in ("given_name", "family_name"):
+        if field in call.data and len(call.data[field] or "") > 120:
+            raise errors.bad_request.FieldsValueError(f"{field} must be at most 120 characters")
+    if "avatar" in call.data:
+        avatar = call.data["avatar"] or ""
+        if len(avatar) > 2048 or (avatar and not avatar.startswith(("https://", "http://"))):
+            raise errors.bad_request.FieldsValueError("avatar must be an HTTP(S) URL of at most 2048 characters")
+    if "bio" in call.data and len(call.data["bio"] or "") > 1000:
+        raise errors.bad_request.FieldsValueError("bio must be at most 1000 characters")
     update_count, updated_fields = update_user(user_id, company_id, call.data)
     call.result.data_model = UpdateResponse(updated=update_count, fields=updated_fields)
 

@@ -74,6 +74,8 @@ def upload():
         if not filename:
             continue
         file_path = filename.lstrip(os.sep)
+        if auth_handler:
+            auth_handler.authorize_file(request, file_path, mode="write")
         safe_path = safe_join(app.config["UPLOAD_FOLDER"], file_path)
         if safe_path is None:
             raise NotFound()
@@ -90,6 +92,7 @@ def upload():
 def download(path):
     if auth_handler:
         auth_handler.validate(request)
+        auth_handler.authorize_file(request, path)
 
     as_attachment = "download" in request.args
 
@@ -126,6 +129,7 @@ def _get_full_path(path: str) -> Optional[Path]:
 def delete(path):
     if auth_handler:
         auth_handler.validate(request)
+        auth_handler.authorize_file(request, path, mode="write")
 
     full_path = _get_full_path(path)
     if not (full_path and full_path.exists() and full_path.is_file()):
@@ -163,6 +167,9 @@ def batch_delete():
             # empty path may result in deleting all company data. Too dangerous
             record_error("Empty path not allowed", file, path)
             continue
+
+        if auth_handler:
+            auth_handler.authorize_file(request, path, mode="write")
 
         full_path = _get_full_path(path)
 
