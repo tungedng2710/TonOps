@@ -66,10 +66,10 @@ def authorize_entity_call(call, endpoint_name, company):
     These endpoints predate user-scoped projects and normally authorize only
     by company. Keep the check in one place so direct API calls are covered.
     """
-    if not restricted(call.identity) or not company:
-        return
     service, _, action = endpoint_name.partition(".")
-    if service not in ("projects", "tasks", "models", "events", "reports"):
+    if not company or service not in ("projects", "tasks", "models", "events", "reports"):
+        return
+    if not restricted(call.identity):
         return
 
     if action in ("make_public", "make_private"):
