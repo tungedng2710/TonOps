@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["jasmine", "node"]
+  },
+  "files": [
+    "src/app/business-logic/api-services/iam.service.spec.ts",
+    "src/app/features/settings/iam/iam-groups.component.spec.ts",
+    "src/app/features/settings/iam/iam-notifications.service.spec.ts",
+    "src/app/features/settings/iam/iam-user-dialog.component.spec.ts",
+    "src/app/features/settings/iam/iam-users.component.spec.ts",
+    "src/app/features/settings/settings.component.spec.ts"
+  ]
+}

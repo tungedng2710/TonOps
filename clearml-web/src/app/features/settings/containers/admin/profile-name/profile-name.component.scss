@@ -1,0 +1,71 @@
+  .header {
+    gap: 24px;
+    font-size: 16px;
+  }
+
+  .profile-page {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 32px;
+  }
+
+  .password-form {
+    width: 420px;
+    display: flex;
+    flex-direction: column;
+    h2 { font-size: 18px; }
+  }
+
+  .password-error { color: var(--color-error); margin-bottom: 12px; }
+  .password-success { color: var(--color-success); margin-bottom: 12px; }
+  .password-help { color: var(--color-outline); font-size: 12px; margin-top: 8px; }
+
+  .user-icon {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    background-image: url(../../../../../webapp-common/assets/icons/icon-profile-user.svg);
+  }
+
+  .profile-label {
+    font-size: 12px;
+    color: var(--color-outline);
+    font-weight: 500;;
+  }
+
+  .profile-name {
+    display: flex;
+    align-items: center;
+    padding-left: 64px;
+    min-height: 32px;
+    &.edit {
+      transform: translateX(18px);
+    }
+  }
+
+  .badge {
+    height: 18px;
+    display: flex;
+    align-items: center;
+    background-color: var(--color-outline-variant);
+    padding: 0 6px 0 16px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: none;
+    position: relative;
+    overflow: hidden;
+    color: var(--color-on-surface);
+    border: 1px solid var(--color-outline-variant);
+    .al-icon {
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }

@@ -1,0 +1,28 @@
+:host {
+  display: inline-flex;
+
+  .tooltip-wrapper {
+    display: inherit;
+  }
+
+  mat-icon {
+    color: var(--color-outline);
+    margin-left: 8px;
+  }
+
+  &.color-primary mat-icon {
+    color: var(--color-primary);
+  }
+}
+
+.tooltip-container {
+  max-width: 400px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: normal;
+
+  &.word-break {
+    word-wrap: break-word;
+  }
+}

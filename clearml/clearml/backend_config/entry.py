@@ -1,0 +1,89 @@
+from abc import ABC, abstractmethod
+from typing import Optional, Any, Tuple, Callable, Dict
+
+from .converters import any_to_bool
+
+NotSet = object()
+
+Converter = Callable[[Any], Any]
+
+
+class Entry(ABC):
+    """
+    Configuration entry definition
+    """
+
+    @classmethod
+    def default_conversions(cls) -> Dict[Any, Converter]:
+        return {
+            bool: any_to_bool,
+            str: lambda s: str(s).strip(),
+        }
+
+    def __init__(self, key: str, *more_keys: str, **kwargs: Any) -> None:
+        """
+        :param key: Entry's key (at least one).
+        :param more_keys: More alternate keys for this entry.
+        :param type: Value type. If provided, will be used choosing a default conversion or
+        (if none exists) for casting the environment value.
+        :param converter: Value converter. If provided, will be used to convert the environment value.
+        :param default: Default value. If provided, will be used as the default value on calls to get() and get_pair()
+        in case no value is found for any key and no specific default value was provided in the call.
+        Default value is None.
+        :param help: Help text describing this entry
+        """
+        self.keys = (key,) + more_keys
+        self.type = kwargs.pop("type", str)
+        self.converter = kwargs.pop("converter", None)
+        self.default = kwargs.pop("default", None)
+        self.help = kwargs.pop("help", None)
+
+    def __str__(self) -> str:
+        return str(self.key)
+
+    @property
+    def key(self) -> str:
+        return self.keys[0]
+
+    def convert(self, value: Any, converter: Converter = None) -> Optional[Any]:
+        converter = converter or self.converter
+        if not converter:
+            converter = self.default_conversions().get(self.type, self.type)
+        return converter(value)
+
+    def get_pair(self, default: Any = NotSet, converter: Converter = None) -> Optional[Tuple[str, Any]]:
+        for key in self.keys:
+            value = self._get(key)
+            if value is NotSet:
+                continue
+            # noinspection PyBroadException
+            try:
+                value = self.convert(value, converter)
+            except Exception as ex:  # noqa: F841
+                self.error(f"invalid value {key}={value}: {ex}")
+                break
+            return key, value
+        result = self.default if default is NotSet else default
+        return self.key, result
+
+    def get(self, default: Any = NotSet, converter: Converter = None) -> Optional[Any]:
+        return self.get_pair(default=default, converter=converter)[1]
+
+    def set(self, value: Any) -> None:
+        # key, _ = self.get_pair(default=None, converter=None)
+        for k in self.keys:
+            self._set(k, str(value))
+
+    def _set(self, key: str, value: str) -> None:
+        pass
+
+    @abstractmethod
+    def _get(self, key: str) -> Any:
+        pass
+
+    @abstractmethod
+    def error(self, message: str) -> None:
+        pass
+
+    def exists(self) -> bool:
+        return any(key for key in self.keys if self._get(key) is not NotSet)

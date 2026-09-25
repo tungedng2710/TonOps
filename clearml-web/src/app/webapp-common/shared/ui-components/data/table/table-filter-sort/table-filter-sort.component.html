@@ -1,0 +1,99 @@
+<div class="filter-sort-container d-flex align-items-center" [class.active]="value()?.length > 0 || subValue()?.length > 0">
+  @if (column().sortable) {
+    <button class="sm btn-sort" data-id="sortTableColumn" (click)="switchSortOrder($event)">
+        @if (this.sortOrder()?.order) {
+          @if (this.sortOrder()?.order === TABLE_SORT_ORDER.DESC) {
+            <mat-icon fontSet="al" fontIcon="al-ico-sort-on-down" class="sm"><span class="path1"></span><span class="path2"></span></mat-icon>
+          } @else {
+            <mat-icon fontSet="al" fontIcon="al-ico-sort-on-up" class="sm"><span class="path1"></span><span class="path2"></span></mat-icon>
+          }
+          } @else {
+            <mat-icon fontSet="al" fontIcon="al-ico-sort-off" class="sm"></mat-icon>
+          }
+    </button>
+  }
+  @if (column().filterable) {
+    <div
+      (click)="column().sortable && switchSortOrder($event)"
+      [class.pointer]="column().sortable"
+      [smTooltip]="tooltip() ? column().header: undefined"
+      class="ellipsis menu-button"
+      [class.active]="this.sortOrder()?.order || isFiltered()"
+    >{{column().header}}</div>
+    <sm-menu
+      #smMenu
+      searchPlaceholder="Search"
+      [enableSearch]="column().searchableFilter"
+      [fixedOptionsSubheader]="subOptions()?.length ? fixedOptionsSubheader() : ''"
+      [searchValue]="searchValue()"
+      [prefixIconClass]="isFiltered() ? 'al-ico-filter-on' : 'al-ico-filter-off'"
+      [showCart]="false"
+      (searchValueChanged)="searchChanged($event)"
+      (menuClosed)="onMenuClose()"
+      (menuOpened)="onMenuOpen()"
+      [buttonClass]="'sm'"
+      data-id="OpenMenu"
+      >
+      @switch (column().filterType) {
+        @case (FILTER_TYPE.duration) {
+          <sm-table-filter-duration
+            [value]="value() ?? []"
+          (filterChanged)="filterChanged.emit($event)"></sm-table-filter-duration>
+        }
+        @case (FILTER_TYPE.durationNumeric) {
+          <sm-table-filter-duration-numeric
+            [value]="value() ?? []"
+            (filterChanged)="filterChanged.emit($event)"
+          ></sm-table-filter-duration-numeric>
+        }
+        @case (FILTER_TYPE.durationDate) {
+          <sm-table-filter-duration-date-time
+            [value]="value() ?? []"
+            (filterChanged)="filterChanged.emit($event)"
+          ></sm-table-filter-duration-date-time>
+        }
+        @default {
+          @if (column().andFilter) {
+            <div class="filter-type" smClickStopPropagation>
+              <button mat-button data-id="AnyTagOption" class="link" [class.selected]="!andFilter()" (click)="toggleCombination()">Any</button>
+              <button mat-button data-id="allTagOption" class="link" [class.selected]="andFilter()" (click)="toggleCombination()">All</button>
+            </div>
+          }
+          <div [class.options-section]="column().searchableFilter" smClickStopPropagation class="d-flex align-items-start flex-column checkbox-list">
+            <sm-checkbox-three-state-list
+              [supportExcludeFilter]="column().excludeFilter"
+              [options]="paginatedOptions()"
+              [checkedList]="value() ?? []"
+              (filterChanged)="emitFilterChanged($event)"
+            ></sm-checkbox-three-state-list>
+            @if (options() !== null && !noMoreOptions()) {
+              <sm-dots-load-more
+                [loading]="loading()"
+                (loadMore)="loadMore()"
+                class="mx-auto my-2"
+              ></sm-dots-load-more>
+            }
+            <div fixedOptions>
+              @for (option of subOptions(); track option.label) {
+                <sm-menu-item
+                  [itemLabel]="option.label"
+                  [checked]="subValue()?.includes(option.value)" [selectable]="true" [itemValue]="option.value"
+                  (itemClicked)="onSubFilterChanged($event)"
+                ></sm-menu-item>
+              }
+            </div>
+          </div>
+        }
+      }
+      @if (column().columnExplain && options()?.length) {
+        <div class="column-explanation">{{column().columnExplain}}</div>
+      }
+    </sm-menu>
+  } @else {
+    <div [smTooltip]="tooltip() ? column().header : undefined"
+      class="menu-button pointer"
+      [class.active]="this.sortOrder()?.order"
+      (click)="column().sortable && switchSortOrder($event)">{{column().header}}
+    </div>
+  }
+</div>

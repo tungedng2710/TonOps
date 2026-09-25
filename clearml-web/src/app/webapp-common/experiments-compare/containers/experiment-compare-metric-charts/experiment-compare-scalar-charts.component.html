@@ -1,0 +1,104 @@
+<mat-drawer-container [hasBackdrop]="false" autosize class="light-theme">
+  <mat-drawer #drawer [opened]="!minimized" [mode]="minimized ? 'over' : 'side'" [disableClose]="!minimized">
+    <div class="list-container">
+      @if (!minimized) {
+        <sm-graph-settings-bar
+          class="drawer-settings-bar"
+          [verticalLayout]="true"
+          [smoothWeight]="settings.smoothWeight"
+          [smoothSigma]="settings.smoothSigma"
+          [smoothType]="settings.smoothType"
+          [xAxisType]="settings.xAxisType"
+          [showOrigin]="settings.showOriginals"
+          [lineWidth]="settings.lineWidth"
+          [groupBy]="settings.groupBy"
+          [groupByOptions]="groupByOptions"
+          [clearable]="null"
+          [showLineWidth]="true"
+          (changeWeight)="changeSmoothness($event)"
+          (changeSigma)="changeSigma($event)"
+          (toggleSettings)="toggleSettingsBar()"
+          (changeXAxisType)="changeXAxisType($event)"
+          (changeGroupBy)="changeGroupBy($event)"
+          (changeLineWidth)="changeLineWidth($event)"
+          (changeSmoothType)="changeSmoothType($event)"
+          (changeShowOrigin)="changeShowOriginals($event)"
+        ></sm-graph-settings-bar>
+      }
+      @if (!minimized) {
+        <sm-selectable-grouped-filter-list
+          [list]="graphList"
+          [nested]="settings.groupBy === 'none'"
+          [checkedList]="settings.selectedMetricsScalar"
+          [searchTerm]="searchTerm$ | ngrxPush"
+          (itemSelect)="metricSelected($event)"
+          (selectedChanged)="selectedListChanged($event)"
+          (searchTermChanged)="searchTermChanged($event)"
+        >
+        </sm-selectable-grouped-filter-list>
+      }
+    </div>
+  </mat-drawer>
+  <mat-drawer-content class="overflow-hidden">
+    <sm-experiment-graphs
+      [class.hidden]="loading()"
+      [noTasks]="!taskIds?.length"
+      [metrics]="graphs"
+      [skipLayoutCalc]="loading()"
+      [list]="graphList"
+      [hiddenList]="settings.selectedMetricsScalar"
+      [isGroupGraphs]="settings.groupBy === 'none'"
+      [isCompare]="true"
+      [hideLegend]="minimized"
+      [smoothWeight]="settings.smoothWeight"
+      [smoothSigma]="settings.smoothSigma"
+      [smoothType]="settings.smoothType"
+      [xAxisType]="settings.xAxisType"
+      [groupBy]="settings.groupBy"
+      [showOriginals]="settings.showOriginals"
+      [lineWidth]="settings.lineWidth"
+      [multipleSingleValueData]="singleValuesChart"
+      [exportForReport]="!modelsFeature"
+      [minimized]="minimized"
+      [breakPoint]="900"
+      [splitSize]="splitSize$ | ngrxPush"
+      [defaultHoverMode]="'x'"
+      (resetGraphs)="resetMetrics()"
+      (createEmbedCode)="createEmbedCode($event)"
+      (chartSettingsChanged)="changeChartSettings($event)"
+    ></sm-experiment-graphs>
+  </mat-drawer-content>
+</mat-drawer-container>
+
+
+@if (minimized) {
+  <div class="menu-trigger"
+       smClickStopPropagation
+       [matMenuTriggerFor]="graphSettingsMenu">
+  </div>
+  <mat-menu #graphSettingsMenu="matMenu" (closed)="toggleSettingsBar()">
+    <sm-graph-settings-bar
+      smClickStopPropagation
+      class="graph-settings-menu"
+      [verticalLayout]="true"
+      [smoothWeight]="settings.smoothWeight"
+      [smoothSigma]="settings.smoothSigma"
+      [smoothType]="settings.smoothType"
+      [xAxisType]="settings.xAxisType"
+      [showOrigin]="settings.showOriginals"
+      [groupBy]="settings.groupBy"
+      [lineWidth]="settings.lineWidth"
+      [groupByOptions]="groupByOptions"
+      [clearable]="null"
+      [showLineWidth]="true"
+      (changeWeight)="changeSmoothness($event)"
+      (changeSigma)="changeSigma($event)"
+      (toggleSettings)="toggleSettingsBar()"
+      (changeXAxisType)="changeXAxisType($event)"
+      (changeGroupBy)="changeGroupBy($event)"
+      (changeSmoothType)="changeSmoothType($event)"
+      (changeShowOrigin)="changeShowOriginals($event)"
+      (changeLineWidth)="changeLineWidth($event)"
+    ></sm-graph-settings-bar>
+  </mat-menu>
+}

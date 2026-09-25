@@ -1,0 +1,22 @@
+services:
+  apiserver:
+    volumes:
+      - ../apiserver/bll/auth/__init__.py:/opt/clearml/apiserver/bll/auth/__init__.py:ro
+      - ../apiserver/bll/iam:/opt/clearml/apiserver/bll/iam:ro
+      - ../apiserver/config/default/apiserver.conf:/opt/clearml/apiserver/config/default/apiserver.conf:ro
+      - ../apiserver/database/model/auth.py:/opt/clearml/apiserver/database/model/auth.py:ro
+      - ../apiserver/database/model/iam.py:/opt/clearml/apiserver/database/model/iam.py:ro
+      - ../apiserver/mongo/initialize/__init__.py:/opt/clearml/apiserver/mongo/initialize/__init__.py:ro
+      - ../apiserver/mongo/initialize/iam.py:/opt/clearml/apiserver/mongo/initialize/iam.py:ro
+      - ../apiserver/schema/services/iam.conf:/opt/clearml/apiserver/schema/services/iam.conf:ro
+      - ../apiserver/service_repo/auth/auth.py:/opt/clearml/apiserver/service_repo/auth/auth.py:ro
+      - ../apiserver/service_repo/auth/local_user.py:/opt/clearml/apiserver/service_repo/auth/local_user.py:ro
+      - ../apiserver/service_repo/auth/payload/token.py:/opt/clearml/apiserver/service_repo/auth/payload/token.py:ro
+      - ../apiserver/services/iam.py:/opt/clearml/apiserver/services/iam.py:ro
+      - ../apiserver/services/login/__init__.py:/opt/clearml/apiserver/services/login/__init__.py:ro
+
+  webserver:
+    volumes:
+      # The webserver entrypoint writes runtime configuration beside index.html.
+      - ../../clearml-web/build/browser:/usr/share/nginx/html
+      - ../../clearml-web/dist/report-widgets/browser:/usr/share/nginx/widgets

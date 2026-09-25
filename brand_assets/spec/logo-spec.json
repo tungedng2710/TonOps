@@ -1,0 +1,22 @@
+{
+  "source_concept": "brain/circuit left + geometric technology right",
+  "master_viewbox": [
+    0,
+    0,
+    1087,
+    964
+  ],
+  "content_bbox_in_source_px": [
+    83,
+    123,
+    1169,
+    1086
+  ],
+  "recommended_clear_space": "At least 10% of logo width on every side",
+  "recommended_minimum_size": {
+    "digital_with_full_detail": "32 px high",
+    "print": "8 mm high"
+  },
+  "background": "transparent for all logo master files",
+  "notes": "App-icon-slate files intentionally include a slate background; all logo masters and transparent PNGs do not."
+}

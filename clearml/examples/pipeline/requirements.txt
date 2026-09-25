@@ -1,0 +1,5 @@
+joblib>=0.13.2
+matplotlib >= 3.1.1
+scikit-learn
+pandas
+clearml>=1.14.4

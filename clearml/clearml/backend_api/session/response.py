@@ -1,0 +1,75 @@
+from typing import Any
+
+import requests
+
+from . import jsonmodels
+from .apimodel import ApiModel
+from .datamodel import NonStrictDataModelMixin
+
+
+class FloatOrStringField(jsonmodels.fields.BaseField):
+    """String field."""
+
+    types = (
+        float,
+        str,
+    )
+
+
+class Response(ApiModel, NonStrictDataModelMixin):
+    pass
+
+
+class _ResponseEndpoint(jsonmodels.models.Base):
+    name = jsonmodels.fields.StringField()
+    requested_version = FloatOrStringField()
+    actual_version = FloatOrStringField()
+
+
+class ResponseMeta(jsonmodels.models.Base):
+    @property
+    def is_valid(self) -> bool:
+        return self._is_valid
+
+    @classmethod
+    def from_raw_data(cls, status_code: int, text: str = "", endpoint: str = None) -> "ResponseMeta":
+        return cls(
+            is_valid=False,
+            result_code=status_code,
+            result_subcode=0,
+            result_msg=text,
+            endpoint=_ResponseEndpoint(name=(endpoint or "unknown")),
+        )
+
+    def __init__(self, is_valid: bool = True, **kwargs: Any) -> None:
+        super(ResponseMeta, self).__init__(**kwargs)
+        self._is_valid = is_valid
+
+    id = jsonmodels.fields.StringField(required=True)
+    trx = jsonmodels.fields.StringField(required=True)
+    endpoint = jsonmodels.fields.EmbeddedField([_ResponseEndpoint], required=True)
+    result_code = jsonmodels.fields.IntField(required=True)
+    result_subcode = jsonmodels.fields.IntField()
+    result_msg = jsonmodels.fields.StringField(required=True)
+    error_stack = jsonmodels.fields.StringField()
+
+    def __str__(self) -> str:
+        result_code = (
+            self.result_code
+            if self.result_code == requests.codes.ok
+            else f"{self.result_code}/{self.result_subcode}"
+        )
+        endpoint = (
+            f"{self.endpoint.name}/v{self.endpoint.actual_version}"
+            if (
+                self.result_code == requests.codes.ok
+                or self._is_valid
+            )
+            else self.endpoint.name
+        )
+
+        return (
+            f"<{result_code}: {endpoint} ({self.result_msg})>"
+            if self.result_msg
+            else f"<{result_code}: {endpoint}>"
+        )

@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  max-width: 640px;
+
+  .reference {
+    padding: 6px;
+    margin-bottom: 12px;
+  }
+
+  mat-form-field {
+    .clone-description {
+      min-height: 68px;
+    }
+  }
+
+  .text-danger {
+    display: block;
+    position: absolute;
+  }
+
+  mat-checkbox {
+    white-space: break-spaces;
+    margin: 0 0 20px -6px;
+  }
+}
+

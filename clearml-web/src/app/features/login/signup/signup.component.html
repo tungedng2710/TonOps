@@ -1,0 +1,92 @@
+<main class="signup-page">
+  <section class="signup-card" aria-labelledby="signup-title">
+    <div class="brand-lockup">
+      <img
+        [ngSrc]="environment().branding.logo"
+        [priority]="true"
+        width="48"
+        height="48"
+        alt="TonOps logo">
+      <span>TonOps</span>
+    </div>
+
+    @if (checkingAvailability()) {
+      <div class="state-panel">
+        <mat-spinner diameter="28"></mat-spinner>
+        <p>Checking registration availability…</p>
+      </div>
+    } @else if (!signupEnabled()) {
+      <div class="state-panel">
+        <h1 id="signup-title">Registration unavailable</h1>
+        <p>Self-service signup is not enabled for this TonOps instance.</p>
+        <a mat-flat-button routerLink="/login">Back to sign in</a>
+      </div>
+    } @else if (complete()) {
+      <div class="state-panel success">
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <h1 id="signup-title">Account created</h1>
+        <p>Your TonOps account is ready. Sign in with your new username and password.</p>
+        <a mat-flat-button routerLink="/login">Continue to sign in</a>
+      </div>
+    } @else {
+      <header>
+        <h1 id="signup-title">Create your account</h1>
+        <p>Join your team’s MLOps workspace.</p>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="signup()">
+        <div class="field-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username" autocomplete="username">
+            @if (form.controls.username.touched && form.controls.username.invalid) {
+              <mat-error>Use 3–64 letters, numbers, dots, dashes, or underscores.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Display name <span class="optional">(optional)</span></mat-label>
+            <input matInput formControlName="display_name" autocomplete="name">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" autocomplete="email">
+            @if (form.controls.email.touched && form.controls.email.invalid) {
+              <mat-error>Enter a valid email address.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" type="password" autocomplete="new-password">
+            @if (form.controls.password.touched && form.controls.password.invalid) {
+              <mat-error>Password must be at least 12 characters.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Confirm password</mat-label>
+            <input matInput formControlName="confirm_password" type="password" autocomplete="new-password">
+            @if (form.controls.confirm_password.touched && !passwordsMatch()) {
+              <mat-error>Passwords do not match.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (error()) {
+          <div class="form-error" role="alert">{{ error() }}</div>
+        }
+
+        <button mat-flat-button type="submit" [disabled]="submitting()">
+          @if (submitting()) {
+            <mat-spinner diameter="18"></mat-spinner>
+          }
+          Create account
+        </button>
+      </form>
+
+      <p class="auth-switch">Already have an account? <a routerLink="/login">Sign in</a></p>
+    }
+  </section>
+</main>

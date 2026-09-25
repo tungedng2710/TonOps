@@ -1,0 +1,69 @@
+:host {
+  .filter-sort-container {
+    position: relative;
+    z-index: 20;
+
+    .btn-sort {
+      width:8px;
+      background-color: transparent;
+      border: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      transform: translateY(-1px);
+      margin-left: -2px;
+      margin-right: 6px;
+      border-radius: 4px;
+      overflow: visible;
+      cursor: pointer;
+      mat-icon {
+        transform: translateX(-4px);
+      }
+      &:hover {
+        background-color: var(--color-tint-14);
+      }
+    }
+  }
+}
+
+.filter-type {
+  padding: 4px 0;
+  text-align: right;
+
+  .link {
+    color: var(--color-outline);
+
+    &.selected {
+      color: var(--color-on-surface);
+      pointer-events: none;
+    }
+  }
+}
+
+.column-explanation {
+  padding: 5px;
+  font-size: 10px;
+}
+
+.options-section {
+  height: 60vh;
+  max-height: 400px;
+  overflow: auto;
+}
+
+.arrow {
+  fill: var(--color-outline);
+  &.active {
+    fill: var(--color-on-surface);
+  }
+}
+
+.menu-button {
+  font-size: 12px;
+  font-weight: 500;
+  margin-right: 2px;
+}
+
+sm-menu {
+  transform: translateY(-1px);
+}

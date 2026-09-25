@@ -1,0 +1,166 @@
+@use "../../layout/layout";
+
+::ng-deep.mat-mdc-menu-panel.search-menu {
+  max-width: fit-content !important;
+}
+:host {
+  display: block;
+  position: relative;
+  height: layout.$top-bar-height;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant), transparent 35%);
+
+  sm-header-navbar-tabs {
+    height: layout.$top-bar-height;
+  }
+
+  .share-view {
+    visibility: hidden;
+  }
+
+  .header-container {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr);
+    grid-gap: 32px;
+    background-color: color-mix(in srgb, var(--color-surface-container-lowest), transparent 4%);
+    backdrop-filter: blur(18px);
+    color: var(--color-primary);
+    height: 100%;
+    width: 100%;
+    padding: 0 28px;
+    align-items: center;
+    justify-content: space-between;
+
+    & > * {
+      min-width: 0;
+    }
+
+    &.no-tabs {
+      grid-template-columns:  1fr 0 minmax(150px, auto);
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .spacer {
+      min-width: 50px;
+    }
+
+    .left-menu {
+      display: flex;
+      align-items: center;
+
+    };
+
+    sm-breadcrumbs {
+      display: flex;
+
+      :not(.login) {
+        width: 95%;
+      }
+    }
+
+    sm-common-search,
+    .resources-trigger {
+      margin-right: 14px;
+    }
+
+    .refresh-button {
+      margin-right: 10px;
+      ::ng-deep {
+        .tooltip-container, .tip {
+          background-color: var(--color-surface-container-lowest);
+        }
+      }
+    }
+
+    .menu-trigger {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      padding: 2px;
+
+      &:hover {
+        background-color: var(--color-surface-bright);
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+      }
+
+      .user-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 32px;
+        width: 32px;
+        height: 32px;
+        background-color: var(--color-surface-container-high);
+        color: var(--on-surface);
+        border-radius: 50%;
+
+        .al-icon {
+          margin-top: -2px;
+        }
+      }
+    }
+
+    .logout {
+      color: var(--color-surface-container-lowest);
+    }
+  }
+
+
+  .logo-full {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+
+    &.make-room-for-slogan {
+      justify-content: start;
+
+      .slogan {
+        padding: 12px;
+      }
+    }
+
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--color-on-surface);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+
+      img {
+        width: 38px;
+        height: 38px;
+        object-fit: contain;
+      }
+    }
+  }
+
+  .right-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .user-notification {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    border: solid 2px var(--color-outline);
+    border-radius: 50%;
+    background-color: var(--color-neon-surface);
+  }
+
+
+}

@@ -1,0 +1,35 @@
+@if (data) {
+  <sm-dialog-template iconClass="al-ico-pipelines" header="CREATE NEW PIPELINE">
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </sm-dialog-template>
+} @else {
+  <div class="content">
+    <div class="code">
+      <p>
+        Run this code for a quick example (requires TonOps 1.3 or above)
+      </p>
+    @if (initPipelineCode()) {
+      <sm-code-editor [code]="initPipelineCode()" [readonly]="true" [showCopyButton]="true"></sm-code-editor>
+    }
+  </div>
+  <div class="diagram">
+    <i class="i-pipeline-empty-state"></i>
+  </div>
+</div>
+}
+
+<ng-template #content>
+  <div class="content">
+    <div class="code">
+        <p>
+          Run this code for a quick example (requires TonOps 1.3 or above)
+        </p>
+    @if (initPipelineCode()) {
+      <sm-code-editor [code]="initPipelineCode()" [readonly]="true" [showCopyButton]="true"></sm-code-editor>
+    }
+  </div>
+  <div class="diagram">
+    <i class="i-pipeline-empty-state"></i>
+  </div>
+</div>
+</ng-template>

@@ -1,0 +1,89 @@
+@use "variables";
+
+$link-item-size-height: 36px;
+$link-item-size-width: 40px;
+$icon-size: 20px;
+$item-margin: 20px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: variables.$side-bar-close-width;
+  background: linear-gradient(180deg, #a70f27 0%, #7f1022 100%);
+  border-right: 0;
+  box-shadow: 8px 0 28px rgba(91, 11, 30, 0.12);
+  position: relative;
+  z-index: 2;
+
+  .logo {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+
+    img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+  }
+
+  .items-container {
+    text-align: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex-grow: 1;
+    &.on-scrolling {
+      box-shadow: 0 -3px 3px rgba(0, 0, 0, 0.3) inset;
+    }
+  }
+
+  .item {
+    margin: $item-margin auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $link-item-size-width;
+    height: $link-item-size-height;
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.76);
+    transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
+    // ICON SIZE
+    &:before {
+      font-size: $icon-size;
+    }
+
+    &:hover {
+      color: #fff;
+      background-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    &.active {
+      background-color: #fff;
+      color: #a70f27;
+      box-shadow: 0 8px 22px rgba(64, 0, 16, 0.25);
+    }
+  }
+
+
+  .account {
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+
+    .item {
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  }
+
+  .i-slack-mark-color {
+    width: $icon-size;
+    height: $icon-size;
+    background-size: $icon-size;
+  }
+}

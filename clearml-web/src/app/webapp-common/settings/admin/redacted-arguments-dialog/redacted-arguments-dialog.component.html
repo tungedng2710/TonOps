@@ -1,0 +1,36 @@
+<sm-dialog-template header="REDACTED ARGUMENTS" iconClass="al-ico-access-key">
+  <div class="form-container">
+    @for (control of argumentsArray.controls; track control; let i = $index) {
+      <div class="d-flex align-items-center" >
+        <mat-form-field appearance="outline" floatLabel="always" class="argument-input no-bottom">
+          @if (control.errors?.required) {
+            <mat-error>Required</mat-error>
+          }
+          <input type="text"
+            matInput
+            [formControl]="control"
+            [autocomplete]="'off'"
+            placeholder="Argument"
+            data-id="redactedArgumentField">
+        </mat-form-field>
+        <button mat-icon-button (click)="removeArgument(i)" data-id="redactedArgumentDeleteButton">
+          <mat-icon fontSet="al" fontIcon="al-ico-trash"></mat-icon>
+        </button>
+      </div>
+    }
+  </div>
+  <button mat-button (click)="addArgument()" data-id="addRedactedArgumentsButton"><mat-icon fontSet="al" fontIcon="al-ico-add"></mat-icon>Add</button>
+  <mat-dialog-actions>
+    <button
+      mat-stroked-button
+      (click)="closeDialog()" data-id="cancelButton">
+      CANCEL
+    </button>
+    <button type="submit"
+      mat-flat-button
+      (click)="applyChanges()"
+      [disabled]="argumentsArray.invalid" data-id="saveButton">
+      SAVE
+    </button>
+  </mat-dialog-actions>
+</sm-dialog-template>
