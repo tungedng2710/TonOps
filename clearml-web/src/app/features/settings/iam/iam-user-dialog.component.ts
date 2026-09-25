@@ -11,19 +11,28 @@ import {IamUser} from './iam.models';
 @Component({
   selector: 'sm-iam-user-dialog',
   template: `
-    <h2 mat-dialog-title>{{ data.user ? 'Edit user' : 'Add user' }}</h2>
+    <div class="dialog-heading">
+      <p class="eyebrow">USER ACCOUNT</p>
+      <h2 mat-dialog-title>{{ data.user ? 'Edit user' : 'Add user' }}</h2>
+      <p>{{ data.user ? 'Update account details and access.' : 'Create an account for a workspace member.' }}</p>
+    </div>
     <mat-dialog-content>
       <form [formGroup]="form" class="iam-form">
-        @if (!data.user) {
-          <mat-form-field appearance="outline"><mat-label>Username</mat-label>
+        @if (data.user) {
+          <div class="account-identifier full-width"><span>Username</span><strong>{{ data.user.username }}</strong></div>
+        } @else {
+          <mat-form-field appearance="outline" class="full-width"><mat-label>Username</mat-label>
             <input matInput formControlName="username" autocomplete="off">
+            @if (form.controls.username.invalid) { <mat-error>Use 3–64 letters, numbers, dots, dashes, or underscores.</mat-error> }
           </mat-form-field>
         }
-        <mat-form-field appearance="outline"><mat-label>Display name</mat-label>
+        <mat-form-field appearance="outline" class="full-width"><mat-label>Display name{{ data.user ? '' : ' (optional)' }}</mat-label>
           <input matInput formControlName="display_name">
+          @if (form.controls.display_name.invalid) { <mat-error>Enter a display name of up to 128 characters.</mat-error> }
         </mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Email (optional)</mat-label>
+        <mat-form-field appearance="outline" class="full-width"><mat-label>Email (optional)</mat-label>
           <input matInput formControlName="email" type="email">
+          @if (form.controls.email.invalid) { <mat-error>Enter a valid email address.</mat-error> }
         </mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Role</mat-label>
           <mat-select formControlName="role"><mat-option value="user">User</mat-option><mat-option value="admin">Admin</mat-option></mat-select>
@@ -33,23 +42,38 @@ import {IamUser} from './iam.models';
             <mat-select formControlName="status"><mat-option value="active">Active</mat-option><mat-option value="disabled">Disabled</mat-option></mat-select>
           </mat-form-field>
         } @else {
-          <mat-form-field appearance="outline"><mat-label>Temporary password</mat-label>
+          <mat-form-field appearance="outline" class="full-width"><mat-label>Temporary password</mat-label>
             <input matInput formControlName="password" type="password" autocomplete="new-password">
+            <mat-hint>At least 12 characters.</mat-hint>
           </mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Confirm password</mat-label>
+          <mat-form-field appearance="outline" class="full-width"><mat-label>Confirm password</mat-label>
             <input matInput formControlName="confirm_password" type="password" autocomplete="new-password">
           </mat-form-field>
-          <mat-checkbox formControlName="must_change_password">Force password change on next login</mat-checkbox>
+          <mat-checkbox class="full-width" formControlName="must_change_password">Require password change at next login</mat-checkbox>
         }
-        @if (error) { <div class="error">{{ error }}</div> }
+        @if (error) { <div class="error full-width" role="alert">{{ error }}</div> }
       </form>
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions align="end" class="dialog-actions">
       <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()" [disabled]="form.invalid">Save</button>
+      <button mat-flat-button (click)="save()" [disabled]="form.invalid">{{ data.user ? 'Save changes' : 'Add user' }}</button>
     </mat-dialog-actions>
   `,
-  styles: [`.iam-form{display:flex;flex-direction:column;min-width:420px;padding-top:8px}.error{color:var(--color-error);margin-bottom:8px}`],
+  styles: [`
+    .dialog-heading { padding: 24px 24px 8px; }
+    .eyebrow { margin: 0 0 8px; color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .12em; }
+    h2[mat-dialog-title] { margin: 0 0 6px; padding: 0; font-size: 24px; }
+    .dialog-heading > p:last-child { margin: 0; color: var(--color-on-surface-variant); font-size: 13px; }
+    .iam-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; padding-top: 12px; }
+    .iam-form mat-form-field { min-width: 0; }
+    .full-width { grid-column: 1 / -1; }
+    .account-identifier { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; padding: 12px 14px; border-radius: 10px; background: var(--color-surface-container-low); }
+    .account-identifier span { color: var(--color-on-surface-variant); font-size: 11px; }
+    .account-identifier strong { font-size: 14px; }
+    .error { color: var(--color-error); font-size: 13px; }
+    .dialog-actions { gap: 8px; padding: 16px 24px 24px; border-top: 1px solid var(--color-outline-variant); }
+    @media (max-width: 480px) { .iam-form { grid-template-columns: minmax(0, 1fr); } }
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatButtonModule]
 })
@@ -59,7 +83,7 @@ export class IamUserDialogComponent {
   protected error = '';
   protected form = new FormGroup({
     username: new FormControl(this.data.user?.username ?? '', [Validators.required, Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}$/)]),
-    display_name: new FormControl(this.data.user?.display_name ?? '', [Validators.maxLength(128)]),
+    display_name: new FormControl(this.data.user?.display_name ?? '', this.data.user ? [Validators.required, Validators.maxLength(128)] : [Validators.maxLength(128)]),
     email: new FormControl(this.data.user?.email ?? '', [Validators.email]),
     role: new FormControl(this.data.user?.role ?? 'user', [Validators.required]),
     status: new FormControl(this.data.user?.status ?? 'active'),
@@ -69,6 +93,8 @@ export class IamUserDialogComponent {
   });
 
   protected save() {
+    this.form.markAllAsTouched();
+    if (this.form.invalid) return;
     const value = this.form.getRawValue();
     if (!this.data.user && value.password !== value.confirm_password) {
       this.error = 'Passwords do not match.';

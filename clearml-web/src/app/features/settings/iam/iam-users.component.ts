@@ -9,7 +9,6 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatTableModule} from '@angular/material/table';
 import {MatPaginatorModule, PageEvent} from '@angular/material/paginator';
 import {MatMenuModule} from '@angular/material/menu';
-import {MatIconModule} from '@angular/material/icon';
 import {MatSortModule, Sort} from '@angular/material/sort';
 import {debounceTime, filter} from 'rxjs/operators';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -22,29 +21,85 @@ import {IamNotificationsService} from './iam-notifications.service';
 @Component({
   selector: 'sm-iam-users',
   template: `
-    <div class="toolbar">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Search users</mat-label><input matInput [formControl]="search"></mat-form-field>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Role</mat-label><mat-select [formControl]="role"><mat-option value="">All</mat-option><mat-option value="admin">Admin</mat-option><mat-option value="user">User</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Status</mat-label><mat-select [formControl]="status"><mat-option value="">All</mat-option><mat-option value="active">Active</mat-option><mat-option value="disabled">Disabled</mat-option></mat-select></mat-form-field>
-      <span class="spacer"></span><button mat-flat-button color="primary" (click)="openUser()">+ Add user</button>
+    <div class="iam-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Users</h2>
+          <p>{{ total() }} {{ total() === 1 ? 'account' : 'accounts' }} in this workspace</p>
+        </div>
+        <button mat-flat-button type="button" (click)="openUser()">Add user</button>
+      </div>
+      <div class="filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+          <mat-label>Search by name or username</mat-label>
+          <input matInput [formControl]="search" autocomplete="off">
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Role</mat-label>
+          <mat-select [formControl]="role">
+            <mat-option value="">All roles</mat-option>
+            <mat-option value="admin">Admin</mat-option>
+            <mat-option value="user">User</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select [formControl]="status">
+            <mat-option value="">All statuses</mat-option>
+            <mat-option value="active">Active</mat-option>
+            <mat-option value="disabled">Disabled</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="table-scroll">
+        <table mat-table matSort [dataSource]="users()" (matSortChange)="sortChanged($event)" class="users-table">
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="username">User</th>
+            <td mat-cell *matCellDef="let u">
+              <div class="user-cell">
+                <span class="user-avatar" aria-hidden="true">{{ (u.display_name || u.username).charAt(0).toUpperCase() }}</span>
+                <span class="user-details"><strong>{{ u.username }}</strong><small>{{ u.email || 'No email address' }}</small></span>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef mat-sort-header="display_name">Display name</th><td mat-cell *matCellDef="let u">{{ u.display_name || '—' }}</td></ng-container>
+          <ng-container matColumnDef="role"><th mat-header-cell *matHeaderCellDef mat-sort-header="role">Role</th><td mat-cell *matCellDef="let u"><span class="role-badge" [class.admin]="u.role === 'admin'">{{ u.role }}</span></td></ng-container>
+          <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header="status">Status</th><td mat-cell *matCellDef="let u"><span class="status-badge" [class.disabled]="u.status === 'disabled'">{{ u.status }}</span></td></ng-container>
+          <ng-container matColumnDef="last"><th mat-header-cell *matHeaderCellDef mat-sort-header="last_login_at">Last login</th><td mat-cell *matCellDef="let u">{{ u.last_login_at ? (u.last_login_at | date:'mediumDate') : 'Never' }}</td></ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
+            <td mat-cell *matCellDef="let u" class="actions-cell">
+              <div class="row-actions">
+                <button mat-stroked-button type="button" class="edit-button" (click)="openUser(u)" [attr.aria-label]="'Edit ' + u.username">Edit</button>
+                <button mat-icon-button type="button" [matMenuTriggerFor]="actions" [attr.aria-label]="'More actions for ' + u.username">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor">
+                    <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
+                  </svg>
+                </button>
+                <mat-menu #actions="matMenu">
+                  <button mat-menu-item (click)="toggle(u)">{{ u.status === 'active' ? 'Disable user' : 'Enable user' }}</button>
+                  <button mat-menu-item (click)="reset(u)">Reset password</button>
+                  <button mat-menu-item (click)="remove(u)">Delete user</button>
+                </mat-menu>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columns"></tr>
+          <tr mat-row *matRowDef="let row; columns: columns"></tr>
+        </table>
+        @if (!users().length) {
+          <div class="empty-state">
+            <strong>No users found</strong>
+            <p>Try changing the search or filters, or add a new user.</p>
+          </div>
+        }
+      </div>
+      <mat-paginator [length]="total()" [pageIndex]="page()" [pageSize]="pageSize" [pageSizeOptions]="[25,50,100]" (page)="paginate($event)"></mat-paginator>
     </div>
-    <table mat-table matSort [dataSource]="users()" (matSortChange)="sortChanged($event)">
-      <ng-container matColumnDef="username"><th mat-header-cell *matHeaderCellDef mat-sort-header="username">Username</th><td mat-cell *matCellDef="let u">{{u.username}}</td></ng-container>
-      <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef mat-sort-header="display_name">Name</th><td mat-cell *matCellDef="let u">{{u.display_name}}</td></ng-container>
-      <ng-container matColumnDef="role"><th mat-header-cell *matHeaderCellDef mat-sort-header="role">Role</th><td mat-cell *matCellDef="let u">{{u.role}}</td></ng-container>
-      <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header="status">Status</th><td mat-cell *matCellDef="let u"><span class="status" [class.disabled]="u.status === 'disabled'">{{u.status}}</span></td></ng-container>
-      <ng-container matColumnDef="last"><th mat-header-cell *matHeaderCellDef mat-sort-header="last_login_at">Last login</th><td mat-cell *matCellDef="let u">{{u.last_login_at ? (u.last_login_at | date:'medium') : 'Never'}}</td></ng-container>
-      <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let u">
-        <button mat-icon-button [matMenuTriggerFor]="actions"><mat-icon>more_vert</mat-icon></button>
-        <mat-menu #actions="matMenu"><button mat-menu-item (click)="openUser(u)">Edit</button><button mat-menu-item (click)="toggle(u)">{{u.status === 'active' ? 'Disable' : 'Enable'}}</button><button mat-menu-item (click)="reset(u)">Reset password</button><button mat-menu-item (click)="remove(u)">Delete</button></mat-menu>
-      </td></ng-container>
-      <tr mat-header-row *matHeaderRowDef="columns"></tr><tr mat-row *matRowDef="let row; columns: columns"></tr>
-    </table>
-    <mat-paginator [length]="total()" [pageIndex]="page()" [pageSize]="pageSize" [pageSizeOptions]="[25,50,100]" (page)="paginate($event)"></mat-paginator>
   `,
   styleUrls: ['./iam.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatTableModule, MatPaginatorModule, MatMenuModule, MatIconModule, MatSortModule, DatePipe]
+  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatTableModule, MatPaginatorModule, MatMenuModule, MatSortModule, DatePipe]
 })
 export class IamUsersComponent {
   private api = inject(ApiIamService);
@@ -79,7 +134,7 @@ export class IamUsersComponent {
   protected paginate(event: PageEvent) { this.page.set(event.pageIndex); this.pageSize = event.pageSize; this.reload(); }
   protected sortChanged(sort: Sort) { this.sort = sort.direction === 'desc' ? `-${sort.active}` : (sort.active || 'username'); this.reload(true); }
   protected openUser(user?: IamUser) {
-    this.dialog.open(IamUserDialogComponent, {data: {user}, width: '520px'}).afterClosed().pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe(value => {
+    this.dialog.open(IamUserDialogComponent, {data: {user}, width: '560px', maxWidth: 'calc(100vw - 32px)'}).afterClosed().pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe(value => {
       const request = user ? this.api.updateUser(user.id, value) : this.api.createUser(value);
       request.subscribe({next: () => this.reload(), error: error => this.notifications.error('Unable to save user', error)});
     });

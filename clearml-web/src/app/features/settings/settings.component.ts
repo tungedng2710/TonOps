@@ -6,6 +6,9 @@ import {AdminFooterComponent} from '@common/settings/admin/admin-footer/admin-fo
 import {Store} from '@ngrx/store';
 import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {ApiIamService} from '~/business-logic/api-services/iam.service';
+import {BreakpointObserver} from '@angular/cdk/layout';
+import {MatButtonModule} from '@angular/material/button';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'sm-settings',
@@ -15,6 +18,7 @@ import {ApiIamService} from '~/business-logic/api-services/iam.service';
     MatDrawerContainer,
     MatDrawer,
     MatListModule,
+    MatButtonModule,
     RouterLinkActive,
     RouterLink,
     MatDrawerContent,
@@ -27,8 +31,12 @@ export class SettingsComponent {
   private iam = inject(ApiIamService);
   protected currentUser = this.store.selectSignal(selectCurrentUser);
   protected iamEnabled = signal(false);
+  protected narrow = signal(false);
 
   constructor() {
+    const breakpoints = inject(BreakpointObserver);
+    this.narrow.set(breakpoints.isMatched('(max-width: 760px)'));
+    breakpoints.observe('(max-width: 760px)').pipe(takeUntilDestroyed()).subscribe(result => this.narrow.set(result.matches));
     this.iam.status().subscribe({
       next: result => this.iamEnabled.set(result.enabled),
       error: () => this.iamEnabled.set(false)

@@ -8,6 +8,8 @@ import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {fetchCurrentUser} from '@common/core/actions/users.actions';
 import {ApiUsersService} from '~/business-logic/api-services/users.service';
 import {ApiIamService} from '~/business-logic/api-services/iam.service';
+import {selectUserTheme} from '@common/core/reducers/view.reducer';
+import {userThemeChanged} from '@common/core/actions/layout.actions';
 
 @Component({
   selector: 'sm-profile-name',
@@ -23,6 +25,13 @@ export class ProfileNameComponent {
   currentUser = this.store.selectSignal(selectCurrentUser);
   iamEnabled = signal(false);
   saving = signal(false);
+  savingPassword = signal(false);
+  userTheme = this.store.selectSignal(selectUserTheme);
+  themeOptions = [
+    {value: 'light', label: 'Light', description: 'Bright and clear'},
+    {value: 'dark', label: 'Dark', description: 'Easy on the eyes'},
+    {value: 'system', label: 'System', description: 'Match this device'}
+  ] as const;
   profileMessage = signal('');
   profileError = signal('');
   passwordMessage = signal('');
@@ -75,7 +84,7 @@ export class ProfileNameComponent {
   }
 
   changePassword() {
-    if (this.passwordForm.invalid) return;
+    if (this.passwordForm.invalid || this.savingPassword()) return;
     const value = this.passwordForm.getRawValue();
     this.passwordMessage.set('');
     this.passwordError.set('');
@@ -83,12 +92,21 @@ export class ProfileNameComponent {
       this.passwordError.set('New passwords do not match.');
       return;
     }
+    this.savingPassword.set(true);
     this.iam.changePassword(value.current, value.password).subscribe({
       next: () => {
+        this.savingPassword.set(false);
         this.passwordForm.reset();
         this.passwordMessage.set('Password changed successfully.');
       },
-      error: error => this.passwordError.set(error?.error?.meta?.result_msg ?? 'Unable to change password.')
+      error: error => {
+        this.savingPassword.set(false);
+        this.passwordError.set(error?.error?.meta?.result_msg ?? 'Unable to change password.');
+      }
     });
+  }
+
+  setTheme(theme: 'light' | 'dark' | 'system') {
+    this.store.dispatch(userThemeChanged({theme}));
   }
 }

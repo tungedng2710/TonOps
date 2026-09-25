@@ -14,22 +14,28 @@ import {IamNotificationsService} from './iam-notifications.service';
 @Component({
   selector: 'sm-iam-audit',
   template: `
-    <div class="toolbar">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Actor ID</mat-label><input matInput [formControl]="actor"></mat-form-field>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Action</mat-label><input matInput [formControl]="action"></mat-form-field>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Target ID</mat-label><input matInput [formControl]="target"></mat-form-field>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>From</mat-label><input matInput type="datetime-local" [formControl]="from"></mat-form-field>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>To</mat-label><input matInput type="datetime-local" [formControl]="to"></mat-form-field>
+    <div class="iam-panel">
+      <div class="panel-header"><div><h2>Audit log</h2><p>Review account and access changes.</p></div></div>
+      <div class="audit-filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Actor ID</mat-label><input matInput [formControl]="actor"></mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Action</mat-label><input matInput [formControl]="action"></mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Target ID</mat-label><input matInput [formControl]="target"></mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>From</mat-label><input matInput type="datetime-local" [formControl]="from"></mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>To</mat-label><input matInput type="datetime-local" [formControl]="to"></mat-form-field>
+      </div>
+      <div class="table-scroll">
+        <table mat-table [dataSource]="events()">
+          <ng-container matColumnDef="time"><th mat-header-cell *matHeaderCellDef>Time</th><td mat-cell *matCellDef="let event">{{event.timestamp | date:'medium'}}</td></ng-container>
+          <ng-container matColumnDef="actor"><th mat-header-cell *matHeaderCellDef>Actor</th><td mat-cell *matCellDef="let event">{{event.actor_username || 'system'}}</td></ng-container>
+          <ng-container matColumnDef="action"><th mat-header-cell *matHeaderCellDef>Action</th><td mat-cell *matCellDef="let event">{{event.action}}</td></ng-container>
+          <ng-container matColumnDef="target"><th mat-header-cell *matHeaderCellDef>Target</th><td mat-cell *matCellDef="let event">{{event.target_type}} {{event.target_id}}</td></ng-container>
+          <ng-container matColumnDef="ip"><th mat-header-cell *matHeaderCellDef>Source IP</th><td mat-cell *matCellDef="let event">{{event.source_ip || '—'}}</td></ng-container>
+          <tr mat-header-row *matHeaderRowDef="columns"></tr><tr mat-row *matRowDef="let row; columns: columns"></tr>
+        </table>
+        @if (!events().length) { <div class="empty-state"><strong>No audit events found</strong><p>Try changing the filters.</p></div> }
+      </div>
+      <mat-paginator [length]="total()" [pageIndex]="page()" [pageSize]="pageSize" [pageSizeOptions]="[25,50,100]" (page)="paginate($event)"></mat-paginator>
     </div>
-    <table mat-table [dataSource]="events()">
-      <ng-container matColumnDef="time"><th mat-header-cell *matHeaderCellDef>Time</th><td mat-cell *matCellDef="let event">{{event.timestamp | date:'medium'}}</td></ng-container>
-      <ng-container matColumnDef="actor"><th mat-header-cell *matHeaderCellDef>Actor</th><td mat-cell *matCellDef="let event">{{event.actor_username || 'system'}}</td></ng-container>
-      <ng-container matColumnDef="action"><th mat-header-cell *matHeaderCellDef>Action</th><td mat-cell *matCellDef="let event">{{event.action}}</td></ng-container>
-      <ng-container matColumnDef="target"><th mat-header-cell *matHeaderCellDef>Target</th><td mat-cell *matCellDef="let event">{{event.target_type}} {{event.target_id}}</td></ng-container>
-      <ng-container matColumnDef="ip"><th mat-header-cell *matHeaderCellDef>Source IP</th><td mat-cell *matCellDef="let event">{{event.source_ip || '—'}}</td></ng-container>
-      <tr mat-header-row *matHeaderRowDef="columns"></tr><tr mat-row *matRowDef="let row; columns: columns"></tr>
-    </table>
-    <mat-paginator [length]="total()" [pageIndex]="page()" [pageSize]="pageSize" [pageSizeOptions]="[25,50,100]" (page)="paginate($event)"></mat-paginator>
   `,
   styleUrls: ['./iam.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

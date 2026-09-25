@@ -3,11 +3,10 @@ import {inject, Injectable, Renderer2, DOCUMENT} from '@angular/core';
 import {ConfigurationService} from '@common/shared/services/configuration.service';
 import {BreakpointObserver, BreakpointState} from '@angular/cdk/layout';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {map, startWith} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {Store} from '@ngrx/store';
 import {setForcedTheme, setThemeColors, systemThemeChanged} from '@common/core/actions/layout.actions';
 import {selectThemeMode} from '@common/core/reducers/view.reducer';
-import {pairwise} from 'rxjs';
 
 
 @Injectable({
@@ -38,15 +37,14 @@ export class ThemeService {
 
     this.store.select(selectThemeMode)
       .pipe(
-        startWith(null),
         takeUntilDestroyed(),
-        pairwise()
       )
-      .subscribe(([prevTheme, theme]) => {
-        this.renderer.removeClass(this.document.documentElement, `${prevTheme}-mode`);
+      .subscribe(theme => {
+        this.renderer.removeClass(this.document.documentElement, 'light-mode');
+        this.renderer.removeClass(this.document.documentElement, 'dark-mode');
+        this.renderer.removeClass(this.document.documentElement, 'system-mode');
         this.renderer.addClass(this.document.documentElement, `${theme}-mode`);
         this.store.dispatch(setThemeColors({colors: this.getAllThemeColors()}));
-
       });
 
   }

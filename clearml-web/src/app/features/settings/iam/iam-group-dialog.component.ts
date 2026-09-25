@@ -21,7 +21,7 @@ import {IamNotificationsService} from './iam-notifications.service';
     </form></mat-dialog-content>
     <mat-dialog-actions align="end"><button mat-button mat-dialog-close>Cancel</button><button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Save</button></mat-dialog-actions>
   `,
-  styles: [`.iam-form{display:flex;flex-direction:column;min-width:400px;padding-top:8px}`],
+  styles: [`.iam-form{display:flex;flex-direction:column;min-width:0;width:100%;padding-top:8px}.iam-form mat-form-field{width:100%}`],
   imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule]
 })
 export class IamGroupDialogComponent {
@@ -50,7 +50,7 @@ export class IamGroupDialogComponent {
     </mat-dialog-content>
     <mat-dialog-actions align="end"><button mat-button mat-dialog-close>Cancel</button><button mat-flat-button color="primary" [disabled]="user.invalid" (click)="save()">Add</button></mat-dialog-actions>
   `,
-  styles: [`.w-100{width:100%;min-width:400px}`],
+  styles: [`.w-100{width:100%;min-width:0}`],
   imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule]
 })
 export class IamMemberDialogComponent {

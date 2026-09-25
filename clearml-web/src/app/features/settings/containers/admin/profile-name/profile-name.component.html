@@ -1,51 +1,132 @@
 @if (currentUser(); as user) {
-  <div class="profile-page">
-    <header class="profile-header">
+  <main class="profile-page">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">ACCOUNT SETTINGS</p>
+        <h1>Your profile</h1>
+        <p>Manage how you appear in TonOps and keep your account secure.</p>
+      </div>
+    </div>
+
+    <section class="identity-card" aria-label="Current account">
       @if (user.avatar) {
         <img class="avatar" [src]="user.avatar" alt="Your avatar">
       } @else {
         <div class="avatar avatar-placeholder" aria-hidden="true">{{ (user.name || '?').charAt(0).toUpperCase() }}</div>
       }
-      <div><h1>{{ user.name }}</h1><p>{{ user.email || user.id }}</p></div>
-    </header>
-
-    <form class="profile-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-      <h2>Personal information</h2>
-      <mat-form-field appearance="outline">
-        <mat-label>Display name</mat-label>
-        <input matInput formControlName="name" autocomplete="name">
-        @if (profileForm.controls.name.invalid) { <mat-error>Enter a name of 2 to 120 characters.</mat-error> }
-      </mat-form-field>
-      <div class="name-fields">
-        <mat-form-field appearance="outline"><mat-label>Given name</mat-label><input matInput formControlName="given_name" autocomplete="given-name"></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Family name</mat-label><input matInput formControlName="family_name" autocomplete="family-name"></mat-form-field>
+      <div class="identity-details">
+        <h2>{{ user.name }}</h2>
+        <p>{{ user.email || user.id }}</p>
       </div>
-      <mat-form-field appearance="outline">
-        <mat-label>Avatar URL</mat-label>
-        <input matInput formControlName="avatar" placeholder="https://example.com/avatar.png">
-        <mat-hint>Use an image URL available to people who can see your profile.</mat-hint>
-        @if (profileForm.controls.avatar.invalid) { <mat-error>Enter an HTTP or HTTPS URL.</mat-error> }
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Bio</mat-label>
-        <textarea matInput formControlName="bio" rows="4"></textarea>
-        <mat-hint align="end">{{ profileForm.controls.bio.value?.length || 0 }}/1000</mat-hint>
-      </mat-form-field>
-      @if (profileError()) { <p class="form-error" role="alert">{{ profileError() }}</p> }
-      @if (profileMessage()) { <p class="form-success" role="status">{{ profileMessage() }}</p> }
-      <button mat-flat-button type="submit" [disabled]="profileForm.invalid || !profileForm.dirty || saving()">Save profile</button>
-    </form>
+    </section>
 
-    @if (iamEnabled()) {
-      <form class="profile-card" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-        <h2>Change password</h2>
-        <mat-form-field appearance="outline"><mat-label>Current password</mat-label><input matInput type="password" formControlName="current" autocomplete="current-password"></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>New password</mat-label><input matInput type="password" formControlName="password" autocomplete="new-password"><mat-hint>Use at least 12 characters.</mat-hint></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Confirm new password</mat-label><input matInput type="password" formControlName="confirm" autocomplete="new-password"></mat-form-field>
-        @if (passwordError()) { <p class="form-error" role="alert">{{ passwordError() }}</p> }
-        @if (passwordMessage()) { <p class="form-success" role="status">{{ passwordMessage() }}</p> }
-        <button mat-flat-button type="submit" [disabled]="passwordForm.invalid">Change password</button>
+    <div class="settings-grid">
+      <form class="settings-card personal-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <div class="card-heading">
+          <div>
+            <h2>Personal information</h2>
+            <p>Update your name, image, and introduction.</p>
+          </div>
+        </div>
+
+        <div class="field-stack">
+          <mat-form-field appearance="outline">
+            <mat-label>Display name</mat-label>
+            <input matInput formControlName="name" autocomplete="name">
+            @if (profileForm.controls.name.invalid) { <mat-error>Enter a name of 2 to 120 characters.</mat-error> }
+          </mat-form-field>
+          <div class="name-fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Given name</mat-label>
+              <input matInput formControlName="given_name" autocomplete="given-name">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Family name</mat-label>
+              <input matInput formControlName="family_name" autocomplete="family-name">
+            </mat-form-field>
+          </div>
+          <mat-form-field appearance="outline">
+            <mat-label>Avatar URL</mat-label>
+            <input matInput formControlName="avatar" placeholder="https://example.com/avatar.png">
+            <mat-hint>Use an image URL available to people who can see your profile.</mat-hint>
+            @if (profileForm.controls.avatar.invalid) { <mat-error>Enter an HTTP or HTTPS URL.</mat-error> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Bio</mat-label>
+            <textarea matInput formControlName="bio" rows="5"></textarea>
+            <mat-hint align="end">{{ profileForm.controls.bio.value?.length || 0 }}/1000</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="card-actions">
+          <div class="form-feedback">
+            @if (profileError()) { <p class="form-error" role="alert">{{ profileError() }}</p> }
+            @if (profileMessage()) { <p class="form-success" role="status">{{ profileMessage() }}</p> }
+          </div>
+          <button mat-flat-button type="submit" [disabled]="profileForm.invalid || !profileForm.dirty || saving()">
+            {{ saving() ? 'Saving…' : 'Save changes' }}
+          </button>
+        </div>
       </form>
-    }
-  </div>
+
+      <div class="settings-stack">
+        <section class="settings-card appearance-card" aria-labelledby="appearance-heading">
+          <div class="card-heading">
+            <div>
+              <h2 id="appearance-heading">Appearance</h2>
+              <p>Choose how TonOps looks on this device.</p>
+            </div>
+          </div>
+          <div class="theme-options" role="group" aria-label="Color theme">
+            @for (theme of themeOptions; track theme.value) {
+              <button
+                class="theme-option"
+                type="button"
+                [class.selected]="userTheme() === theme.value"
+                [attr.aria-pressed]="userTheme() === theme.value"
+                (click)="setTheme(theme.value)">
+                <span class="theme-option__name">{{ theme.label }}</span>
+                <span class="theme-option__description">{{ theme.description }}</span>
+              </button>
+            }
+          </div>
+        </section>
+
+        @if (iamEnabled()) {
+          <form class="settings-card password-card" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <div class="card-heading">
+              <div>
+                <h2>Security</h2>
+                <p>Change your password to protect your account.</p>
+              </div>
+            </div>
+            <div class="field-stack">
+              <mat-form-field appearance="outline">
+                <mat-label>Current password</mat-label>
+                <input matInput type="password" formControlName="current" autocomplete="current-password">
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>New password</mat-label>
+                <input matInput type="password" formControlName="password" autocomplete="new-password">
+                <mat-hint>Use at least 12 characters.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Confirm new password</mat-label>
+                <input matInput type="password" formControlName="confirm" autocomplete="new-password">
+              </mat-form-field>
+            </div>
+            <div class="card-actions">
+              <div class="form-feedback">
+                @if (passwordError()) { <p class="form-error" role="alert">{{ passwordError() }}</p> }
+                @if (passwordMessage()) { <p class="form-success" role="status">{{ passwordMessage() }}</p> }
+              </div>
+              <button mat-flat-button type="submit" [disabled]="passwordForm.invalid || savingPassword()">
+                {{ savingPassword() ? 'Updating…' : 'Change password' }}
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  </main>
 }

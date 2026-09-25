@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef, DOCUMENT,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -71,7 +71,6 @@ export class LoginComponent {
   private userPreferences = inject(UserPreferences);
   private config = inject(ConfigurationService);
   private destroy = inject(DestroyRef);
-  private document = inject(DOCUMENT);
   private titleService = inject(Title);
   private iam = inject(ApiIamService);
 
@@ -285,6 +284,5 @@ export class LoginComponent {
 
   private setTheme(theme: 'light' | 'dark' | 'system') {
     this.store.dispatch(userThemeChanged({theme}));
-    this.document.body.parentElement.classList.add(`${theme}-mode`);
   }
 }

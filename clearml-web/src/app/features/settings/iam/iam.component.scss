@@ -1,16 +1,161 @@
+:host { display: block; min-width: 0; }
+
+.iam-panel {
+  overflow: hidden;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 20px;
+  background: var(--color-surface-container-low);
+  box-shadow: 0 12px 36px color-mix(in srgb, var(--color-shadow) 9%, transparent);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 28px 18px;
+
+  h2 { margin: 0 0 5px; font-size: 19px; font-weight: 650; }
+  p { margin: 0; color: var(--color-on-surface-variant); font-size: 13px; }
+  button { flex: none; min-height: 40px; }
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(140px, 180px) minmax(140px, 180px);
+  gap: 12px;
+  padding: 0 28px 24px;
+
+  mat-form-field { min-width: 0; width: 100%; }
+}
+
+.audit-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 0 28px 24px;
+
+  mat-form-field { min-width: 0; width: 100%; }
+}
+
+.table-scroll { overflow-x: auto; }
+
+table {
+  width: 100%;
+  min-width: 660px;
+  background: transparent;
+}
+
+.mat-mdc-header-row {
+  background: var(--color-surface-container);
+}
+
+.mat-mdc-header-cell {
+  color: var(--color-on-surface-variant);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.mat-mdc-row { transition: background-color 150ms ease; }
+.mat-mdc-row:hover { background: var(--color-surface-container); }
+.mat-mdc-cell, .mat-mdc-header-cell { padding: 14px 18px; border-bottom-color: var(--color-outline-variant); }
+
+.user-cell { display: flex; align-items: center; gap: 12px; min-width: 180px; }
+.user-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--color-on-primary-container);
+  background: var(--color-primary-container);
+  font-size: 13px;
+  font-weight: 700;
+}
+.user-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+
+  strong { overflow: hidden; color: var(--color-on-surface); font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+  small { overflow: hidden; color: var(--color-on-surface-variant); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.role-badge,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.role-badge { color: var(--color-on-surface-variant); background: var(--color-surface-container-high); }
+.role-badge.admin { color: var(--color-on-primary-container); background: var(--color-primary-container); }
+.status-badge { color: var(--color-on-tertiary-container); background: var(--color-tertiary-container); }
+.status-badge.disabled { color: var(--color-on-error-container); background: var(--color-error-container); }
+
+.actions-header,
+.actions-cell { text-align: right; }
+.mat-column-actions { min-width: 174px; }
+.row-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; white-space: nowrap; }
+.edit-button { min-height: 34px; padding-inline: 15px; }
+.row-actions button[mat-icon-button],
+.member button[mat-icon-button] { display: inline-grid; flex: none; place-items: center; width: 36px; height: 36px; }
+.row-actions svg,
+.member svg { display: block; width: 18px; height: 18px; }
+
+.empty-state { padding: 52px 24px; text-align: center; }
+.empty-state strong { font-size: 15px; }
+.empty-state p { margin: 8px 0 0; color: var(--color-on-surface-variant); font-size: 13px; }
+
+mat-paginator { background: transparent; border-top: 1px solid var(--color-outline-variant); }
+
 .toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
-  min-height: 48px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--color-outline-variant);
+
   .spacer { flex: 1; }
-  h2, h3 { margin: 0; }
+  h2, h3 { margin: 0; font-size: 18px; font-weight: 650; }
+  mat-form-field { min-width: 155px; }
 }
-table { width: 100%; background: var(--color-surface-container-lowest); }
-.status { text-transform: capitalize; color: var(--color-success); &.disabled { color: var(--color-error); } }
-.split { display: grid; grid-template-columns: minmax(520px, 2fr) minmax(300px, 1fr); gap: 24px; }
-aside { border-left: 1px solid var(--color-surface-container-high); padding-left: 24px; }
-.member { display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-surface-container-high);padding:6px 0; small{display:block;color:var(--color-outline)} }
-.empty { color: var(--color-outline); }
-.selected { background: var(--color-tint-8); }
+
+.split { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .85fr); min-width: 0; }
+.groups-table { min-width: 500px; }
+aside { min-width: 0; padding: 0 22px 24px; border-left: 1px solid var(--color-outline-variant); }
+aside .toolbar { padding-inline: 0; }
+.member { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--color-outline-variant); }
+.member small { display: block; margin-top: 3px; color: var(--color-on-surface-variant); }
+.empty { padding: 16px 0; color: var(--color-on-surface-variant); }
+.selected { background: var(--color-primary-container); }
+
+@media (max-width: 1050px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  aside { border-top: 1px solid var(--color-outline-variant); border-left: 0; }
+  .audit-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .panel-header { align-items: flex-start; flex-direction: column; padding: 22px 20px 16px; }
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0 20px 20px; }
+  .audit-filters { padding: 0 20px 20px; }
+  .search-field { grid-column: 1 / -1; }
+}
+
+@media (max-width: 480px) {
+  .filters { grid-template-columns: minmax(0, 1fr); }
+  .audit-filters { grid-template-columns: minmax(0, 1fr); }
+  .search-field { grid-column: auto; }
+}
