@@ -70,7 +70,7 @@ services:
     environment:
       <<: *api-environment
       CLEARML__apiserver__auth__iam__enabled: ${CLEARML_IAM_ENABLED:-true}
-      CLEARML__apiserver__auth__iam__self_signup__enabled: ${CLEARML_IAM_SELF_SIGNUP_ENABLED:-false}
+      CLEARML__apiserver__auth__iam__self_signup__enabled: ${CLEARML_IAM_SELF_SIGNUP_ENABLED:-true}
       CLEARML_IAM_BOOTSTRAP_ADMIN_USERNAME: ${CLEARML_IAM_BOOTSTRAP_ADMIN_USERNAME:-}
       CLEARML_IAM_BOOTSTRAP_ADMIN_PASSWORD_FILE: ${CLEARML_IAM_BOOTSTRAP_ADMIN_PASSWORD_FILE:-}
       CLEARML__apiserver__pre_populate__enabled: "false"
