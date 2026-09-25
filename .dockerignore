@@ -3,7 +3,8 @@
 .env.*
 !.env.example
 docker-data
-brand_assets
+brand_assets/*
+!brand_assets/background.png
 examples
 clearml
 clearml_iam_agent_prompt.md

@@ -7,6 +7,7 @@ RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 COPY clearml-web/package.json clearml-web/pnpm-lock.yaml clearml-web/pnpm-workspace.yaml clearml-web/.npmrc ./
 RUN pnpm install --frozen-lockfile
 COPY clearml-web/ ./
+COPY brand_assets/background.png /src/brand_assets/background.png
 ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN pnpm run build && pnpm run build-widgets
 

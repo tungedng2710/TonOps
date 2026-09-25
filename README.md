@@ -41,4 +41,11 @@ docker compose down                       # Stop without deleting data
 
 Or run `./scripts/restart-tonops.sh` to rebuild, restart, and wait for the web, API, and fileserver endpoints.
 
+The login and Create Account background comes from `brand_assets/background.png`. After replacing that file, rebuild the image and recreate the webserver so it serves the new artwork:
+
+```bash
+docker compose build apiserver
+docker compose up -d --no-deps --force-recreate webserver
+```
+
 The image build needs access to the pinned Node, ClearML server, and package images and the packages in `pnpm-lock.yaml`. For an isolated network, preload those images and provide an internal npm registry or a populated pnpm store. Runtime has no external authentication dependency. Local fileserver authentication remains enabled so project file access is checked. See [project visibility](clearml-server/docs/iam/project-visibility.md) for storage limits and [IAM deployment](clearml-server/docs/iam/deployment.md) for bootstrap and migration details.
