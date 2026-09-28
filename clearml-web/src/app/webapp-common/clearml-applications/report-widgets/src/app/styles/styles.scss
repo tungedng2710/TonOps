@@ -15,11 +15,6 @@
   @include mat.system-level-colors(themes.$theme);
   @include customizations.components(themes.$theme);
 
-  &.dark-mode {
-    @include mat.all-component-colors(themes.$dark-theme);
-    @include mat.system-level-colors(themes.$dark-theme);
-    @include customizations.components(themes.$dark-theme);
-  }
 }
 
 
@@ -40,9 +35,6 @@ html, body {
   overflow: hidden;
   --mat-select-trigger-text-size: 14px;
 
-  &.dark-mode {
-    background-color: var(--color-surface-container-lowest);
-  }
 }
 
 body {

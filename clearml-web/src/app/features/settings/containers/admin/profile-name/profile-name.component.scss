@@ -91,6 +91,10 @@
   grid-template-columns: minmax(0, 1.2fr) minmax(330px, 0.8fr);
   align-items: start;
   gap: 24px;
+
+  &.single-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .settings-stack {
@@ -169,55 +173,6 @@
 .form-error { color: var(--color-error); }
 .form-success { color: var(--color-primary); }
 
-.theme-options {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.theme-option {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 7px;
-  min-width: 0;
-  min-height: 88px;
-  padding: 15px 13px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 12px;
-  color: var(--color-on-surface);
-  background: var(--color-surface);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 160ms ease, background-color 160ms ease;
-
-  &:hover,
-  &:focus-visible {
-    border-color: var(--color-primary);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-
-  &.selected {
-    border-color: var(--color-primary);
-    background: var(--color-primary-container);
-  }
-
-  &__name {
-    font-size: 13px;
-    font-weight: 650;
-  }
-
-  &__description {
-    color: var(--color-on-surface-variant);
-    font-size: 11px;
-    line-height: 1.35;
-  }
-}
-
 @media (max-width: 1200px) {
   .settings-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -228,13 +183,10 @@
   .profile-page { padding: 28px 18px 56px; }
   .identity-card { padding: 20px; }
   .settings-card { padding: 22px; }
-  .theme-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 520px) {
   .name-fields { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .theme-options { grid-template-columns: minmax(0, 1fr); }
-  .theme-option { min-height: 0; }
   .card-actions { align-items: stretch; flex-direction: column; }
   .card-actions button { width: 100%; }
 }

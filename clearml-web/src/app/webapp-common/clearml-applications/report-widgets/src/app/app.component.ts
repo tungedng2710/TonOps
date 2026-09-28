@@ -174,15 +174,9 @@ export class AppComponent implements OnInit {
   }
 
   changeTheme = () => {
-    this.renderer.removeClass(this.document.documentElement, `${this.isDarkTheme ? 'dark' : 'light'}-mode`);
-    try {
-      if (window.top.document.body.parentElement.className) {
-        this.isDarkTheme = window.top.document.body.parentElement.classList.contains('dark-mode');
-      }
-    } catch {
-      this.isDarkTheme = this.searchParams.get('light') ? this.searchParams.get('light') === 'false' : !this.isDarkTheme;
-    }
-    this.renderer.addClass(this.document.documentElement, `${this.isDarkTheme ? 'dark' : 'light'}-mode`);
+    this.isDarkTheme = false;
+    this.renderer.removeClass(this.document.documentElement, 'dark-mode');
+    this.renderer.addClass(this.document.documentElement, 'light-mode');
     this.cdr.markForCheck();
   };
 
@@ -546,4 +540,3 @@ export class AppComponent implements OnInit {
     }, {});
   }
 }
-

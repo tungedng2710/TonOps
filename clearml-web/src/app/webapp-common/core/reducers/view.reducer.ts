@@ -93,12 +93,11 @@ export const selectNotification = createSelector(views, state => state.notificat
 
 export const selectAutoRefresh = createSelector(views, state => state?.autoRefresh);
 export const selectAppVisible = createSelector(views, state => state?.applicationVisible);
-export const selectUserTheme = createSelector(views, state => state?.theme ?? state?.defaultTheme ?? 'system');
-export const selectSystemTheme = createSelector(views, state => state?.systemTheme ?? 'dark');
-export const selectForcedTheme = createSelector(views, state => state?.forcedTheme);
+export const selectUserTheme = createSelector(views, (): 'light' | 'dark' | 'system' => 'light');
+export const selectSystemTheme = createSelector(views, (): 'light' | 'dark' => 'light');
+export const selectForcedTheme = createSelector(views, (): 'light' | 'dark' => 'light');
 export const selectThemeColors = createSelector(views, state => state.themeColors);
-export const selectThemeMode = createSelector(selectUserTheme, selectSystemTheme, selectForcedTheme,
-  (user, system, forced) => forced ?? (user === 'system' ? system : user));
+export const selectThemeMode = createSelector(views, (): 'light' | 'dark' => 'light');
 export const selectDarkTheme = createSelector(selectThemeMode, mode => mode === 'dark');
 export const selectScaleFactor = createSelector(views, state => state?.scaleFactor);
 export const selectFirstLogin = createSelector(views, state => state.firstLogin);
@@ -224,4 +223,3 @@ export const viewReducers = [
   on(setHideEnterpriseFeatures, (state, action): ViewState =>
     ({...state, hideEnterpriseFeatures: action.hide})),
 ] as ReducerTypes<ViewState, ActionCreator[]>[];
-

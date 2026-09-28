@@ -6,14 +6,36 @@
 @include mat.elevation-classes();
 @include mat.app-background();
 
+// A white canvas with a charcoal action color keeps controls legible on light surfaces.
+$_ink: (
+  0: #000000, 10: #17191c, 20: #2b2e33, 25: #363a40,
+  30: #42464d, 35: #4e535b, 40: #5a6069, 50: #737a84,
+  60: #8d949e, 70: #a8afb8, 80: #c3c9d1, 90: #e0e4e9,
+  95: #f0f2f5, 98: #f9fafb, 99: #fcfcfd, 100: #ffffff,
+);
+$_neutral: (
+  0: #000000, 4: #0d0e10, 6: #121316, 10: #1b1c1f,
+  12: #202125, 17: #2b2d31, 20: #303237, 22: #36383d,
+  24: #3b3d42, 25: #3d3f44, 30: #494b51, 35: #55575d,
+  40: #61636a, 50: #7a7c83, 60: #94969c, 70: #afb0b6,
+  80: #c9cbd0, 87: #dedfe3, 90: #e5e6ea, 92: #ebecf0,
+  94: #f0f1f3, 95: #f3f4f6, 96: #f6f7f9, 98: #fafbfc,
+  99: #fdfdfe, 100: #ffffff,
+);
+$_neutral-variant: (
+  0: #000000, 10: #1b1c1f, 20: #303237, 25: #3d3f44,
+  30: #494b51, 35: #55575d, 40: #61636a, 50: #7a7c83,
+  60: #94969c, 70: #afb0b6, 80: #c9cbd0, 90: #e5e6ea,
+  95: #f3f4f6, 98: #fafbfc, 99: #fdfdfe, 100: #ffffff,
+);
 $_rest: (
-  secondary: map.get(palette.$palettes, secondary),
-  neutral: map.get(palette.$palettes, neutral),
-  neutral-variant: map.get(palette.$palettes,  neutral-variant),
+  secondary: $_ink,
+  neutral: $_neutral,
+  neutral-variant: $_neutral-variant,
   error: map.get(palette.$palettes, error),
 );
-$_primary: map.merge(map.get(palette.$palettes, primary), $_rest);
-$_tertiary: map.merge(map.get(palette.$palettes, tertiary), $_rest);
+$_primary: map.merge($_ink, $_rest);
+$_tertiary: map.merge($_ink, $_rest);
 
 $theme: mat.define-theme((
   color: (
@@ -28,18 +50,3 @@ $theme: mat.define-theme((
     brand-family: variables.$font-family-base,
   )
 ));
-
-$dark-theme: mat.define-theme((
-  color: (
-    theme-type: dark,
-    primary: $_primary,
-    tertiary: $_tertiary,
-    use-system-variables: true,
-    system-variables-prefix: sys,
-  ),
-  typography: (
-    plain-family: variables.$font-family-base,
-    brand-family: variables.$font-family-base,
-  )
-));
-

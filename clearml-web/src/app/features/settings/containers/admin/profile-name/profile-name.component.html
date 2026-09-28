@@ -20,7 +20,7 @@
       </div>
     </section>
 
-    <div class="settings-grid">
+    <div class="settings-grid" [class.single-column]="!iamEnabled()">
       <form class="settings-card personal-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
         <div class="card-heading">
           <div>
@@ -69,30 +69,8 @@
         </div>
       </form>
 
-      <div class="settings-stack">
-        <section class="settings-card appearance-card" aria-labelledby="appearance-heading">
-          <div class="card-heading">
-            <div>
-              <h2 id="appearance-heading">Appearance</h2>
-              <p>Choose how TonOps looks on this device.</p>
-            </div>
-          </div>
-          <div class="theme-options" role="group" aria-label="Color theme">
-            @for (theme of themeOptions; track theme.value) {
-              <button
-                class="theme-option"
-                type="button"
-                [class.selected]="userTheme() === theme.value"
-                [attr.aria-pressed]="userTheme() === theme.value"
-                (click)="setTheme(theme.value)">
-                <span class="theme-option__name">{{ theme.label }}</span>
-                <span class="theme-option__description">{{ theme.description }}</span>
-              </button>
-            }
-          </div>
-        </section>
-
-        @if (iamEnabled()) {
+      @if (iamEnabled()) {
+        <div class="settings-stack">
           <form class="settings-card password-card" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
             <div class="card-heading">
               <div>
@@ -125,8 +103,8 @@
               </button>
             </div>
           </form>
-        }
-      </div>
+        </div>
+      }
     </div>
   </main>
 }

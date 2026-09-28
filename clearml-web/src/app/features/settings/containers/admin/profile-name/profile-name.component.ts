@@ -8,8 +8,6 @@ import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {fetchCurrentUser} from '@common/core/actions/users.actions';
 import {ApiUsersService} from '~/business-logic/api-services/users.service';
 import {ApiIamService} from '~/business-logic/api-services/iam.service';
-import {selectUserTheme} from '@common/core/reducers/view.reducer';
-import {userThemeChanged} from '@common/core/actions/layout.actions';
 
 @Component({
   selector: 'sm-profile-name',
@@ -26,12 +24,6 @@ export class ProfileNameComponent {
   iamEnabled = signal(false);
   saving = signal(false);
   savingPassword = signal(false);
-  userTheme = this.store.selectSignal(selectUserTheme);
-  themeOptions = [
-    {value: 'light', label: 'Light', description: 'Bright and clear'},
-    {value: 'dark', label: 'Dark', description: 'Easy on the eyes'},
-    {value: 'system', label: 'System', description: 'Match this device'}
-  ] as const;
   profileMessage = signal('');
   profileError = signal('');
   passwordMessage = signal('');
@@ -106,7 +98,4 @@ export class ProfileNameComponent {
     });
   }
 
-  setTheme(theme: 'light' | 'dark' | 'system') {
-    this.store.dispatch(userThemeChanged({theme}));
-  }
 }

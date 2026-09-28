@@ -16,22 +16,12 @@
 @use "themes";
 @use "customizations";
 
-@media (prefers-color-scheme: dark) {
-  html {
-    background-color: var(--color-shadow);
-  }
-}
-
 :root {
   @include mat.all-component-themes(themes.$theme);
   @include mat.system-level-colors(themes.$theme);
   @include customizations.components(themes.$theme);
-
-  &.dark-mode {
-    @include mat.all-component-colors(themes.$dark-theme);
-    @include mat.system-level-colors(themes.$dark-theme);
-    @include customizations.components(themes.$dark-theme);
-  }
+  --tonops-icon-blue: #1764bd;
+  --tonops-icon-blue-dark: #155aa9;
 }
 
 html,
@@ -51,7 +41,7 @@ body {
 
 .mat-mdc-card {
   border: 1px solid color-mix(in srgb, var(--color-outline-variant), transparent 28%);
-  box-shadow: 0 12px 32px rgba(55, 18, 27, 0.07) !important;
+  box-shadow: 0 12px 32px rgba(20, 24, 30, 0.06) !important;
 }
 
 .mat-mdc-button-base {
@@ -59,6 +49,20 @@ body {
   --mat-button-outlined-container-shape: 10px;
   --mat-button-text-container-shape: 10px;
   font-weight: 600;
+}
+
+.mat-mdc-icon-button:not(.delete-button, .mat-warn, :disabled) {
+  --mat-icon-button-icon-color: var(--tonops-icon-blue);
+  color: var(--tonops-icon-blue);
+
+  &:hover {
+    background-color: #edf5ff;
+    color: var(--tonops-icon-blue-dark);
+  }
+}
+
+.mat-mdc-menu-item .mat-icon {
+  color: var(--tonops-icon-blue);
 }
 
 .mat-mdc-form-field {

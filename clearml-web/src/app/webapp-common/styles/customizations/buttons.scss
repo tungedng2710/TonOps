@@ -2,6 +2,31 @@
 
 
 :root {
+  --tonops-button-gradient: linear-gradient(115deg, #123f91 0%, #1764bd 55%, #1978c9 100%);
+
+  .mat-mdc-unelevated-button:not(.delete-button, .mat-warn, :disabled),
+  .mat-mdc-raised-button:not(.delete-button, .mat-warn, :disabled) {
+    background-image: var(--tonops-button-gradient);
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(18, 63, 145, 0.18);
+    transition: filter 160ms ease, box-shadow 160ms ease;
+
+    &:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 7px 18px rgba(18, 63, 145, 0.23);
+    }
+  }
+
+  .mat-mdc-outlined-button:not(.delete-button, .mat-warn, :disabled) {
+    border-color: #4b82c4;
+    color: #155aa9;
+
+    &:hover {
+      border-color: #155aa9;
+      background-color: #edf5ff;
+    }
+  }
+
   .mat-mdc-button-base {
     @include mat.button-overrides((
       filled-container-height: 36px,

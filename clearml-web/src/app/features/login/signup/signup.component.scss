@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100%;
-  color: rgba(255, 255, 255, 0.92);
+  color: #1b1c1f;
 }
 
 .signup-page {
@@ -9,22 +9,20 @@
   display: grid;
   place-items: center;
   padding: 40px 24px;
-  background-image:
-    linear-gradient(180deg, rgba(7, 14, 30, 0.24), rgba(7, 14, 30, 0.42)),
-    url('../../../../assets/login-background.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background:
+    linear-gradient(90deg, rgba(7, 16, 36, 0.14), rgba(7, 16, 36, 0.06)),
+    url('../../../../assets/login-background.png') center / cover no-repeat;
 }
 
 .signup-card {
   width: min(100%, 580px);
   padding: 38px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 28px;
-  background: rgba(10, 20, 42, 0.54);
-  box-shadow: 0 28px 80px rgba(3, 9, 22, 0.4);
-  backdrop-filter: blur(18px);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(232, 244, 255, 0.7));
+  box-shadow: 0 30px 80px rgba(4, 12, 30, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(26px) saturate(155%);
+  backdrop-filter: blur(26px) saturate(155%);
 }
 
 .brand-lockup {
@@ -59,7 +57,7 @@ h1 {
 header p,
 .state-panel p {
   margin: 8px 0 26px;
-  color: rgba(255, 255, 255, 0.72);
+  color: #626973;
 }
 
 .field-grid {
@@ -100,20 +98,20 @@ form > button {
 .form-error {
   margin: 2px 0 10px;
   padding: 10px 12px;
-  border: 1px solid rgba(255, 190, 195, 0.35);
+  border: 1px solid #f1c6ca;
   border-radius: 10px;
-  background: rgba(65, 0, 6, 0.32);
-  color: #ffdadd;
+  background: #fff5f5;
+  color: #9b1b29;
   font-size: 12px;
 }
 
 .auth-switch {
   margin: 20px 0 0;
   text-align: center;
-  color: rgba(255, 255, 255, 0.72);
+  color: #626973;
 
   a {
-    color: #fff;
+    color: #155aa9;
     font-weight: 600;
   }
 }
@@ -135,8 +133,8 @@ form > button {
   height: 52px;
   margin-bottom: 18px;
   border-radius: 50%;
-  color: #65111f;
-  background: #fff;
+  color: #fff;
+  background: linear-gradient(135deg, #123f91, #1978c9);
   font-size: 28px;
   font-weight: 700;
 }
@@ -161,17 +159,6 @@ form > button {
 }
 
 :host ::ng-deep {
-  .mat-mdc-form-field {
-    --mat-form-field-outlined-input-text-color: #fff;
-    --mat-form-field-outlined-label-text-color: rgba(255, 255, 255, 0.72);
-    --mat-form-field-outlined-hover-label-text-color: #fff;
-    --mat-form-field-outlined-focus-label-text-color: #fff;
-    --mat-form-field-outlined-outline-color: rgba(255, 255, 255, 0.3);
-    --mat-form-field-outlined-hover-outline-color: rgba(255, 255, 255, 0.58);
-    --mat-form-field-outlined-focus-outline-color: #fff;
-    --mat-form-field-outlined-caret-color: #fff;
-  }
-
   .mat-mdc-progress-spinner circle {
     stroke: currentColor;
   }

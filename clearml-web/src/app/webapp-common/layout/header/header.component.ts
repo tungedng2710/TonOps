@@ -18,8 +18,7 @@ import {LoginService} from '~/shared/services/login.service';
 import {selectUserSettingsNotificationPath} from '~/core/reducers/view.reducer';
 import {selectInvitesPending} from '~/core/reducers/users.reducer';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
-import {selectDarkTheme, selectForcedTheme, selectHeaderMenu} from '@common/core/reducers/view.reducer';
-import {AppearanceComponent} from '../appearance/appearance.component';
+import {selectHeaderMenu} from '@common/core/reducers/view.reducer';
 import {BreadcrumbsComponent} from '@common/layout/breadcrumbs/breadcrumbs.component';
 import {RefreshButtonComponent} from '@common/shared/components/refresh-button/refresh-button.component';
 import {HeaderUserMenuActionsComponent} from '~/layout/header/header-user-menu-actions/header-user-menu-actions.component';
@@ -76,8 +75,6 @@ export class HeaderComponent implements OnInit {
   protected isAdmin = this.store.selectSignal(selectIsAdmin);
   protected userNotificationPath = this.store.selectSignal(selectUserSettingsNotificationPath);
   protected invitesPending = this.store.selectSignal(selectInvitesPending);
-  protected darkTheme = this.store.selectSignal(selectDarkTheme);
-  protected forcedTheme = this.store.selectSignal(selectForcedTheme);
   protected userFocus = signal<boolean>(false);
   protected hideSideNav = signal<boolean>(false);
   protected showAutoRefresh = signal<boolean>(false);
@@ -154,11 +151,6 @@ export class HeaderComponent implements OnInit {
   openWelcome(event: MouseEvent) {
     event.preventDefault();
     this.dialog.open(WelcomeMessageComponent, {data: {step: 2}, panelClass: 'dialog-md'});
-  }
-
-  openAppearance(event: MouseEvent) {
-    event.preventDefault();
-    this.dialog.open(AppearanceComponent);
   }
 
   toggleAutoRefresh(autoRefresh: boolean) {

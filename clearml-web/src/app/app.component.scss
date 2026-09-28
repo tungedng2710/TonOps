@@ -18,9 +18,7 @@ notification-container {
     flex: 1;
     height: 100%;
     width: calc(100% - #{$side-bar-close-width});
-    background:
-      radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--color-primary), transparent 94%) 0, transparent 28rem),
-      var(--color-surface);
+    background: #fff;
 
     &.notifier-open {
       height: calc(100% - #{$notifier-height});

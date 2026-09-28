@@ -10,9 +10,9 @@ $item-margin: 20px;
   flex-direction: column;
   height: 100%;
   width: variables.$side-bar-close-width;
-  background: linear-gradient(180deg, #a70f27 0%, #7f1022 100%);
-  border-right: 0;
-  box-shadow: 8px 0 28px rgba(91, 11, 30, 0.12);
+  background: #fff;
+  border-right: 1px solid #e7e9ed;
+  box-shadow: 4px 0 18px rgba(20, 24, 30, 0.03);
   position: relative;
   z-index: 2;
 
@@ -21,7 +21,7 @@ $item-margin: 20px;
     height: 64px;
     display: grid;
     place-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom: 1px solid #eceef1;
 
     img {
       width: 40px;
@@ -36,7 +36,7 @@ $item-margin: 20px;
     overflow-y: auto;
     flex-grow: 1;
     &.on-scrolling {
-      box-shadow: 0 -3px 3px rgba(0, 0, 0, 0.3) inset;
+      box-shadow: 0 -3px 3px rgba(20, 24, 30, 0.06) inset;
     }
   }
 
@@ -48,7 +48,7 @@ $item-margin: 20px;
     width: $link-item-size-width;
     height: $link-item-size-height;
     border-radius: 12px;
-    color: rgba(255, 255, 255, 0.76);
+    color: #5c789c;
     transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
     // ICON SIZE
     &:before {
@@ -56,16 +56,16 @@ $item-margin: 20px;
     }
 
     &:hover {
-      color: #fff;
-      background-color: rgba(255, 255, 255, 0.12);
+      color: #155aa9;
+      background-color: #edf5ff;
       transform: translateY(-1px);
       text-decoration: none;
     }
 
     &.active {
-      background-color: #fff;
-      color: #a70f27;
-      box-shadow: 0 8px 22px rgba(64, 0, 16, 0.25);
+      background: linear-gradient(145deg, #e9f3ff, #dcecff);
+      color: #155aa9;
+      box-shadow: inset 0 0 0 1px rgba(23, 100, 189, 0.12);
     }
   }
 

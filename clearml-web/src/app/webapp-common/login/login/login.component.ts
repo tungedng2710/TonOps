@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   input,
@@ -28,8 +27,6 @@ import {UserPreferences} from '../../user-preferences';
 import {setBreadcrumbs} from '@common/core/actions/router.actions';
 import {CrumbTypeEnum} from '@common/layout/breadcrumbs/breadcrumbs.component';
 import {selectCurrentUser} from '@common/core/reducers/users-reducer';
-import {userThemeChanged} from '@common/core/actions/layout.actions';
-import {selectUserTheme} from '@common/core/reducers/view.reducer';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {NgOptimizedImage, NgTemplateOutlet} from '@angular/common';
 import {MatFormField, MatLabel} from '@angular/material/form-field';
@@ -70,7 +67,6 @@ export class LoginComponent {
   private route = inject(ActivatedRoute);
   private userPreferences = inject(UserPreferences);
   private config = inject(ConfigurationService);
-  private destroy = inject(DestroyRef);
   private titleService = inject(Title);
   private iam = inject(ApiIamService);
 
@@ -108,17 +104,11 @@ export class LoginComponent {
   private redirectUrl: string;
   private mustChangePassword = false;
 
-  private theme = this.store.selectSignal(selectUserTheme);
-  private originalTheme = signal(this.theme());
-
   get buttonCaption() {
     return this.loginMode() === loginModes.simple ? 'START' : 'LOGIN';
   }
 
   constructor() {
-    if (!this.config.configuration().forceTheme) {
-      this.setTheme(this.environment().communityServer ? 'light' : 'dark');
-    }
     this.titleService.setTitle(`${this.titlePrefix()}Login`);
 
     this.iam.status()
@@ -191,9 +181,6 @@ export class LoginComponent {
         this.options = users ?? [];
       });
 
-    this.destroy.onDestroy(() => {
-      this.setTheme(this.originalTheme());
-    });
   }
 
   login() {
@@ -282,7 +269,4 @@ export class LoginComponent {
     }
   }
 
-  private setTheme(theme: 'light' | 'dark' | 'system') {
-    this.store.dispatch(userThemeChanged({theme}));
-  }
 }

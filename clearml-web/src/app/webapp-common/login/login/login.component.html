@@ -1,10 +1,10 @@
-<div class="login-form" [class]="showBackground() ? 'dark-theme' : 'light-theme'">
+<div class="login-form light-theme">
   <div class="login-section">
     @if ([loginModeEnum.password, loginModeEnum.simple, loginModeEnum.ssoOnly].includes(loginMode())) {
-      <section [class.login-section-inner]="!showBackground()">
+      <section class="login-section-inner">
         <div class="brand-lockup">
           <img
-            [ngSrc]="showBackground() ? environment().branding.logo : environment().branding.logo.replace('-white', '')"
+            [ngSrc]="environment().branding.logo"
             [priority]="true" width="48" height="48" class="logo" alt="TonOps logo">
           <span>TonOps</span>
         </div>
@@ -76,20 +76,20 @@
         </form>
       </section>
     } @else if(errorTemplate()) {
-      <section [class.login-section-inner]="!showBackground()">
+      <section class="login-section-inner">
         <div class="brand-lockup">
           <img
-            [ngSrc]="showBackground() ? environment().branding.logo : environment().branding.logo.replace('-white', '')"
+            [ngSrc]="environment().branding.logo"
             [priority]="true" width="48" height="48" class="logo" alt="TonOps logo">
           <span>TonOps</span>
         </div>
         <ng-container *ngTemplateOutlet="errorTemplate()"></ng-container>
       </section>
     } @else {
-      <section class="login-error">
+      <section class="login-error login-section-inner">
         <div class="brand-lockup mb-4">
           <img
-            [ngSrc]="showBackground() ? environment().branding.logo : environment().branding.logo.replace('-white', '')"
+            [ngSrc]="environment().branding.logo"
             [priority]="true" width="48" height="48" class="logo" alt="TonOps logo">
           <span>TonOps</span>
         </div>

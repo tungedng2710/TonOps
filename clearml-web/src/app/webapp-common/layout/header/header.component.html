@@ -16,7 +16,7 @@
     <div class="logo-full middle">
       <div class="brand-lockup">
         <img alt="TonOps logo" [priority]="true"
-             [ngSrc]="darkTheme() ? environment().branding.logo : environment().branding.logo.replace('-white', '')"
+             [ngSrc]="environment().branding.logo"
              width="38" height="38">
         <span>TonOps</span>
       </div>
@@ -58,12 +58,6 @@
           </mat-icon>
           <span>Settings</span>
         </button>
-        @if (!forcedTheme()) {
-          <button mat-menu-item (click)="openAppearance($event)" data-id="Theme Options">
-            <mat-icon fontSet="al" fontIcon="al-ico-palette"></mat-icon>
-            <span>Appearance</span>
-          </button>
-        }
         <sm-header-user-menu-actions></sm-header-user-menu-actions>
         <hr/>
         <button mat-menu-item (click)="logout()" data-id="Logout">

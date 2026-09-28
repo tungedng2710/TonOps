@@ -4,7 +4,9 @@
     flex-direction: column;
     overflow: auto;
 
-    background: var(--login-bg, white);
+    background:
+      linear-gradient(90deg, rgba(7, 16, 36, 0.14), rgba(7, 16, 36, 0.06)),
+      url('../../../../assets/login-background.png') center / cover no-repeat;
     flex: 1;
     padding: 32px 24px;
     display: flex;
@@ -49,7 +51,7 @@
       .login-title {
         font-weight: 600;
         font-size: 22px;
-        color: #ffffff;
+        color: var(--color-on-surface);
         max-width: 320px;
         min-height: 30px;
         white-space: pre-line;
@@ -57,7 +59,7 @@
       }
 
       .login-notice {
-        color: #fff;
+        color: var(--color-on-surface-variant);
         margin-bottom: 5px;
       }
 
@@ -67,11 +69,13 @@
       }
 
       .login-section-inner {
-        background: #fff;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(232, 244, 255, 0.7));
         padding: 36px;
-        border: 1px solid rgba(127, 16, 34, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.7);
         border-radius: 28px;
-        box-shadow: 0 24px 60px rgba(70, 16, 27, 0.12);
+        box-shadow: 0 30px 80px rgba(4, 12, 30, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        -webkit-backdrop-filter: blur(26px) saturate(155%);
+        backdrop-filter: blur(26px) saturate(155%);
       }
 
       .login-error {
@@ -101,21 +105,21 @@
       display: grid;
       gap: 10px;
       margin: -14px 0 26px;
-      color: rgba(255, 255, 255, 0.76);
+      color: var(--color-on-surface-variant);
       font-size: 13px;
 
       a {
         width: 100%;
         min-height: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.55);
+        border: 1px solid #4b82c4;
         border-radius: 12px;
-        color: #fff;
+        color: #155aa9;
         font-weight: 600;
         letter-spacing: 0.02em;
 
         &:hover {
-          border-color: #fff;
-          background: rgba(255, 255, 255, 0.1);
+          border-color: #155aa9;
+          background: rgba(237, 245, 255, 0.72);
         }
       }
     }
@@ -139,42 +143,6 @@
       margin-left: -2px;
     }
 
-    &.dark-theme {
-      color: rgba(255, 255, 255, 0.87);
-      background-image:
-        linear-gradient(180deg, rgba(7, 14, 30, 0.24), rgba(7, 14, 30, 0.42)),
-        url('../../../../assets/login-background.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-
-      mat-form-field {
-        --mat-form-field-outlined-label-text-color: rgba(255, 255, 255, 0.82);
-        --mat-form-field-outlined-hover-label-text-color: #fff;
-        --mat-form-field-outlined-focus-label-text-color: #fff;
-        --mat-form-field-outlined-error-label-text-color: #fff;
-        --mat-form-field-outlined-error-hover-label-text-color: #fff;
-        --mat-form-field-outlined-error-focus-label-text-color: #fff;
-      }
-
-      section {
-        padding: 40px 36px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 28px;
-        background: rgba(10, 20, 42, 0.54);
-        box-shadow: 0 28px 80px rgba(3, 9, 22, 0.4);
-        backdrop-filter: blur(18px);
-      }
-
-      .terms-of-use {
-        color: rgba(255, 255, 255, 0.87);
-
-        a[href] {
-          color: #A1C9FF;
-        }
-      }
-    }
-
     &.light-theme {
       .login-title,
       .login-notice {
@@ -185,8 +153,8 @@
         color: var(--color-on-surface-variant);
 
         a {
-          border-color: var(--color-outline);
-          color: var(--color-primary);
+          border-color: #4b82c4;
+          color: #155aa9;
         }
       }
     }
@@ -199,8 +167,8 @@
   width: 80px;
   height: 80px;
   border-radius: 100%;
-  border: 10px solid rgba(255, 255, 255, 0.5);
-  border-top-color: #FFFFFF;
+  border: 10px solid #e7e9ed;
+  border-top-color: #1764bd;
   animation: spin 1s infinite linear;
   @keyframes spin {
     100% {
@@ -227,9 +195,6 @@
   .login-form {
     padding-top: 64px;
   }
-}
-
-:host-context(.dark-mode) {
 }
 
 input:-webkit-autofill {

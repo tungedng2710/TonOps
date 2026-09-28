@@ -91,7 +91,9 @@ export const BASE_ENV = {
   accountAdministration: false,
   useFilesProxy: true,
   plotlyURL: 'app/webapp-common/assets/plotly-2.35.0.min.js',
-  branding: {logo: 'assets/tonops-logo-white.svg?v=1', logoSmall: 'assets/tonops-icon-white.svg?v=1'},
+  branding: {logo: 'assets/tonops-logo.svg?v=2', logoSmall: 'assets/tonops-icon.svg?v=2'},
+  forceTheme: 'light',
+  defaultTheme: 'light',
   serverDownMessage: 'The TonOps server is currently unavailable.<BR>' +
     'Please try to reload this page in a little while.<BR>' +
     'If the problem persists, verify your network connection is working and check the TonOps server logs for possible errors',
