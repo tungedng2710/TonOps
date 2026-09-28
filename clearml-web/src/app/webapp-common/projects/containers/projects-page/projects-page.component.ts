@@ -44,6 +44,8 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {PushPipe} from '@ngrx/component';
 import {CommonModule} from '@angular/common';
+import {selectCurrentUser} from '@common/core/reducers/users-reducer';
+import {OwnedProjectDeleteDialogComponent} from './owned-project-delete-dialog.component';
 
 
 @Component({
@@ -64,6 +66,7 @@ export class ProjectsPageComponent implements OnDestroy {
   protected router = inject(Router);
   protected route = inject(ActivatedRoute);
   protected dialog = inject(MatDialog);
+  private currentUser = this.store.selectSignal(selectCurrentUser);
 
   public ALL_EXPERIMENTS_CARD: ProjectsGetAllResponseSingle = {
     id: '*',
@@ -188,7 +191,11 @@ export class ProjectsPageComponent implements OnDestroy {
         filter(readyForDeletion => readyForDeletion !== null && readyForDeletionFilter(readyForDeletion))
       )
       .subscribe(readyForDeletion => {
-        if (isDeletableProject(readyForDeletion)) {
+        const owner = readyForDeletion.project.user as string | {id: string};
+        const ownerId = typeof owner === 'string' ? owner : owner?.id;
+        if (this.getName() === 'project' && ownerId === this.currentUser()?.id) {
+          this.showOwnedDeleteDialog(readyForDeletion.project);
+        } else if (isDeletableProject(readyForDeletion)) {
           this.showDeleteDialog(readyForDeletion);
         } else {
           this.showConfirmDialog(readyForDeletion);
@@ -289,6 +296,20 @@ export class ProjectsPageComponent implements OnDestroy {
         }
         this.store.dispatch(resetDeleteState());
       });
+  }
+
+  private showOwnedDeleteDialog(project: Project) {
+    this.dialog.open<OwnedProjectDeleteDialogComponent, Project, boolean>(OwnedProjectDeleteDialogComponent, {
+      data: project,
+      panelClass: 'dialog-md',
+      disableClose: true
+    }).afterClosed().subscribe(deleted => {
+      if (deleted) {
+        this.store.dispatch(resetProjects());
+        this.store.dispatch(getAllProjectsPageProjects());
+      }
+      this.store.dispatch(resetReadyToDelete());
+    });
   }
 
   ngOnDestroy() {

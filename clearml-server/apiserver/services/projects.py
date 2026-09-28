@@ -25,6 +25,7 @@ from apiserver.apimodels.projects import (
     EntityTypeEnum,
 )
 from apiserver.bll.organization import OrgBLL, Tags
+from apiserver.bll.iam import verify_password
 from apiserver.bll.project import ProjectBLL, ProjectQueries
 from apiserver.bll.project.access import readable_query, require_project_path_write, require_read, require_write, restricted
 from apiserver.bll.project.project_bll import pipeline_tag, reports_tag
@@ -36,6 +37,7 @@ from apiserver.database.errors import translate_errors_context
 from apiserver.database.model import EntityVisibility
 from apiserver.database.model.model import Model
 from apiserver.database.model.project import Project
+from apiserver.database.model.auth import User
 from apiserver.database.model.task.task import TaskType, Task
 from apiserver.database.utils import (
     parse_from_call,
@@ -417,6 +419,12 @@ def validate_delete(call: APICall, company_id: str, request: ProjectRequest):
 
 @endpoint("projects.delete", request_data_model=DeleteRequest)
 def delete(call: APICall, company_id: str, request: DeleteRequest):
+    if request.force and request.delete_contents:
+        project = Project.objects(id=request.project, company=company_id).only("user").first()
+        if project and project.user == call.identity.user:
+            user = User.objects(id=call.identity.user, company=company_id).only("password_hash").first()
+            if not user or not verify_password(request.password, user.password_hash):
+                raise errors.unauthorized.InvalidCredentials("invalid password")
     res, affected_projects = delete_project(
         company=company_id,
         user=call.identity.user,

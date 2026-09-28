@@ -26,6 +26,10 @@ export class WebappInterceptor implements HttpInterceptor {
   protected errorHandler(request: HttpRequest<any>, err: HttpErrorResponse) {
     const redirectUrl: string = window.location.pathname + window.location.search;
     if (err.status === 401) {
+      // A wrong project confirmation password does not invalidate the session.
+      if (request.url.endsWith('/projects.delete') && request.body?.password && err.error?.meta?.result_subcode === 22) {
+        return throwError(() => err);
+      }
       if (redirectUrl.indexOf('/signup') === -1 && redirectUrl.indexOf('/login') === -1) {
         this.login.logout();
       }
