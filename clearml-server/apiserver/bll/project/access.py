@@ -21,7 +21,7 @@ def can_read(project, identity):
 
 
 def can_write(project, identity):
-    return not restricted(identity) or project.user == identity.user
+    return not iam_enabled() or identity.role in (Role.root, Role.system) or project.user == identity.user
 
 
 def require_read(project, identity):
@@ -69,7 +69,7 @@ def authorize_entity_call(call, endpoint_name, company):
     service, _, action = endpoint_name.partition(".")
     if not company or service not in ("projects", "tasks", "models", "events", "reports"):
         return
-    if not restricted(call.identity):
+    if not iam_enabled() or call.identity.role in (Role.root, Role.system):
         return
 
     if action in ("make_public", "make_private"):

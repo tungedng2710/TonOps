@@ -46,6 +46,7 @@ import {PushPipe} from '@ngrx/component';
 import {CommonModule} from '@angular/common';
 import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {OwnedProjectDeleteDialogComponent} from './owned-project-delete-dialog.component';
+import {isProjectOwner} from '@common/projects/project-permissions';
 
 
 @Component({
@@ -191,9 +192,7 @@ export class ProjectsPageComponent implements OnDestroy {
         filter(readyForDeletion => readyForDeletion !== null && readyForDeletionFilter(readyForDeletion))
       )
       .subscribe(readyForDeletion => {
-        const owner = readyForDeletion.project.user as string | {id: string};
-        const ownerId = typeof owner === 'string' ? owner : owner?.id;
-        if (this.getName() === 'project' && ownerId === this.currentUser()?.id) {
+        if (this.getName() === 'project' && isProjectOwner(readyForDeletion.project, this.currentUser()?.id)) {
           this.showOwnedDeleteDialog(readyForDeletion.project);
         } else if (isDeletableProject(readyForDeletion)) {
           this.showDeleteDialog(readyForDeletion);
@@ -363,7 +362,24 @@ export class ProjectsPageComponent implements OnDestroy {
   }
 
   deleteProject(project: Project) {
+    if (!isProjectOwner(project, this.currentUser()?.id)) {
+      this.showPermissionDialog();
+      return;
+    }
     this.store.dispatch(checkProjectForDeletion({project}));
+  }
+
+  private showPermissionDialog() {
+    this.dialog.open<ConfirmDialogComponent, ConfirmDialogConfig, boolean>(ConfirmDialogComponent, {
+      data: {
+        title: 'Cannot Delete Project',
+        body: 'Only the project owner can delete this project.',
+        no: 'OK',
+        iconClass: 'al-ico-alert',
+        iconColor: 'var(--color-warning)'
+      },
+      panelClass: 'dialog-md'
+    });
   }
 
   loadMore() {

@@ -66,7 +66,7 @@ export class EditProjectFormComponent {
       this.projectForm.controls.name.setValue(this.project()?.basename ?? '');
       this.projectForm.controls.parent.setValue(this.parentProjectPath());
       this.projectForm.controls.default_output_destination.setValue(this.project()?.default_output_destination);
-      this.projectForm.controls.visibility.setValue(this.project()?.visibility ?? 'public');
+      this.projectForm.controls.visibility.setValue(this.project()?.visibility ?? 'private');
       if (this.isReadOnly()) {
         this.projectForm.disable();
       } else {

@@ -25,9 +25,9 @@ from apiserver.apimodels.projects import (
     EntityTypeEnum,
 )
 from apiserver.bll.organization import OrgBLL, Tags
-from apiserver.bll.iam import verify_password
+from apiserver.bll.iam import enabled as iam_enabled, verify_password
 from apiserver.bll.project import ProjectBLL, ProjectQueries
-from apiserver.bll.project.access import readable_query, require_project_path_write, require_read, require_write, restricted
+from apiserver.bll.project.access import can_read, can_write, readable_query, require_project_path_write, require_read, require_write, restricted
 from apiserver.bll.project.project_bll import pipeline_tag, reports_tag
 from apiserver.bll.project.project_cleanup import (
     delete_project,
@@ -37,7 +37,7 @@ from apiserver.database.errors import translate_errors_context
 from apiserver.database.model import EntityVisibility
 from apiserver.database.model.model import Model
 from apiserver.database.model.project import Project
-from apiserver.database.model.auth import User
+from apiserver.database.model.auth import Role, User
 from apiserver.database.model.task.task import TaskType, Task
 from apiserver.database.utils import (
     parse_from_call,
@@ -59,12 +59,13 @@ project_queries = ProjectQueries()
 @endpoint("projects.authorize_file", validate_schema=True)
 def authorize_file(call: APICall, company: str, _):
     """Authorize a fileserver URL against a registered task artifact or model."""
-    if not restricted(call.identity):
+    write = call.data.get("mode") == "write"
+    if not iam_enabled() or call.identity.role in (Role.root, Role.system) or (
+        not write and not restricted(call.identity)
+    ):
         return {"allowed": True}
-
     path = unquote(call.data["path"]).lstrip("/")
     host = call.data["host"].lower()
-    write = call.data.get("mode") == "write"
     if not path or len(path) > 4096 or not host:
         return {"allowed": False}
 
@@ -76,7 +77,7 @@ def authorize_file(call: APICall, company: str, _):
     candidate_ids = set(re.findall(r"\.([a-f0-9]{32})(?:/|$)", path))
     for task in Task.objects(id__in=candidate_ids, company=company).only("project", "user"):
         project = Project.objects(id=task.project, company=company).first()
-        if (project and (project.user == call.identity.user or (not write and project.visibility != "private"))) or (
+        if (project and (can_write(project, call.identity) if write else can_read(project, call.identity))) or (
             not project and task.user == call.identity.user
         ):
             return {"allowed": True}
@@ -88,7 +89,7 @@ def authorize_file(call: APICall, company: str, _):
     for model in Model.objects(company=company, uri__in=model_urls).only("project", "user", "uri"):
         if matches(model.uri):
             project = Project.objects(id=model.project, company=company).first()
-            if (project and (project.user == call.identity.user or (not write and project.visibility != "private"))) or (
+            if (project and (can_write(project, call.identity) if write else can_read(project, call.identity))) or (
                 not project and model.user == call.identity.user
             ):
                 return {"allowed": True}

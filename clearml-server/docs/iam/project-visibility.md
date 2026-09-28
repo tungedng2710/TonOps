@@ -1,8 +1,8 @@
 # Project visibility with local IAM
 
-New projects are **private** by default. The owner and administrators can view and change them. A **public** project can be viewed by any signed-in user in the same company; only the owner or an administrator can change it. The project create form and Project Settings expose the visibility choice.
+New projects are **private** by default. The owner and administrators can view them. A **public** project can be viewed by any signed-in user in the same company. Only the owner can change or delete a project and its contents; other users, including administrators, have read-only access. The project create form and Project Settings expose the visibility choice.
 
-Existing projects have no `visibility` value. They retain their earlier company-wide readability until an owner or administrator explicitly changes the setting. This avoids hiding projects during an upgrade.
+Existing projects have no `visibility` value. They retain their earlier company-wide readability until the owner explicitly changes the setting. This avoids hiding projects during an upgrade.
 
 The API applies project access checks to project, task, model, and event calls. The local fileserver asks the API server to authorize each authenticated download, upload, and deletion. Its `fileserver.auth.enabled` setting must remain `true`. Standard task output paths include the task ID; registered model URLs are also checked. Files with custom paths that cannot be linked to a task or model are denied while local IAM is enabled.
 

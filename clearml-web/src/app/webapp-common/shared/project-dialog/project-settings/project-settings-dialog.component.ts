@@ -50,6 +50,7 @@ import {TooltipDirective} from '@common/shared/ui-components/indicators/tooltip/
 import {isReadOnly} from '@common/shared/utils/is-read-only';
 import {ProjectSettingsStore} from '~/features/dashboard-search/project-settings-dashboard-search-permissions.store';
 import {selectCurrentUser} from '@common/core/reducers/users-reducer';
+import {isProjectOwner} from '@common/projects/project-permissions';
 
 export interface ProjectSettingsDialogConfig {
   project: Project;
@@ -115,7 +116,7 @@ export class ProjectSettingsDialogComponent {
   protected settings = linkedSignal(() => ({...this.defaultSettings, ...this.storeSettings()}));
   protected settingsGroupBy = computed(() => this.settings().groupBy);
   protected readonlyProject = computed(() => isReadOnly(this.data.project) || this.settingsStore.isReadOnly() ||
-    (!!this.data.project.visibility && this.data.project.user !== this.currentUser()?.id && this.currentUser()?.role !== 'admin'));
+    !isProjectOwner(this.data.project, this.currentUser()?.id));
 
 
   protected scalarsWithoutSummary = computed(() => this.settingsStore.scalars().map(variant => variant.metric === singleValueChartTitle ? {...variant, variant: null} : variant))
