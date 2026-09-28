@@ -148,6 +148,15 @@
       background-position: center;
       background-repeat: no-repeat;
 
+      mat-form-field {
+        --mat-form-field-outlined-label-text-color: rgba(255, 255, 255, 0.82);
+        --mat-form-field-outlined-hover-label-text-color: #fff;
+        --mat-form-field-outlined-focus-label-text-color: #fff;
+        --mat-form-field-outlined-error-label-text-color: #fff;
+        --mat-form-field-outlined-error-hover-label-text-color: #fff;
+        --mat-form-field-outlined-error-focus-label-text-color: #fff;
+      }
+
       section {
         padding: 40px 36px;
         border: 1px solid rgba(255, 255, 255, 0.2);
