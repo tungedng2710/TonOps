@@ -20,6 +20,7 @@ from apiserver.config_repo import config
 from apiserver.database.model.auth import Role, User
 from apiserver.database.model.iam import IAMAuditEvent, IAMGroup, IAMGroupMember
 from apiserver.database.model.user import User as BackendUser
+from apiserver.database.model.project import Project
 from apiserver.database import utils as database_utils
 from apiserver.redis_manager import redman
 from apiserver.service_repo import APICall, endpoint
@@ -143,6 +144,59 @@ def me(call: APICall, company_id: str, _):
         IAMGroupMember.objects(company=company_id, user_id=user.id).scalar("group_id")
     )
     return {"user": result}
+
+
+def _public_profile(user: User, backend_users: dict) -> dict:
+    details = backend_users.get(user.id)
+    return {
+        "id": user.id,
+        "username": user.username,
+        "display_name": (details.name if details and details.name else user.name) or user.username,
+        "avatar": details.avatar if details else None,
+        "bio": details.bio if details else None,
+        "role": user.role,
+        "created_at": user.created.isoformat() if user.created else None,
+    }
+
+
+@endpoint("iam.search_profiles", validate_schema=True)
+def search_profiles(call: APICall, company_id: str, _):
+    _require_enabled()
+    page, page_size = _page(call.data)
+    query = Q(company=company_id) & Q(username__ne=None) & Q(status="active")
+    search = (call.data.get("search") or "").strip()
+    if search:
+        query &= Q(username__icontains=search) | Q(name__icontains=search)
+    users = User.objects(query)
+    total = users.count()
+    items = list(users.order_by("username")[page * page_size:(page + 1) * page_size])
+    details = {item.id: item for item in BackendUser.objects(company=company_id, id__in=[user.id for user in items])}
+    return {"users": [_public_profile(user, details) for user in items], "total": total, "page": page, "page_size": page_size}
+
+
+@endpoint("iam.get_profile", validate_schema=True)
+def get_profile(call: APICall, company_id: str, _):
+    _require_enabled()
+    user = _user(call.data["user_id"], company_id)
+    if user.status != "active":
+        raise errors.bad_request.InvalidUserId(user=user.id)
+    details = BackendUser.objects(id=user.id, company=company_id).first()
+    # A visitor can see only public projects. The owner can also see private ones.
+    projects = Project.objects(company=company_id, user=user.id)
+    if call.identity.user != user.id:
+        projects = projects.filter(Q(visibility="public") | Q(visibility=None))
+    projects = projects.order_by("-last_update", "-created")
+    return {
+        "user": _public_profile(user, {user.id: details} if details else {}),
+        "projects": [{
+            "id": project.id,
+            "name": project.name,
+            "description": project.description,
+            "visibility": project.visibility or "public",
+            "created": project.created.isoformat() if project.created else None,
+            "last_update": project.last_update.isoformat() if project.last_update else None,
+        } for project in projects[:100]],
+    }
 
 
 @endpoint("iam.list_users", validate_schema=True)

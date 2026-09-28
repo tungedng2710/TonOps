@@ -17,14 +17,15 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'profile',
+        redirectTo: 'account',
         pathMatch: 'full'
       },
-      {path: 'profile',
+      {path: 'profile', redirectTo: 'account', pathMatch: 'full'},
+      {path: 'account',
         loadComponent: () => import('./containers/admin/profile-name/profile-name.component').then(m => m.ProfileNameComponent),
         data: {
         staticBreadcrumb:[[settingsBreadcrumb, {
-            name: 'Profile',
+            name: 'Account settings',
             type: CrumbTypeEnum.SubFeature
           }]]},
       },
@@ -38,11 +39,8 @@ export const routes: Routes = [
       },
       {
         path: 'workspace-configuration',
-        loadComponent: () => import('@common/settings/workspace-configuration/workspace-configuration.component').then(m => m.WorkspaceConfigurationComponent),
-        data: {workspaceNeutral: true, staticBreadcrumb:[[settingsBreadcrumb, {
-            name: 'Workspace',
-            type: CrumbTypeEnum.SubFeature
-          }]]},
+        redirectTo: 'account',
+        pathMatch: 'full'
       },
       {
         path: 'user-management',

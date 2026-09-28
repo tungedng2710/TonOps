@@ -52,11 +52,19 @@
         }
       </span>
       <mat-menu #profileMenu="matMenu" class="user-menu">
-        <button mat-menu-item [routerLink]="'settings/' + userNotificationPath()" data-id="Settings Button">
+        <button mat-menu-item [routerLink]="['/users', user().id]">
+          <mat-icon fontSet="al" fontIcon="al-ico-account"></mat-icon>
+          <span>My profile</span>
+        </button>
+        <button mat-menu-item routerLink="/users">
+          <mat-icon fontSet="al" fontIcon="al-ico-search"></mat-icon>
+          <span>Find people</span>
+        </button>
+        <button mat-menu-item routerLink="/settings/account" data-id="Settings Button">
           <mat-icon fontSet="al" [fontIcon]="userNotificationPath() ? 'al-ico-settings-alert' : 'al-ico-settings'">
             <span class="path1"></span><span class="path2"></span>
           </mat-icon>
-          <span>Settings</span>
+          <span>Account settings</span>
         </button>
         <sm-header-user-menu-actions></sm-header-user-menu-actions>
         <hr/>

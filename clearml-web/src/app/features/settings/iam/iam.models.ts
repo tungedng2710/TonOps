@@ -29,6 +29,25 @@ export interface IamUser {
   groups?: string[];
 }
 
+export interface PublicProfile {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar?: string;
+  bio?: string;
+  role: IamRole;
+  created_at?: string;
+}
+
+export interface ProfileProject {
+  id: string;
+  name: string;
+  description?: string;
+  visibility: 'public' | 'private';
+  created?: string;
+  last_update?: string;
+}
+
 export interface IamGroup {
   id: string;
   name: string;

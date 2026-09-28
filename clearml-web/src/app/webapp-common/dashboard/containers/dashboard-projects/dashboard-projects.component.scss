@@ -1,4 +1,5 @@
 @use "mixins/common";
+@use "src/app/webapp-common/projects/dumb/projects-list/project-folder-cards" as folder-cards;
 
 .view-all {
   font-size: 12px;
@@ -6,11 +7,34 @@
 }
 
 .sm-card-list-layout {
-  height: 320px;
+  height: 340px;
   overflow: hidden;
-  grid-gap: 16px 24px;
-  padding-top: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 352px));
+  grid-gap: 26px 24px;
+  padding-top: 20px;
   padding-bottom: 0;
+}
+
+:host ::ng-deep .sm-card-list-layout {
+  @include folder-cards.project-folder-cards;
+
+  sm-plus-card {
+    display: block;
+    min-width: 0;
+
+    .card {
+      width: 100%;
+    }
+
+    .card-container {
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.87), rgba(229, 242, 255, 0.7));
+      box-shadow: 0 15px 36px rgba(30, 64, 110, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      -webkit-backdrop-filter: blur(22px) saturate(150%);
+      backdrop-filter: blur(22px) saturate(150%);
+    }
+  }
 }
 
 .sm-card-list-header {

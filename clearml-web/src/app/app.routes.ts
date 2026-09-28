@@ -47,6 +47,14 @@ export const routes: Routes = [
         data: {search: false, workspaceNeutral: false, },
       },
       {
+        path: 'users',
+        data: {search: false, workspaceNeutral: true},
+        children: [
+          {path: '', loadComponent: () => import('./features/profiles/profiles.component').then(m => m.ProfilesComponent)},
+          {path: ':userId', loadComponent: () => import('./features/profiles/profiles.component').then(m => m.ProfilesComponent)}
+        ]
+      },
+      {
         path: 'projects',
         data: {search: true},
         children: [

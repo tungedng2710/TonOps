@@ -27,6 +27,8 @@ import {RouterLink} from '@angular/router';
 import {MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {NAPipe} from '@common/shared/pipes/na.pipe';
+import {ConfigurationService} from '@common/shared/services/configuration.service';
+import {resolveLocalFileserverUrl} from '~/shared/utils/url';
 
 @Component({
   selector: 'sm-model-general-info',
@@ -49,6 +51,7 @@ export class ModelGeneralInfoComponent {
   private store = inject(Store);
   private adminService = inject(AdminService);
   private locale = inject(LOCALE_ID);
+  private configuration = inject(ConfigurationService);
 
   public kpis: { label: string; value: string; downloadable?: boolean; href?: string; task?: string }[];
   private _model: SelectedModel;
@@ -70,7 +73,7 @@ export class ModelGeneralInfoComponent {
         {label: 'UPDATED AT', value: model.last_update ? (formatDate(model.last_update, TIME_FORMAT_STRING, this.locale)) : 'NA'},
         {label: 'FRAMEWORK', value: model.framework || NA},
         {label: 'STATUS', value: (model.ready !== undefined) ? (model.ready ? 'Published' : 'Draft') : NA},
-        {label: 'MODEL URL', value: model.uri || NA, downloadable: true},
+        {label: 'MODEL URL', value: resolveLocalFileserverUrl(model.uri, this.configuration.fileServerUrl()) || NA, downloadable: true},
         {label: 'USER', value: get( model,'user.name', NA)},
         {label: 'ARCHIVED', value: model && model.system_tags && model.system_tags.includes(TAGS.HIDDEN) ? 'Yes' : 'No'},
         {label: 'PROJECT', value: get(model, 'project.name', NA)},

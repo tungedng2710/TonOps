@@ -8,13 +8,15 @@ import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {fetchCurrentUser} from '@common/core/actions/users.actions';
 import {ApiUsersService} from '~/business-logic/api-services/users.service';
 import {ApiIamService} from '~/business-logic/api-services/iam.service';
+import {ProfileKeyStorageComponent} from '@common/settings/admin/profile-key-storage/profile-key-storage.component';
+import {UserCredentialsComponent} from '~/features/settings/containers/admin/user-credentials/user-credentials.component';
 
 @Component({
   selector: 'sm-profile-name',
   templateUrl: './profile-name.component.html',
   styleUrls: ['./profile-name.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule]
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, ProfileKeyStorageComponent, UserCredentialsComponent]
 })
 export class ProfileNameComponent {
   private store = inject(Store);

@@ -1,0 +1,70 @@
+<main class="profiles-page">
+  <header class="page-header">
+    <a routerLink="/users" class="back-link">People</a>
+    @if (profile(); as person) {
+      <span class="divider">/</span><span>{{ person.username }}</span>
+    }
+  </header>
+
+  @if (loading()) { <p class="status">Loading…</p> }
+  @if (error()) { <p class="status error" role="alert">{{ error() }}</p> }
+
+  @if (profile(); as person) {
+    <div class="profile-layout">
+      <aside class="profile-identity">
+        @if (person.avatar) {
+          <img class="avatar large" [src]="person.avatar" [alt]="person.display_name + ' avatar'">
+        } @else {
+          <div class="avatar large placeholder">{{ person.display_name.charAt(0).toUpperCase() }}</div>
+        }
+        <h1>{{ person.display_name }}</h1>
+        <p class="username">{{ person.username }}</p>
+        @if (person.role === 'admin') { <span class="role">Admin</span> }
+        @if (person.bio) { <p class="bio">{{ person.bio }}</p> }
+        @if (currentUser()?.id === person.id) {
+          <a class="edit-link" routerLink="/settings/account">Edit account settings</a>
+        }
+      </aside>
+      <section class="projects">
+        <h2>Projects <span class="count">{{ projects().length }}</span></h2>
+        @if (!projects().length) { <p class="empty">No projects to show.</p> }
+        <div class="project-grid">
+          @for (project of projects(); track project.id) {
+            <a class="project-card" [routerLink]="['/projects', project.id, 'overview']">
+              <div class="project-title">{{ project.name }}</div>
+              @if (project.description) { <p>{{ project.description }}</p> }
+              <div class="project-meta">{{ project.visibility }} · Updated {{ (project.last_update || project.created || '').slice(0, 10) }}</div>
+            </a>
+          }
+        </div>
+      </section>
+    </div>
+  } @else if (!loading() && !error()) {
+    <section class="directory">
+      <h1>People</h1>
+      <p>Find people and explore their projects.</p>
+      <form (ngSubmit)="findPeople(0)" class="search-form">
+        <input name="search" [(ngModel)]="search" type="search" placeholder="Search by name or username" aria-label="Search people">
+        <button type="submit">Search</button>
+      </form>
+      <div class="people-list">
+        @for (person of people(); track person.id) {
+          <a [routerLink]="['/users', person.id]" class="person-row">
+            @if (person.avatar) {
+              <img class="avatar" [src]="person.avatar" alt="">
+            } @else {
+              <div class="avatar placeholder">{{ person.display_name.charAt(0).toUpperCase() }}</div>
+            }
+            <span class="person-name">{{ person.display_name }}<small>{{ person.username }}</small></span>
+            @if (person.role === 'admin') { <span class="role">Admin</span> }
+          </a>
+        } @empty { <p class="empty">No people found.</p> }
+      </div>
+      <div class="pagination">
+        <button type="button" [disabled]="page() === 0" (click)="findPeople(page() - 1)">Previous</button>
+        <span>{{ page() + 1 }} / {{ totalPages() }}</span>
+        <button type="button" [disabled]="(page() + 1) * 30 >= total()" (click)="findPeople(page() + 1)">Next</button>
+      </div>
+    </section>
+  }
+</main>

@@ -1,0 +1,121 @@
+@use "src/app/webapp-common/assets/fonts/variables" as icons;
+
+@mixin project-folder-cards {
+  --card-tab1-bg: rgba(246, 250, 255, 0.82);
+  --card-tab1-hover-bg: rgba(233, 244, 255, 0.92);
+  --card-tab2-bg: rgba(225, 239, 255, 0.88);
+  --card-tab2-bg-hover: rgba(209, 230, 255, 0.94);
+  --card-footer-bg: rgba(225, 239, 255, 0.38);
+
+  sm-project-card {
+    display: block;
+    min-width: 0;
+    height: 248px;
+    transition: transform 180ms ease;
+
+    &:hover,
+    &:focus-within {
+      transform: translateY(-4px);
+    }
+
+    sm-card.project-card {
+      display: block;
+      width: 100%;
+      height: 248px;
+      overflow: visible;
+    }
+
+    .card {
+      width: 100%;
+      overflow: visible;
+    }
+
+    .folder-tab {
+      filter: drop-shadow(0 -2px 5px rgba(36, 84, 145, 0.08));
+
+      .second-tab.text {
+        color: #285f9e;
+        font-weight: 600;
+      }
+    }
+
+    .card-container {
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.87), rgba(229, 242, 255, 0.7));
+      box-shadow: 0 15px 36px rgba(30, 64, 110, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      -webkit-backdrop-filter: blur(22px) saturate(150%);
+      backdrop-filter: blur(22px) saturate(150%);
+      transition: box-shadow 180ms ease, border-color 180ms ease;
+
+      &.is-folder {
+        border-top-left-radius: 8px;
+      }
+    }
+
+    &:hover .card-container,
+    &:focus-within .card-container {
+      border-color: rgba(128, 185, 245, 0.65);
+      box-shadow: 0 22px 46px rgba(28, 72, 132, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+    }
+
+    .first-tab-container {
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.82), rgba(232, 244, 255, 0.56));
+
+      footer {
+        border-top: 1px solid rgba(110, 164, 224, 0.18);
+      }
+    }
+
+    &:hover .first-tab-container,
+    &:focus-within .first-tab-container {
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.9), rgba(221, 239, 255, 0.72));
+    }
+
+    .second-tab-container {
+      background: linear-gradient(145deg, rgba(242, 248, 255, 0.88), rgba(214, 233, 255, 0.76));
+    }
+
+    .card-name {
+      gap: 8px;
+
+      &::before {
+        content: icons.$al-ico-projects-outlined;
+        display: grid;
+        flex: 0 0 32px;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border: 1px solid rgba(75, 140, 220, 0.2);
+        border-radius: 10px;
+        background: linear-gradient(145deg, #e9f4ff, #cfe5ff);
+        color: #155aa9;
+        font: 18px/1 trains;
+      }
+
+      .title {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .project-name {
+        font-size: 15px;
+        font-weight: 650;
+      }
+    }
+
+    .sub-projects-list a {
+      border-radius: 9px;
+      transition: background-color 140ms ease, color 140ms ease;
+
+      &:hover {
+        background-color: rgba(198, 226, 255, 0.68);
+        color: #155aa9;
+      }
+    }
+
+    .circle-counter {
+      box-shadow: 0 4px 12px rgba(39, 83, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.56);
+    }
+  }
+}

@@ -20,6 +20,8 @@ from apiserver.bll.iam import (
 )
 from apiserver.database import Database
 from apiserver.database.model.auth import Role, User
+from apiserver.database.model.project import Project
+from apiserver.database.model.user import User as BackendUser
 from apiserver.database.model.iam import IAMAuditEvent, IAMGroup, IAMGroupMember
 from apiserver.service_repo.auth.local_user import LocalDatabaseProvider
 from apiserver.service_repo.auth import Identity, Token
@@ -53,6 +55,8 @@ class LocalIAMTest(unittest.TestCase):
 
     def setUp(self):
         User.drop_collection()
+        BackendUser.drop_collection()
+        Project.drop_collection()
         IAMGroup.drop_collection()
         IAMGroupMember.drop_collection()
         IAMAuditEvent.drop_collection()
@@ -194,6 +198,25 @@ class LocalIAMTest(unittest.TestCase):
         self.assertFalse(update_endpoint.allows(Role.user))
         self.assertTrue(change_endpoint.allows(Role.user))
         self.assertFalse(signup_endpoint.authorize)
+
+    def test_public_profile_filters_private_projects_and_credentials(self):
+        from apiserver.services.iam import get_profile, search_profiles
+
+        owner = create_user(company="company", username="admin", password="Correct-Horse-1", role=Role.admin)
+        viewer = create_user(company="company", username="viewer", password="Correct-Horse-2")
+        now = datetime.utcnow()
+        Project(id="public", company="company", user=owner.id, name="Public", basename="Public", visibility="public", created=now).save()
+        Project(id="private", company="company", user=owner.id, name="Private", basename="Private", visibility="private", created=now).save()
+        call = SimpleNamespace(data={"user_id": owner.id}, identity=SimpleNamespace(user=viewer.id))
+        result = get_profile(call, "company", None)
+        self.assertEqual(["public"], [project["id"] for project in result["projects"]])
+        self.assertEqual(Role.admin, result["user"]["role"])
+        self.assertNotIn("email", result["user"])
+        self.assertNotIn("credentials", result["user"])
+        call.identity.user = owner.id
+        self.assertEqual(2, len(get_profile(call, "company", None)["projects"]))
+        directory = search_profiles(SimpleNamespace(data={"search": "admin"}), "company", None)
+        self.assertEqual([owner.id], [user["id"] for user in directory["users"]])
 
     def test_self_signup_always_creates_a_normal_user(self):
         from apiserver.services.iam import signup
