@@ -83,7 +83,7 @@ export class WelcomeMessageComponent {
     [{
       id: 1,
       header: null, code: null,
-      subNote: 'See TonOps documentation for different ways of deploying workers'
+      subNote: 'See ClearML documentation for different ways of deploying workers'
     }, {
       id: 2,
       header: 'To setup a worker',
@@ -95,7 +95,7 @@ export class WelcomeMessageComponent {
       code: 'clearml-agent init'
     }
     ];
-  public links = ['Set up TonOps', 'Run your ML code', 'Relaunch previous experiments'];
+  public links = ['Set up ClearML', 'Run your ML code', 'Relaunch previous experiments'];
   public doNotShowAgain: boolean;
   public credentialsLabel: string;
   public queue: Queue = this.data?.queue;
@@ -201,13 +201,13 @@ export class WelcomeMessageComponent {
     if(this.showTabs) {
       return `import numpy as np
 import matplotlib.pyplot as plt
-# Add the following two lines to your code to have TonOps automatically log your experiment
+# Add the following two lines to your code to have ClearML automatically log your experiment
 from ${this.configGettingStarted()?.packageName || 'clearml'} import Task
 
 task = Task.init(project_name='My Project', task_name='My Experiment')
 # Create a plot using matplotlib, or you can also use plotly
 plt.scatter(np.random.rand(50), np.random.rand(50), c=np.random.rand(50), alpha=0.5)
-# Plot will be reported automatically to clearml
+# Plot will be reported automatically to ClearML
 plt.show()
 
 # Report some scalars

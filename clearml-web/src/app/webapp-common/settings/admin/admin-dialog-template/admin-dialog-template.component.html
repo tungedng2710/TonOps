@@ -36,7 +36,7 @@
     <div class="code-container" [class.jupyter]="isJupyter()">
       @if (!isJupyter()) {
         @if (serviceUserMode){
-          <div class="instructions mt-2 mb-2">Copy the configuration below to the TonOps Agent’s clearml.conf file</div>
+          <div class="instructions mt-2 mb-2">Copy the configuration below to the ClearML Agent’s clearml.conf file</div>
         } @else {
           <div class="instructions mt-2 mb-2">Copy the below info for input to 'clearml-init' configuration request, or modify your existing clearml.conf</div>
         }
@@ -86,7 +86,7 @@
       }
     </div>
   } @else {
-    <div class="instructions mt-2 mb-2">Add the following to your notebook to configure TonOps</div>
+    <div class="instructions mt-2 mb-2">Add the following to your notebook to configure ClearML</div>
     <div class="code">
       <div class="content">
         <div>
@@ -117,7 +117,7 @@
   }
 </div>
 <ng-template #jupyter>
-  <div class="instructions">Add the following to your notebook to configure TonOps</div>
+  <div class="instructions">Add the following to your notebook to configure ClearML</div>
   <div class="code">
     <div class="content" #jupyterCodeEl>{{jupyterCode}}</div>
     <sm-copy-clipboard

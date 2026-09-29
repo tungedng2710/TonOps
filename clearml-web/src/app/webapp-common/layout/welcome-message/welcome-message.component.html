@@ -1,6 +1,6 @@
 <sm-dialog-template [displayX]="true"
   [header]="queue? 'NO WORKERS ASSIGNED TO QUEUE': (step() === 1 ? 'Welcome to TonOps' : (showTabs? 'CREATE NEW TASK' : 'GETTING STARTED'))"
-  [subHeader]="showTabs ? 'To create a new task you can either run your ML code instrumented with the TonOps SDK, or relaunch a previously run task by cloning it.' : ''"
+  [subHeader]="showTabs ? 'To create a new task you can either run your ML code instrumented with the ClearML SDK, or relaunch a previously run task by cloning it.' : ''"
   (xClicked)="closeDialog()" [closeOnX]="false"
   [iconClass]="queue?'al-ico-queues': 'i-welcome-researcher'" xmlns="http://www.w3.org/1999/html">
 
@@ -34,7 +34,7 @@
         </div>
         <div class="info">
           <mat-icon fontSet="al" fontIcon="al-ico-code-file" class="xl"></mat-icon>
-          <div class="mt-2">Use the built-in setup guide to connect your development environment to TonOps.</div>
+          <div class="mt-2">Use the built-in setup guide to connect your development environment to ClearML.</div>
       </div>
     </div>
     <div class="separator"></div>
@@ -46,7 +46,7 @@
   <div class="steps-content">
     @if (queue) {
       <div class="text">
-        {{entityName}} have been enqueued on the <b>{{queue?.display_name || queue?.name}}</b> queue, which is currently not serviced by any worker. They will remain in the 'pending' state until a TonOps worker services this queue.
+        {{entityName}} have been enqueued on the <b>{{queue?.display_name || queue?.name}}</b> queue, which is currently not serviced by any worker. They will remain in the 'pending' state until a ClearML Agent services this queue.
       </div>
     }
     @if (!currentLink || currentLink === links[0]) {
@@ -60,7 +60,7 @@
               <mat-tab label="JUPYTER NOTEBOOK" data-id="JupyterNotebookTab"></mat-tab>
             </mat-tab-group>
           }
-          <div class="sub-note mt-2 mb-2">{{isJupyter() ? 'Set the TonOps environment for your notebook':'Run the TonOps setup script'}}</div>
+          <div class="sub-note mt-2 mb-2">{{isJupyter() ? 'Set the ClearML environment for your notebook':'Run the ClearML setup script'}}</div>
           <div class="code">
             <div class="content" #stepCode>{{step.code}}</div>
             <sm-copy-clipboard
@@ -89,7 +89,7 @@
     }
     <div class="step-container cred-step" [class.jupyter]="isJupyter()" [class.first-step]="!credentialsCreated()" [class.has-ws]="community() && workspace.name" [class.has-label]="credentialsLabel">
       @if (!isJupyter()) {
-        <div class="sub-note" >Complete the clearml configuration information as prompted.</div>
+        <div class="sub-note" >Complete the ClearML configuration information as prompted.</div>
       }
       @if (!credentialsCreated()) {
         <button mat-flat-button class="my-2" data-id="New Credentials" (click)="createCredentials()">
@@ -147,7 +147,7 @@
       @if (!showTabs) {
         <div class="step">3. Integrate</div>
       }
-      <div class="sub-note">Add TonOps to your code. For example:</div>
+      <div class="sub-note">Add ClearML to your code. For example:</div>
       <div class="code">
         @if (!showTabs) {
           <div class="content">
@@ -165,14 +165,14 @@
             <div>
               <span class="variable">import</span> matplotlib.pyplot <span class="variable">as</span> plt
             </div>
-            <div># Add the following two lines to your code to have TonOps automatically log your task</div>
+            <div># Add the following two lines to your code to have ClearML automatically log your task</div>
             <div>
               <span class="variable">from</span> clearml <span class="variable">import</span> Task
             </div>
             <div>task = Task.init(project_name=<span class="string">'My Project'</span>, task_name=<span class="string">'My Task'</span>)</div>
             <div># Create a plot using matplotlib, or you can also use plotly</div>
             <div><code>plt.scatter(np.random.rand(50), np.random.rand(50), c=np.random.rand(50), alpha=0.5)</code></div>
-            <div># Plot will be reported automatically to clearml</div>
+            <div># Plot will be reported automatically to ClearML</div>
             <div>plt.show()</div>
             <div># Report some scalars</div>
             <div>

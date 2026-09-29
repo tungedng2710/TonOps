@@ -68,7 +68,7 @@ docker compose up -d --build             # Rebuild after source changes
 docker compose down                       # Stop without deleting data
 ```
 
-Or run `./scripts/restart-tonops.sh` to rebuild, restart, and wait for the web, API, and fileserver endpoints.
+Or run `./restart_all.sh` to rebuild, restart, and wait for the web, API, fileserver, and RustFS endpoints. Pass `--skip-build` to reuse the existing image or `--force-recreate` to recreate every container.
 
 The login and Create Account background comes from `brand_assets/background.png`. After replacing that file, rebuild the image and recreate the webserver so it serves the new artwork:
 

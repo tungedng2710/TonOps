@@ -34,7 +34,7 @@ csv_file = StorageManager.get_local_copy(
     remote_url="https://vincentarelbundock.github.io/Rdatasets/csv/AER/Affairs.csv"
 )
 
-# Create a dataset with TonOps' Dataset class
+# Create a dataset with ClearML's Dataset class
 dataset = Dataset.create(
     dataset_project="DatasetProject", dataset_name="HelloDataset"
 )
@@ -42,7 +42,7 @@ dataset = Dataset.create(
 # add the example csv
 dataset.add_files(path=csv_file)
 
-# Upload the dataset to the TonOps server (customizable)
+# Upload the dataset to the ClearML server (customizable)
 dataset.upload()
 
 # commit dataset changes

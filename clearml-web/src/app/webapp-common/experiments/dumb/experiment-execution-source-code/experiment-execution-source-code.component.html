@@ -111,7 +111,7 @@
           @if (sourceCodeForm.controls.binary.value && !(sourceCodeForm.controls.binary.value.substring(sourceCodeForm.controls.binary.value.lastIndexOf('/')+1)).match(binaryValidationRegexp)) {
             <i
               class="al-icon al-ico-alert-outline sm ms-2"
-              smTooltip="This binary is not supported by TonOps Agent; system Python will be used for execution"
+              smTooltip="This binary is not supported by ClearML Agent; system Python will be used for execution"
             ></i>
           }
         </div>
