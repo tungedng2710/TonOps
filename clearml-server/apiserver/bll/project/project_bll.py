@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from os import getenv
 from functools import reduce
 from itertools import chain
 from operator import itemgetter
@@ -225,6 +226,8 @@ class ProjectBLL:
         Returns project ID
         """
         from apiserver.bll.iam import enabled as iam_enabled
+        if not default_output_destination:
+            default_output_destination = getenv("RUSTFS_OUTPUT_URI") or None
         if visibility is None and iam_enabled():
             visibility = "private"
         if _get_project_depth(name) > max_depth:

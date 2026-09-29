@@ -11,6 +11,7 @@ from typing import Sequence, Optional, Tuple, Mapping, TypeVar, Hashable, Generi
 from urllib.parse import urlparse
 
 import boto3
+from botocore.config import Config as BotoConfig
 import requests
 from azure.storage.blob import ContainerClient, PartialBatchErrorException
 from boltons.iterutils import bucketize, chunked_iter
@@ -412,6 +413,15 @@ class AWSStorage(Storage):
     def __init__(self, company: str):
         self.configs = storage_bll.get_aws_settings_for_company(company)
         self.scheme = "s3"
+        self.rustfs_host = f"{os.getenv('RUSTFS_PUBLIC_HOST')}:{os.getenv('RUSTFS_API_PORT', '7868')}" if os.getenv('RUSTFS_PUBLIC_HOST') else None
+        self.rustfs_bucket = os.getenv("RUSTFS_BUCKET")
+
+    def _is_rustfs_url(self, parsed) -> bool:
+        return bool(
+            self.rustfs_host and self.rustfs_bucket
+            and parsed.netloc == self.rustfs_host
+            and parsed.path.startswith(f"/{self.rustfs_bucket}/")
+        )
 
     @property
     def name(self) -> str:
@@ -425,6 +435,9 @@ class AWSStorage(Storage):
             parsed = urlparse(url.url)
             if parsed.scheme != self.scheme:
                 return None
+
+            if self._is_rustfs_url(parsed):
+                return f"s3://{self.rustfs_host}/{self.rustfs_bucket}"
 
             s3_conf = self.configs.get_config_by_uri(url.url)
             if s3_conf is None:
@@ -447,6 +460,18 @@ class AWSStorage(Storage):
 
     def get_client(self, base: str, urls: Sequence[UrlToDelete]) -> Client:
         sample_url = urls[0].url
+        if self._is_rustfs_url(urlparse(sample_url)):
+            return self.Client(
+                base,
+                boto3.resource(
+                    "s3",
+                    endpoint_url="http://rustfs:9000",
+                    aws_access_key_id=os.environ["RUSTFS_ACCESS_KEY"],
+                    aws_secret_access_key=os.environ["RUSTFS_SECRET_KEY"],
+                    region_name="us-east-1",
+                    config=BotoConfig(signature_version="s3v4", s3={"addressing_style": "path"}),
+                ).Bucket(self.rustfs_bucket),
+            )
         cfg = self.configs.get_config_by_uri(sample_url)
         boto_kwargs = {
             "endpoint_url": (("https://" if cfg.secure else "http://") + cfg.host)

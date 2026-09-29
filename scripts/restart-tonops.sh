@@ -37,6 +37,20 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
+# RustFS runs as uid 10001 and needs a writable bind mount.
+rustfs_data_root="${RUSTFS_DATA_ROOT:-}"
+if [[ -z "$rustfs_data_root" ]]; then
+  rustfs_data_root="$(sed -n 's/^RUSTFS_DATA_ROOT=//p' .env | tail -1)"
+fi
+if [[ -z "$rustfs_data_root" ]]; then
+  echo "Set RUSTFS_DATA_ROOT in .env before starting the stack." >&2
+  exit 1
+fi
+mkdir -p "$rustfs_data_root"
+if [[ "$(stat -c %u "$rustfs_data_root")" != 10001 ]]; then
+  chown 10001:10001 "$rustfs_data_root"
+fi
+
 if [[ "$SKIP_BUILD" == false ]]; then
   docker compose build apiserver
 fi
@@ -45,7 +59,7 @@ COMPOSE_ARGS=(up -d)
 if [[ "$RECREATE" == true ]]; then
   COMPOSE_ARGS+=(--force-recreate)
 fi
-docker compose "${COMPOSE_ARGS[@]}" mongo redis elasticsearch apiserver fileserver webserver async_delete
+docker compose "${COMPOSE_ARGS[@]}" rustfs rustfs_init mongo redis elasticsearch apiserver fileserver webserver async_delete
 
 wait_for_url() {
   local label=$1
@@ -65,7 +79,9 @@ wait_for_url() {
 api_port="$(docker compose port apiserver 8008 | sed 's/.*://')"
 web_port="$(docker compose port webserver 80 | sed 's/.*://')"
 files_port="$(docker compose port fileserver 8081 | sed 's/.*://')"
+rustfs_port="$(docker compose port rustfs 9000 | sed 's/.*://')"
 wait_for_url "API server" "http://127.0.0.1:${api_port}/debug.ping"
 wait_for_url "web app" "http://127.0.0.1:${web_port}/"
 wait_for_url "fileserver" "http://127.0.0.1:${files_port}/"
+wait_for_url "RustFS" "http://127.0.0.1:${rustfs_port}/health"
 docker compose ps

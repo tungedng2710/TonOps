@@ -10,6 +10,39 @@ x-api-environment: &api-environment
   CLEARML_SERVER_DEPLOYMENT_TYPE: linux
 
 services:
+  rustfs:
+    image: ${RUSTFS_IMAGE:-rustfs/rustfs:latest}
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Set RUSTFS_ACCESS_KEY in .env}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Set RUSTFS_SECRET_KEY in .env}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_VOLUMES: /data
+    volumes:
+      - ${RUSTFS_DATA_ROOT:?Set RUSTFS_DATA_ROOT in .env}:/data
+    ports:
+      - ${RUSTFS_API_PORT:-7868}:9000
+      - ${RUSTFS_CONSOLE_PORT:-7869}:9001
+    healthcheck:
+      test: [CMD, curl, -fsS, http://127.0.0.1:9000/health]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  rustfs_init:
+    image: clearml/local-server:dev
+    restart: "no"
+    depends_on:
+      rustfs: {condition: service_healthy}
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Set RUSTFS_ACCESS_KEY in .env}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Set RUSTFS_SECRET_KEY in .env}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-tonops-artifacts}
+    entrypoint: [python3, /opt/clearml/init_rustfs.py]
+
   mongo:
     image: mongo:8.0.15
     restart: unless-stopped
@@ -67,6 +100,7 @@ services:
       mongo: {condition: service_healthy}
       redis: {condition: service_healthy}
       elasticsearch: {condition: service_healthy}
+      rustfs_init: {condition: service_completed_successfully}
     environment:
       <<: *api-environment
       CLEARML__apiserver__auth__iam__enabled: ${CLEARML_IAM_ENABLED:-true}
@@ -76,6 +110,12 @@ services:
       CLEARML__apiserver__pre_populate__enabled: "false"
       CLEARML__services__async_urls_delete__enabled: "true"
       CLEARML__services__async_urls_delete__fileserver__url_prefixes: "[${CLEARML_FILES_HOST:-http://localhost:7863},http://fileserver:8081]"
+      RUSTFS_OUTPUT_URI: s3://${RUSTFS_PUBLIC_HOST:-localhost}:${RUSTFS_API_PORT:-7868}/${RUSTFS_BUCKET:-tonops-artifacts}
+      RUSTFS_PUBLIC_HOST: ${RUSTFS_PUBLIC_HOST:-localhost}
+      RUSTFS_API_PORT: ${RUSTFS_API_PORT:-7868}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-tonops-artifacts}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Set RUSTFS_ACCESS_KEY in .env}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Set RUSTFS_SECRET_KEY in .env}
     volumes:
       - ${CLEARML_DATA_ROOT:-./docker-data}/config:/opt/clearml/config
       - ${CLEARML_DATA_ROOT:-./docker-data}/logs:/var/log/clearml
@@ -134,10 +174,16 @@ services:
     depends_on:
       apiserver: {condition: service_healthy}
       fileserver: {condition: service_healthy}
+      rustfs: {condition: service_healthy}
     environment:
       <<: *api-environment
       PYTHONPATH: /opt/clearml/apiserver
       CLEARML__services__async_urls_delete__fileserver__url_prefixes: "[${CLEARML_FILES_HOST:-http://localhost:7863},http://fileserver:8081]"
+      RUSTFS_PUBLIC_HOST: ${RUSTFS_PUBLIC_HOST:-localhost}
+      RUSTFS_API_PORT: ${RUSTFS_API_PORT:-7868}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-tonops-artifacts}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Set RUSTFS_ACCESS_KEY in .env}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Set RUSTFS_SECRET_KEY in .env}
     entrypoint: [python3, -m, jobs.async_urls_delete, --fileserver-host, "http://fileserver:8081"]
     volumes:
       - ${CLEARML_DATA_ROOT:-./docker-data}/config:/opt/clearml/config

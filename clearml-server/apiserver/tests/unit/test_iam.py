@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
+import os
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -21,10 +22,12 @@ from apiserver.bll.iam import (
 from apiserver.database import Database
 from apiserver.database.model.auth import Role, User
 from apiserver.database.model.project import Project
+from apiserver.database.model.model import Model
 from apiserver.database.model.user import User as BackendUser
 from apiserver.database.model.iam import IAMAuditEvent, IAMGroup, IAMGroupMember
 from apiserver.service_repo.auth.local_user import LocalDatabaseProvider
 from apiserver.service_repo.auth import Identity, Token
+from apiserver.services.storage import sign_rustfs_url
 
 
 def config_get(key, default=None):
@@ -57,6 +60,7 @@ class LocalIAMTest(unittest.TestCase):
         User.drop_collection()
         BackendUser.drop_collection()
         Project.drop_collection()
+        Model.drop_collection()
         IAMGroup.drop_collection()
         IAMGroupMember.drop_collection()
         IAMAuditEvent.drop_collection()
@@ -217,6 +221,29 @@ class LocalIAMTest(unittest.TestCase):
         self.assertEqual(2, len(get_profile(call, "company", None)["projects"]))
         directory = search_profiles(SimpleNamespace(data={"search": "admin"}), "company", None)
         self.assertEqual([owner.id], [user["id"] for user in directory["users"]])
+
+    def test_rustfs_download_requires_access_to_registered_model(self):
+        owner = create_user(company="company", username="owner", password="Correct-Horse-1")
+        viewer = create_user(company="company", username="viewer", password="Correct-Horse-2")
+        project = Project(id="project", company="company", user=owner.id, name="Private", basename="Private", visibility="private", created=datetime.utcnow()).save()
+        uri = "s3://storage.example:7868/tonops-artifacts/migrated/models/model/weights.pt"
+        Model(id="model", company="company", user=owner.id, project=project.id, name="weights", uri=uri, ready=False, created=datetime.utcnow()).save()
+        call = SimpleNamespace(data={"url": uri}, identity=SimpleNamespace(user=viewer.id, role=Role.user))
+        environment = {
+            "RUSTFS_PUBLIC_HOST": "storage.example", "RUSTFS_API_PORT": "7868",
+            "RUSTFS_BUCKET": "tonops-artifacts", "RUSTFS_ACCESS_KEY": "TESTACCESSKEY",
+            "RUSTFS_SECRET_KEY": "test-secret",
+        }
+        with patch.dict(os.environ, environment):
+            with self.assertRaises(APIError):
+                sign_rustfs_url(call, "company", None)
+            project.update(visibility="public")
+            signed = sign_rustfs_url(call, "company", None)["signed"]
+            self.assertIn("X-Amz-Signature=", signed)
+            self.assertTrue(signed.startswith("http://storage.example:7868/tonops-artifacts/"))
+            call.data["url"] = "s3://storage.example:7868/tonops-artifacts/other.pt"
+            with self.assertRaises(APIError):
+                sign_rustfs_url(call, "company", None)
 
     def test_self_signup_always_creates_a_normal_user(self):
         from apiserver.services.iam import signup

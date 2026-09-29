@@ -1,4 +1,5 @@
 import itertools
+from os import getenv
 from datetime import datetime
 from typing import Tuple, Optional, Sequence, Mapping
 
@@ -60,6 +61,11 @@ def _ensure_project(
     if creation_params is None:
         from apiserver.bll.iam import enabled as iam_enabled
         creation_params = {"description": "", "visibility": "private"} if iam_enabled() else None
+    if getenv("RUSTFS_OUTPUT_URI"):
+        creation_params = {
+            **(creation_params or {"description": ""}),
+            "default_output_destination": (creation_params or {}).get("default_output_destination") or getenv("RUSTFS_OUTPUT_URI"),
+        }
     project = Project(
         id=database.utils.id(),
         user=user,

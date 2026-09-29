@@ -2,7 +2,7 @@ import {effect, inject, Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {from, fromEvent, Observable, of, Subject} from 'rxjs';
 import {fromFetch} from 'rxjs/fetch';
-import {catchError, debounceTime, filter, map} from 'rxjs/operators';
+import {catchError, debounceTime, filter, map, switchMap} from 'rxjs/operators';
 import {DeleteObjectsCommand, GetObjectCommand, ObjectIdentifier, S3Client, S3ClientConfig} from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 import {convertToReverseProxy, isFileserverUrl, resolveLocalFileserverUrl} from '~/shared/utils/url';
@@ -16,6 +16,8 @@ import {ConfigurationService} from '../../shared/services/configuration.service'
 import {DEFAULT_REGION} from '../../shared/utils/amazon-s3-uri';
 import {getBucketAndKeyFromSrc, isGoogleCloudUrl, SignResponse} from '@common/settings/admin/base-admin-utils';
 import {selectCompanyPreSignServices} from '~/core/reducers/auth.reducers';
+import {SmApiRequestsService} from '~/business-logic/api-services/api-requests.service';
+import {HTTP} from '~/app.constants';
 
 const LOCAL_SERVER_PORT = 27878;
 const FOUR_DAYS = 60 * 60 * 24 * 4;
@@ -26,6 +28,7 @@ const HTTP_REGEX = /^https?:\/\//;
 export class BaseAdminService {
   protected store = inject(Store);
   protected confService = inject(ConfigurationService);
+  private api = inject(SmApiRequestsService);
 
   public s3Services: Record<string, S3Client> = {};
   private revokeSucceed = this.store.selectSignal(selectRevokeSucceed);
@@ -65,7 +68,8 @@ export class BaseAdminService {
   signUrlIfNeeded(
     url: string,
     config?: { skipLocalFile?: boolean; skipFileServer?: boolean; disableCache?: number },
-    previousSignedUrl?: { signed: string; expires: number }
+    previousSignedUrl?: { signed: string; expires: number },
+    skipRustfsSign = false
   ): Observable<SignResponse> {
     config = {...{skipLocalFile: true, skipFileServer: this.confService.getStaticEnvironment().production, disableCache: null}, ...config};
 
@@ -82,6 +86,18 @@ export class BaseAdminService {
         return of({type: 'sign', signed: convertToReverseProxy(url), expires: Number.MAX_VALUE});
       }
       return of({type: 'sign', signed: url, expires: Number.MAX_VALUE});
+    }
+
+    if (!skipRustfsSign && url?.startsWith('s3://')) {
+      return this.api.post<{signed: string | null}>(
+        `${HTTP.API_BASE_URL}/storage.sign_rustfs_url`, {url}, {}
+      ).pipe(
+        switchMap(result => result.signed
+          ? of({type: 'sign' as const, signed: result.signed, expires: Date.now() + 295000})
+          : this.signUrlIfNeeded(url, config, previousSignedUrl, true)
+        ),
+        catchError(() => this.signUrlIfNeeded(url, config, previousSignedUrl, true))
+      );
     }
 
     if (this.isLocalFile(url) && !config.skipLocalFile) {

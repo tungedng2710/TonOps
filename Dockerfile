@@ -15,6 +15,7 @@ RUN pnpm run build && pnpm run build-widgets
 FROM ${CLEARML_SERVER_BASE} AS runtime
 COPY clearml-server/apiserver/ /opt/clearml/apiserver/
 COPY clearml-server/fileserver/ /opt/clearml/fileserver/
+COPY scripts/init-rustfs.py /opt/clearml/init_rustfs.py
 RUN rm -rf /usr/share/nginx/html /usr/share/nginx/widgets
 COPY --from=webapp /src/clearml-web/build/browser/ /usr/share/nginx/html/
 COPY --from=webapp /src/clearml-web/dist/report-widgets/browser/ /usr/share/nginx/widgets/
