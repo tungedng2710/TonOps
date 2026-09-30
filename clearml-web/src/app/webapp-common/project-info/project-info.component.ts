@@ -23,6 +23,7 @@ import {MarkdownEditorComponent} from '@common/shared/components/markdown-editor
 import {MatExpansionPanel, MatExpansionPanelContent, MatExpansionPanelHeader, MatExpansionPanelTitle} from '@angular/material/expansion';
 import {MatButton} from '@angular/material/button';
 import {ProjectStatsComponent} from '@common/project-info/conteiners/project-stats/project-stats.component';
+import {ProjectAiComponent} from './project-ai/project-ai.component';
 
 
 @Component({
@@ -37,7 +38,8 @@ import {ProjectStatsComponent} from '@common/project-info/conteiners/project-sta
     MatExpansionPanelHeader,
     MatExpansionPanelContent,
     MatButton,
-    ProjectStatsComponent
+    ProjectStatsComponent,
+    ProjectAiComponent
   ]
 })
 export class ProjectInfoComponent {

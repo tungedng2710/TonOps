@@ -15,6 +15,7 @@
 @forward "printing";
 @use "themes";
 @use "customizations";
+@use "liquid-glass" as glass;
 
 :root {
   @include mat.all-component-themes(themes.$theme);
@@ -22,15 +23,21 @@
   @include customizations.components(themes.$theme);
   --tonops-icon-blue: #1764bd;
   --tonops-icon-blue-dark: #155aa9;
+  --glass-border: rgba(255, 255, 255, 0.9);
+  --glass-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(244, 248, 255, 0.48));
+  --glass-surface-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(242, 247, 255, 0.88));
+  --glass-shadow: 0 8px 28px rgba(38, 64, 105, 0.08), inset 0 1px 0 #fff, inset 0 -1px 0 rgba(255, 255, 255, 0.45);
+  --glass-canvas: #fff;
 }
 
 html,
 body {
-  background: var(--color-surface);
+  background: var(--glass-canvas);
 }
 
 body {
   letter-spacing: 0.005em;
+  -webkit-font-smoothing: antialiased;
 }
 
 .mat-mdc-card,
@@ -40,14 +47,33 @@ body {
 }
 
 .mat-mdc-card {
-  border: 1px solid color-mix(in srgb, var(--color-outline-variant), transparent 28%);
-  box-shadow: 0 12px 32px rgba(20, 24, 30, 0.06) !important;
+  @include glass.surface;
+}
+
+.mat-mdc-dialog-surface,
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  @include glass.surface($strong: true);
+}
+
+.mat-mdc-menu-panel .mat-mdc-menu-content {
+  padding: 6px;
+}
+
+.mat-mdc-menu-item {
+  border-radius: 10px;
+}
+
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--tonops-icon-blue);
+  outline-offset: 3px;
 }
 
 .mat-mdc-button-base {
-  --mat-button-filled-container-shape: 10px;
-  --mat-button-outlined-container-shape: 10px;
-  --mat-button-text-container-shape: 10px;
+  --mat-button-filled-container-shape: 999px;
+  --mat-button-outlined-container-shape: 999px;
+  --mat-button-text-container-shape: 999px;
   font-weight: 600;
 }
 

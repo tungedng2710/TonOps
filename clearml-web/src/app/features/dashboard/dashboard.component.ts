@@ -1,11 +1,11 @@
-import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {combineLatest} from 'rxjs';
 import {Store} from '@ngrx/store';
 import {ActivatedRoute, Router} from '@angular/router';
 import {selectCurrentUser, selectShowOnlyUserWork} from '@common/core/reducers/users-reducer';
 import {debounceTime, filter, take} from 'rxjs/operators';
 import {setDeep} from '@common/core/actions/projects.actions';
-import {getRecentExperiments, getRecentProjects, getRecentReports} from '@common/dashboard/common-dashboard.actions';
+import {getRecentExperiments, getRecentProjects} from '@common/dashboard/common-dashboard.actions';
 import {selectFirstLogin} from '@common/core/reducers/view.reducer';
 import {MatDialog} from '@angular/material/dialog';
 import {WelcomeMessageComponent} from '@common/layout/welcome-message/welcome-message.component';
@@ -14,7 +14,6 @@ import {selectRecentTasks} from '@common/dashboard/common-dashboard.reducer';
 import {initSearch} from '@common/common-search/common-search.actions';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {selectActiveSearch} from '@common/common-search/common-search.reducer';
-import {DashboardReportsComponent} from '@common/dashboard/containers/dashboard-reports/dashboard-reports.component';
 import {MatButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {DashboardProjectsComponent} from '@common/dashboard/containers/dashboard-projects/dashboard-projects.component';
@@ -27,7 +26,6 @@ import {DashboardExperimentsComponent} from '@common/dashboard/containers/dashbo
   styleUrls: ['./dashboard.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    DashboardReportsComponent,
     MatButton,
     MatIconModule,
     DashboardProjectsComponent,
@@ -40,7 +38,6 @@ export class DashboardComponent {
   private activatedRoute = inject(ActivatedRoute);
   private dialog = inject(MatDialog);
   protected recentTasks = this.store.selectSignal(selectRecentTasks);
-  protected width = signal(0);
 
   constructor() {
     this.store.dispatch(setDeep({deep: false}));
@@ -65,7 +62,6 @@ export class DashboardComponent {
      .subscribe(() => {
        this.store.dispatch(getRecentProjects());
        this.store.dispatch(getRecentExperiments());
-       this.store.dispatch(getRecentReports());
      });
 
     this.store.select(selectFirstLogin)

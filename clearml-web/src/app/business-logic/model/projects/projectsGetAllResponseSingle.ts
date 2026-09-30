@@ -29,9 +29,9 @@ export interface ProjectsGetAllResponseSingle {
     description?: string;
     visibility?: 'private' | 'public';
     /**
-     * Associated user id
+     * Project owner ID, or owner details expanded by get_all_ex
      */
-    user?: string;
+    user?: string | {id?: string; name?: string};
     /**
      * Company id
      */

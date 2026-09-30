@@ -25,7 +25,8 @@
           <a class="edit-link" routerLink="/settings/account">Edit account settings</a>
         }
       </aside>
-      <section class="projects">
+      <div class="profile-content">
+        <section class="projects">
         <h2>Projects <span class="count">{{ projects().length }}</span></h2>
         @if (!projects().length) { <p class="empty">No projects to show.</p> }
         <div class="project-grid">
@@ -37,12 +38,47 @@
             </a>
           }
         </div>
-      </section>
+        </section>
+        <section class="reports" aria-labelledby="reports-heading">
+          <header class="reports-header">
+            <h2 id="reports-heading">Reports</h2>
+            @if (currentUser()?.id === person.id) {
+              <button mat-flat-button data-id="New Report" (click)="openCreateReport()">
+                <mat-icon fontSet="al" fontIcon="al-ico-add"></mat-icon>
+                NEW REPORT
+              </button>
+            }
+          </header>
+          <div class="report-grid">
+            @for (report of reports(); track report.id) {
+              <sm-report-card
+                [report]="report"
+                [hideMenu]="true"
+                role="link"
+                tabindex="0"
+                [attr.aria-label]="'Open report ' + report.name"
+                (cardClicked)="openReport($event)"
+                (keydown.enter)="openReport(report, $event)"
+              ></sm-report-card>
+            }
+          </div>
+          @if (reportsLoading()) { <p class="status" role="status">Loading reports…</p> }
+          @if (reportsError()) {
+            <p class="status error" role="alert">{{ reportsError() }}</p>
+            <button mat-button (click)="loadReports()">Retry</button>
+          } @else if (!reportsLoading() && !reports().length) {
+            <p class="empty">No reports to show.</p>
+          }
+          @if (hasMoreReports() && !reportsError()) {
+            <button mat-button class="load-more" [disabled]="reportsLoading()" (click)="loadReports()">Load more reports</button>
+          }
+        </section>
+      </div>
     </div>
   } @else if (!loading() && !error()) {
     <section class="directory">
       <h1>People</h1>
-      <p>Find people and explore their projects.</p>
+      <p>Find people and explore their projects and reports.</p>
       <form (ngSubmit)="findPeople(0)" class="search-form">
         <input name="search" [(ngModel)]="search" type="search" placeholder="Search by name or username" aria-label="Search people">
         <button type="submit">Search</button>

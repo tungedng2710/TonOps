@@ -1,7 +1,7 @@
 @use "variables";
 
 :host {
-  --mat-tab-container-height: #{variables.$nav-bar-height};
+  --mat-tab-container-height: #{variables.$nav-bar-height - 12px};
   --mat-tab-inactive-label-text-color: color-mix(in srgb, var(--color-on-surface-variant), transparent 40%);
 
   .sub-header {

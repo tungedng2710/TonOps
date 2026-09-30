@@ -1,20 +1,72 @@
 @use "mixins/common";
+@use "liquid-glass" as glass;
 
 :host {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  --row-header-color: rgba(232, 242, 255, 0.58);
+  --row-header-hover-color: rgba(220, 237, 255, 0.72);
+  --row-default-color: transparent;
+  --row-default-hover-color: rgba(210, 231, 255, 0.42);
+  --row-border-color: rgba(110, 164, 224, 0.18);
+  --row-selected-color: rgba(190, 221, 255, 0.62);
+  --row-selected-hover-color: rgba(176, 212, 255, 0.72);
+  --row-selected-text-color: var(--color-on-surface);
+
   .recent-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
     padding-bottom: 12px;
   }
 
   .table-container {
-    height: calc(100% - 48px);
-    min-height: 180px;
-    overflow-y: auto;
+    @include glass.surface;
+    min-height: 104px;
+    border-radius: 22px;
+    overflow: hidden;
   }
 
   .recent-title {
     @include common.recent-title();
+  }
+
+  ::ng-deep .p-datatable-table {
+    min-width: 960px;
+  }
+
+  ::ng-deep sm-table tr {
+    th:first-child,
+    td:first-child {
+      padding-left: 16px;
+    }
+
+    th:last-child,
+    td:last-child {
+      padding-right: 16px;
+    }
+
+    td {
+      font-size: 13px;
+    }
+
+    &:not(.header) {
+      transition: background-color 140ms ease;
+    }
+  }
+
+  ::ng-deep sm-table .col-header {
+    color: #496b94;
+    letter-spacing: 0.04em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::ng-deep sm-table tr:not(.header) {
+      transition: none;
+    }
   }
 }

@@ -163,7 +163,7 @@ $border-radius-lg: .3rem; // TODO:
 $border-radius-sm: .2rem; // TODO:
 
 // fonts
-$font-family-base: 'Heebo', sans-serif; // Assumes the browser default, typically `16px`
+$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Heebo', sans-serif;
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 $font-default-color: $blue-100; // Assumes the browser default, typically `16px`
 

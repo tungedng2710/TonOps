@@ -1,0 +1,78 @@
+<section class="ai-panel" aria-labelledby="project-ai-title">
+  <header class="ai-header">
+    <div>
+      <h2 id="project-ai-title"><mat-icon fontSet="al" fontIcon="al-ico-reports"></mat-icon>Ask AI</h2>
+      <p>Explore this project's tasks and metrics, or generate a report.</p>
+    </div>
+    @if (messages().length) {
+      <button mat-button (click)="clear()" [disabled]="busy() || saving() !== null">Clear conversation</button>
+    }
+  </header>
+
+  @if (!messages().length) {
+    <div class="suggestions" aria-label="Suggested questions">
+      @for (suggestion of suggestions; track suggestion) {
+        <button mat-stroked-button [disabled]="busy()" (click)="send(false, suggestion)">{{ suggestion }}</button>
+      }
+    </div>
+  }
+
+  <div #conversation class="conversation" aria-label="AI conversation" aria-live="polite" aria-relevant="additions" [attr.aria-busy]="busy()">
+    @for (message of messages(); track message.id) {
+      <article class="message" [class.user]="message.role === 'user'">
+        <div class="message-label">{{ message.role === 'user' ? 'You' : message.report ? 'AI report draft' : 'Project assistant' }}</div>
+        @if (message.role === 'user') {
+          <p class="question">{{ message.content }}</p>
+        } @else {
+          <div class="answer" [innerHTML]="message.html"></div>
+          @if (message.details; as details) {
+            <p class="context-note">Based on {{ details.context.included_tasks }} of {{ details.context.total_tasks }} tasks and available metric summaries.</p>
+            @if (details.context.omitted_tasks) {
+              <p class="context-note">{{ details.context.omitted_tasks }} older tasks are outside this snapshot.</p>
+            }
+            @if (details.sources.length) {
+              <details class="sources">
+                <summary>Tasks in this snapshot</summary>
+                <div class="source-links">
+                  @for (task of details.sources; track task.id) {
+                    <a [routerLink]="['/projects', task.project_id, 'tasks', task.id]">{{ task.name }}</a>
+                  }
+                </div>
+              </details>
+            }
+            @if (message.report) {
+              <div class="report-actions">
+                @if (message.saved; as saved) {
+                  <span role="status">Report saved</span>
+                  <a mat-flat-button [routerLink]="['/reports', saved.project_id, saved.id]">Open report</a>
+                } @else if (details.can_save) {
+                  <label [for]="'report-title-' + message.id">Report title</label>
+                  <input [id]="'report-title-' + message.id" [ngModel]="message.title" (ngModelChange)="updateTitle(message.id, $event)" maxlength="160">
+                  <button mat-flat-button (click)="save(message)" [disabled]="saving() !== null || (message.title?.trim().length || 0) < 3">
+                    {{ saving() === message.id ? 'Saving…' : 'Save to Reports' }}
+                  </button>
+                } @else {
+                  <p class="context-note">Only the project owner can save a report to this project.</p>
+                }
+              </div>
+            }
+          }
+        }
+      </article>
+    }
+  </div>
+
+  @if (busy()) {
+    <div class="thinking" role="status"><mat-spinner diameter="18"></mat-spinner><span>AI is reviewing this project…</span><button mat-button (click)="cancel()">Cancel</button></div>
+  }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+
+  <form class="composer" (ngSubmit)="send()">
+    <label for="project-ai-question">Ask about tasks, metrics, or what to include in a report</label>
+    <textarea id="project-ai-question" name="question" [ngModel]="prompt()" (ngModelChange)="prompt.set($event)" rows="2" maxlength="2000" placeholder="e.g. How did validation mAP change, and what should I try next?"></textarea>
+    <div class="composer-actions">
+      <button mat-stroked-button type="button" [disabled]="busy()" (click)="send(true)"><mat-icon fontSet="al" fontIcon="al-ico-reports"></mat-icon>Generate report</button>
+      <button mat-flat-button type="submit" [disabled]="busy() || !prompt().trim()">Ask AI</button>
+    </div>
+  </form>
+</section>

@@ -142,7 +142,7 @@ export class CommonProjectsEffects {
                   ...((showHidden) && {search_hidden: true}),
                   ...(hideExamples && {allow_public: false}),
                   order_by: ['featured', ...(orderBy ? [sortOrder === TABLE_SORT_ORDER.DESC ? '-' + orderBy : orderBy] : [])],
-                  only_fields: ['name', 'company', 'user', 'visibility', 'created', 'default_output_destination', 'basename', 'system_tags']
+                  only_fields: ['name', 'company', 'user.id', 'user.name', 'visibility', 'created', 'default_output_destination', 'basename', 'system_tags']
                     .concat(pipelines || datasets ? ['tags', 'last_update'] : []),
                   ...(searchQuery?.query && {
                     _any_: {
@@ -184,7 +184,7 @@ export class CommonProjectsEffects {
                     ...(showHidden && {search_hidden: true}),
                     check_own_contents: true, // in order to check if project is empty
                     ...(showOnlyUserWork && {active_users: [user?.id]}),
-                    only_fields: ['name', 'company', 'user', 'visibility', 'created', 'default_output_destination'],
+                    only_fields: ['name', 'company', 'user.id', 'user.name', 'visibility', 'created', 'default_output_destination'],
                     ...(!projectsView && getSelfFeatureProjectRequest(this.route.snapshot)),
                   }) : nested && showRootFolder(this.route.snapshot) && projectId === '*' && !scrollId && !searchQuery?.query ?
                     // nested reports virtual root card

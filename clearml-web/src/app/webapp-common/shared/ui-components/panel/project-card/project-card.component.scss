@@ -6,7 +6,42 @@ hr {
 
 .card-name {
   height: 32px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.project-owner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 22px;
+  color: #526681;
+  font-size: 11px;
+
+  .owner-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    background: linear-gradient(145deg, #eef1ff, #dce7fb);
+    color: #47649a;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .owner-label {
+    color: #63748c;
+  }
+
+  .owner-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
 }
 
 .project-tag {
@@ -25,7 +60,7 @@ hr {
   @include common.counter-label();
   text-align: center;
   font-size: 10px;
-  padding: 12px
+  padding: 6px 4px;
 }
 
 .sub-projects-list {
@@ -60,8 +95,8 @@ hr {
 
 ::ng-deep .project-card {
   cursor: pointer;
-  height: 228px;
-  overflow: hidden;
+  height: 208px;
+  overflow: visible;
 }
 
 .project-name {
@@ -79,6 +114,7 @@ hr {
   text-transform: capitalize;
   color: var(--color-outline);
   border: 1px solid var(--color-outline-variant);
-  border-radius: 4px;
-  padding: 2px 6px;
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.45);
 }

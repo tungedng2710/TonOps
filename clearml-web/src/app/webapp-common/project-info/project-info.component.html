@@ -1,4 +1,7 @@
 <div class="info-content" [class.h-100]="editor.editMode">
+  @if (project()?.id && project().id !== '*' && !editor.editMode) {
+    <sm-project-ai [project]="project()"></sm-project-ai>
+  }
   <div class="metric-panel" [class.open]="panelOpen()">
     <mat-expansion-panel (opened)="setMetricsPanel(true)" (closed)="setMetricsPanel(false)" [expanded]="panelOpen()">
       <mat-expansion-panel-header expandedHeight="48px" collapsedHeight="48px">

@@ -3,3 +3,57 @@
   align-items: center;
   justify-content: flex-end;
 }
+
+@media (max-width: 700px) {
+  .sm-card-list-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 0;
+  }
+
+  .recent-title {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  sm-common-search {
+    flex: 1;
+    min-width: 36px;
+    margin-left: 0 !important;
+  }
+
+  :host ::ng-deep .sm-card-list-header .recent-title sm-common-search {
+    .search-icon-container {
+      width: 100%;
+
+      .search-icon.open {
+        left: calc(100% - 36px);
+      }
+    }
+
+    .search-container.open {
+      width: 100%;
+      margin-right: 0;
+    }
+
+    .search-input input {
+      min-width: 0;
+      width: 100%;
+    }
+  }
+
+  :host ::ng-deep .sm-card-list-header .recent-title:has(.search-container.open) {
+    flex-wrap: wrap;
+
+    sm-common-search {
+      flex-basis: 100%;
+      min-height: 36px;
+    }
+  }
+
+  .right-buttons {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}

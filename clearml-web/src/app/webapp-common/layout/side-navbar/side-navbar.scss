@@ -1,4 +1,5 @@
 @use "variables";
+@use "liquid-glass" as glass;
 
 $link-item-size-height: 36px;
 $link-item-size-width: 40px;
@@ -8,24 +9,26 @@ $item-margin: 20px;
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: variables.$side-bar-close-width;
-  background: #fff;
-  border-right: 1px solid #e7e9ed;
-  box-shadow: 4px 0 18px rgba(20, 24, 30, 0.03);
+  @include glass.surface;
+  height: calc(100% - 20px);
+  width: calc(#{variables.$side-bar-close-width} - 16px);
+  flex-shrink: 0;
+  margin: 10px 8px;
+  border-radius: 22px;
   position: relative;
   z-index: 2;
 
   .logo {
-    width: 64px;
-    height: 64px;
+    width: 100%;
+    height: 54px;
+    flex-shrink: 0;
     display: grid;
     place-items: center;
-    border-bottom: 1px solid #eceef1;
+    border-bottom: 1px solid rgba(115, 144, 181, 0.12);
 
     img {
-      width: 40px;
-      height: 40px;
+      width: 34px;
+      height: 34px;
       object-fit: contain;
     }
   }
@@ -63,9 +66,9 @@ $item-margin: 20px;
     }
 
     &.active {
-      background: linear-gradient(145deg, #e9f3ff, #dcecff);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(201, 225, 255, 0.75));
       color: #155aa9;
-      box-shadow: inset 0 0 0 1px rgba(23, 100, 189, 0.12);
+      box-shadow: 0 3px 10px rgba(50, 97, 161, 0.12), inset 0 1px 0 #fff;
     }
   }
 

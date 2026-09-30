@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, Component, Input, output, ViewChild, input } from '@angular/core';
-import {ProjectsGetAllResponseSingle} from '~/business-logic/model/projects/projectsGetAllResponseSingle';
 import {CircleTypeEnum} from '~/shared/constants/non-common-consts';
 import {Project} from '~/business-logic/model/projects/project';
 import {trackById} from '@common/shared/utils/forms-track-by';
@@ -42,8 +41,10 @@ import { MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions } from '@angular/
   ]
 })
 export class ProjectCardComponent {
-  private _project: ProjectsGetAllResponseSingle;
+  private _project: Project;
   public computeTime: string;
+  public ownerName: string;
+  public ownerInitial: string;
   public hidden = false;
   trackById = trackById;
   readonly circleTypeEnum = CircleTypeEnum;
@@ -54,6 +55,9 @@ export class ProjectCardComponent {
     this._project = data;
     this.hidden = data.hidden || data.system_tags?.includes('hidden');
     this.computeTime = this.convertSecToDaysHrsMinsSec(data.stats?.active?.total_runtime);
+    const owner = data.user;
+    this.ownerName = typeof owner === 'object' ? owner?.name?.trim() || 'Unknown owner' : 'Unknown owner';
+    this.ownerInitial = this.ownerName === 'Unknown owner' ? '?' : Array.from(this.ownerName)[0].toLocaleUpperCase();
   };
 
   get project() {
@@ -73,7 +77,7 @@ export class ProjectCardComponent {
   @ViewChild('projectName', {static: true}) projectName;
 
 
-  public convertSecToDaysHrsMinsSec(secs) {
+  public convertSecToDaysHrsMinsSec(secs = 0) {
     const dayInSec = 60 * 60 * 24;
     const hourInSec = 60 * 60;
     const minInSec = 60;
@@ -91,6 +95,12 @@ export class ProjectCardComponent {
       this.projectCardClicked.emit(this.project);
   }
 
+  public onCardKeydown(event: KeyboardEvent) {
+    if (event.target === event.currentTarget && ['Enter', ' '].includes(event.key)) {
+      event.preventDefault();
+      this.projectClicked();
+    }
+  }
 
 
   subProjectClicked(id: string) {

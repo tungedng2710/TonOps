@@ -49,10 +49,7 @@ export const routes: Routes = [
       {
         path: 'users',
         data: {search: false, workspaceNeutral: true},
-        children: [
-          {path: '', loadComponent: () => import('./features/profiles/profiles.component').then(m => m.ProfilesComponent)},
-          {path: ':userId', loadComponent: () => import('./features/profiles/profiles.component').then(m => m.ProfilesComponent)}
-        ]
+        loadChildren: () => import('./features/profiles/profiles.routes').then(r => r.routes)
       },
       {
         path: 'projects',

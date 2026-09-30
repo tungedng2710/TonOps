@@ -5,17 +5,14 @@
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 8% 4%, rgba(107, 171, 255, 0.16), transparent 32rem),
-    radial-gradient(circle at 92% 72%, rgba(174, 212, 255, 0.13), transparent 34rem),
-    #fff;
+  background: transparent;
 }
 
 :host ::ng-deep .sm-card-list-layout.projects {
   @include folder-cards.project-folder-cards;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 352px));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 304px));
   align-content: start;
-  gap: 26px 24px;
+  gap: 24px 20px;
   padding: 20px 24px 40px;
 }
 
@@ -23,16 +20,5 @@
   :host ::ng-deep .sm-card-list-layout.projects {
     padding: 14px 16px 32px;
     gap: 20px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :host ::ng-deep .sm-card-list-layout.projects sm-project-card {
-    transition: none;
-
-    &:hover,
-    &:focus-within {
-      transform: none;
-    }
   }
 }

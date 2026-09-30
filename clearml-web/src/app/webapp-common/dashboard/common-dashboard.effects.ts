@@ -54,7 +54,7 @@ export class CommonDashboardEffects {
         ...(showHidden && {search_hidden: true}),
         ...(!showHidden && {include_stats_filter: {system_tags: ['-pipeline']}}),
         ...(hideExamples && {allow_public: false}),
-        only_fields: ['name', 'basename', 'company', 'user', 'created', 'default_output_destination']
+        only_fields: ['name', 'basename', 'company', 'user.id', 'user.name', 'visibility', 'created', 'default_output_destination']
       }).pipe(
           mergeMap(({projects}) => [
             setRecentProjects({projects}),

@@ -6,6 +6,7 @@ $notifier-height: 30px;
 notification-container {
   position: relative;
   width: 100%;
+  background: var(--glass-canvas);
   height: 100%;
 }
 
@@ -18,7 +19,8 @@ notification-container {
     flex: 1;
     height: 100%;
     width: calc(100% - #{$side-bar-close-width});
-    background: #fff;
+    min-width: 0;
+    background: transparent;
 
     &.notifier-open {
       height: calc(100% - #{$notifier-height});

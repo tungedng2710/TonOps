@@ -103,6 +103,11 @@ def authorize_entity_call(call, endpoint_name, company):
                 value = record.get(field)
                 if value:
                     ids.extend(value if isinstance(value, list) else [value])
+            # Modern debug-image and plot requests identify each task inside
+            # metrics. Check every referenced task, including mixed requests.
+            for metric in record.get("metrics") or []:
+                if isinstance(metric, dict) and metric.get("task"):
+                    ids.append(metric["task"])
         if not ids and action != "clear_scroll":
             raise errors.bad_request.InvalidId("task is required")
         for entity_id in set(ids):

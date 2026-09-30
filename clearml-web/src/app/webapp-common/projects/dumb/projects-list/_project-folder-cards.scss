@@ -1,27 +1,39 @@
 @use "src/app/webapp-common/assets/fonts/variables" as icons;
+@use "liquid-glass" as glass;
 
 @mixin project-folder-cards {
-  --card-tab1-bg: rgba(246, 250, 255, 0.82);
-  --card-tab1-hover-bg: rgba(233, 244, 255, 0.92);
-  --card-tab2-bg: rgba(225, 239, 255, 0.88);
-  --card-tab2-bg-hover: rgba(209, 230, 255, 0.94);
-  --card-footer-bg: rgba(225, 239, 255, 0.38);
+  --card-tab1-bg: rgba(250, 252, 255, 0.82);
+  --card-tab1-hover-bg: rgba(244, 249, 255, 0.94);
+  --card-tab2-bg: rgba(211, 228, 252, 0.8);
+  --card-tab2-bg-hover: rgba(202, 221, 249, 0.94);
+  --card-footer-bg: rgba(235, 243, 255, 0.34);
+
+  :is(sm-project-card, sm-plus-card) .card .card-container {
+    @include glass.surface;
+    height: 188px;
+    border-radius: 18px;
+    transition: box-shadow 180ms ease, border-color 180ms ease;
+
+    &.is-folder {
+      border-top-left-radius: 8px;
+    }
+  }
 
   sm-project-card {
     display: block;
     min-width: 0;
-    height: 248px;
+    height: 208px;
     transition: transform 180ms ease;
 
     &:hover,
     &:focus-within {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
     }
 
     sm-card.project-card {
       display: block;
       width: 100%;
-      height: 248px;
+      height: 208px;
       overflow: visible;
     }
 
@@ -39,37 +51,28 @@
       }
     }
 
-    .card-container {
-      border: 1px solid rgba(255, 255, 255, 0.92);
-      border-radius: 20px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.87), rgba(229, 242, 255, 0.7));
-      box-shadow: 0 15px 36px rgba(30, 64, 110, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      -webkit-backdrop-filter: blur(22px) saturate(150%);
-      backdrop-filter: blur(22px) saturate(150%);
-      transition: box-shadow 180ms ease, border-color 180ms ease;
-
-      &.is-folder {
-        border-top-left-radius: 8px;
-      }
-    }
-
     &:hover .card-container,
     &:focus-within .card-container {
       border-color: rgba(128, 185, 245, 0.65);
-      box-shadow: 0 22px 46px rgba(28, 72, 132, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      box-shadow: 0 14px 32px rgba(28, 72, 132, 0.14), inset 0 1px 0 #fff;
     }
 
     .first-tab-container {
-      background: linear-gradient(150deg, rgba(255, 255, 255, 0.82), rgba(232, 244, 255, 0.56));
+      background: transparent;
 
       footer {
         border-top: 1px solid rgba(110, 164, 224, 0.18);
       }
     }
 
+    sm-card.project-card .card-container .first-tab-container .card-body {
+      margin-top: 6px;
+      padding: 0 12px;
+    }
+
     &:hover .first-tab-container,
     &:focus-within .first-tab-container {
-      background: linear-gradient(150deg, rgba(255, 255, 255, 0.9), rgba(221, 239, 255, 0.72));
+      background: rgba(255, 255, 255, 0.18);
     }
 
     .second-tab-container {
@@ -77,20 +80,20 @@
     }
 
     .card-name {
-      gap: 8px;
+      gap: 7px;
 
       &::before {
         content: icons.$al-ico-projects-outlined;
         display: grid;
-        flex: 0 0 32px;
+        flex: 0 0 28px;
         place-items: center;
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border: 1px solid rgba(75, 140, 220, 0.2);
-        border-radius: 10px;
-        background: linear-gradient(145deg, #e9f4ff, #cfe5ff);
+        border-radius: 9px;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(201, 225, 255, 0.7));
         color: #155aa9;
-        font: 18px/1 trains;
+        font: 16px/1 trains;
       }
 
       .title {
@@ -99,7 +102,7 @@
       }
 
       .project-name {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 650;
       }
     }
@@ -114,8 +117,56 @@
       }
     }
 
-    .circle-counter {
-      box-shadow: 0 4px 12px rgba(39, 83, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.56);
+    .counter-container {
+      padding: 6px 4px 0;
+
+      .circle-counter {
+        width: 44px;
+        height: 44px;
+        border-width: 2px;
+        margin-bottom: 5px;
+        box-shadow: 0 3px 10px rgba(39, 83, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
+        &.total {
+          background: linear-gradient(145deg, #edf4ff, #c8ddff);
+        }
+
+        &.running {
+          background: linear-gradient(145deg, #e1f8eb, #afe0c8);
+        }
+
+        &.completed {
+          background: linear-gradient(145deg, #e4f5ff, #b4dffa);
+        }
+
+        &.empty {
+          background: rgba(211, 221, 237, 0.45);
+        }
+
+        .counter {
+          font-size: 18px;
+        }
+      }
+
+      .counter-label {
+        font-size: 9px;
+        line-height: 12px;
+
+        &.leave-space {
+          min-height: 12px;
+        }
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    sm-project-card {
+      transition: none;
+
+      &:hover,
+      &:focus-within {
+        transform: none;
+      }
     }
   }
 }

@@ -9,6 +9,66 @@ from apiserver.services.projects import authorize_file
 
 
 class ProjectOwnerAccessTest(unittest.TestCase):
+    def _authorize_metrics(self, data, user="owner", role=Role.user, model_events=False):
+        projects = {
+            "owned": SimpleNamespace(id="owned", user="owner", visibility="private"),
+            "private": SimpleNamespace(id="private", user="other", visibility="private"),
+        }
+        entities = {
+            "owned-task": SimpleNamespace(project="owned", user="owner"),
+            "private-task": SimpleNamespace(project="private", user="other"),
+        }
+
+        def entity_query(**filters):
+            query = MagicMock()
+            query.first.return_value = entities.get(filters["id"])
+            return query
+
+        def project_query(**filters):
+            query = MagicMock()
+            query.first.return_value = projects.get(filters["id"])
+            return query
+
+        empty_query = MagicMock()
+        empty_query.first.return_value = None
+        call = SimpleNamespace(identity=SimpleNamespace(user=user, role=role), data=data)
+        with patch("apiserver.bll.project.access.iam_enabled", return_value=True), patch(
+            "apiserver.bll.project.access.Project.objects", side_effect=project_query
+        ), patch(
+            "apiserver.database.model.task.task.Task.objects",
+            side_effect=entity_query if not model_events else None,
+            return_value=empty_query,
+        ), patch(
+            "apiserver.database.model.model.Model.objects",
+            side_effect=entity_query if model_events else None,
+            return_value=empty_query,
+        ):
+            for endpoint in ("events.debug_images", "events.plots"):
+                authorize_entity_call(call, endpoint, "company")
+
+    def test_metric_requests_accept_nested_task_ids_for_owner_and_admin(self):
+        for role in (Role.user, Role.admin):
+            with self.subTest(role=role):
+                self._authorize_metrics({"metrics": [{"task": "owned-task"}]}, role=role)
+
+    def test_metric_requests_check_all_nested_tasks(self):
+        for data in (
+            {"metrics": [{"task": "owned-task"}, {"task": "private-task"}]},
+            {"task": "owned-task", "metrics": [{"task": "private-task"}]},
+        ):
+            with self.subTest(data=data), self.assertRaises(APIError):
+                self._authorize_metrics(data)
+
+    def test_metric_requests_reject_missing_and_unknown_tasks(self):
+        for metrics in ([], [{"metric": "Mosaic"}], [{"task": "unknown-task"}]):
+            with self.subTest(metrics=metrics), self.assertRaises(APIError):
+                self._authorize_metrics({"metrics": metrics})
+
+    def test_metric_requests_support_model_events(self):
+        self._authorize_metrics(
+            {"metrics": [{"task": "owned-task"}], "model_events": True}, model_events=True
+        )
+
     def test_only_owner_can_write_project_with_local_iam(self):
         project = SimpleNamespace(id="project", user="owner")
         with patch("apiserver.bll.project.access.iam_enabled", return_value=True):

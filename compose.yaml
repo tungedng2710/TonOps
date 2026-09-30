@@ -107,6 +107,12 @@ services:
       CLEARML__apiserver__auth__iam__self_signup__enabled: ${CLEARML_IAM_SELF_SIGNUP_ENABLED:-true}
       CLEARML_IAM_BOOTSTRAP_ADMIN_USERNAME: ${CLEARML_IAM_BOOTSTRAP_ADMIN_USERNAME:-}
       CLEARML_IAM_BOOTSTRAP_ADMIN_PASSWORD_FILE: ${CLEARML_IAM_BOOTSTRAP_ADMIN_PASSWORD_FILE:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-glm53-flash}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-120}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-8192}
+      LLM_MAX_TASKS: ${LLM_MAX_TASKS:-50}
       CLEARML__apiserver__pre_populate__enabled: "false"
       CLEARML__services__async_urls_delete__enabled: "true"
       CLEARML__services__async_urls_delete__fileserver__url_prefixes: "[${CLEARML_FILES_HOST:-http://localhost:7863},http://fileserver:8081]"

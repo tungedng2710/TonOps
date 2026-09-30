@@ -3,8 +3,6 @@ import {provideState} from '@ngrx/store';
 import {commonDashboardReducer} from '@common/dashboard/common-dashboard.reducer';
 import {commonDashboardProviders} from '@common/dashboard/common-dashboard.providers';
 import {CrumbTypeEnum} from '@common/layout/breadcrumbs/breadcrumbs.component';
-import {provideEffects} from '@ngrx/effects';
-import {ReportsEffects} from '@common/reports/reports.effects';
 import {projectDialogProviders} from '@common/shared/project-dialog/project-dialog.providers';
 import {commonProjectsProviders} from '@common/projects/common-projects.providers';
 
@@ -20,7 +18,6 @@ export const routes: Routes = [
     data: {staticBreadcrumb},
     providers: [
       provideState('dashboard', commonDashboardReducer),
-      provideEffects([ReportsEffects]),
       ...projectDialogProviders,
       ...commonProjectsProviders,
       ...commonDashboardProviders

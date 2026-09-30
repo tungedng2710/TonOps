@@ -35,9 +35,9 @@ export interface Project {
     description?: string;
     visibility?: 'private' | 'public';
     /**
-     * Associated user id
+     * Project owner ID, or owner details expanded by get_all_ex
      */
-    user?: string;
+    user?: string | {id?: string; name?: string};
     /**
      * Company id
      */
@@ -69,4 +69,5 @@ export interface Project {
     own_tasks?: number;
     own_models?: number;
     hidden?: boolean;
+    isRoot?: boolean;
 }

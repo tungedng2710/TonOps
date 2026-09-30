@@ -1,3 +1,5 @@
+@use "liquid-glass" as glass;
+
 :host {
   display: block;
   min-height: 100%;
@@ -15,14 +17,11 @@
 }
 
 .signup-card {
+  @include glass.surface($strong: true);
   width: min(100%, 580px);
   padding: 38px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 28px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(232, 244, 255, 0.7));
   box-shadow: 0 30px 80px rgba(4, 12, 30, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  -webkit-backdrop-filter: blur(26px) saturate(155%);
-  backdrop-filter: blur(26px) saturate(155%);
 }
 
 .brand-lockup {

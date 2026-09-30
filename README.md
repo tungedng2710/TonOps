@@ -61,6 +61,16 @@ To move existing registered model files and task output artifacts, run `python s
 
 ## Operate
 
+### Project AI
+
+Project overview includes **Ask AI** and **Generate report**. The API server retrieves tasks and metric summaries from the project and readable subprojects. Answers show which tasks were included; large projects use a bounded snapshot of the most recently updated tasks. Metric summaries include latest, first, minimum, maximum, and mean values when recorded, rather than complete event histories.
+
+Configure `LLM_BASE_URL` (an OpenAI-compatible `/v1` URL), `LLM_MODEL` (the server's model ID), and `LLM_API_KEY` in the private root `.env`. The GLM endpoint uses model ID `glm53-flash`. `LLM_TIMEOUT_SECONDS`, `LLM_MAX_TOKENS`, and `LLM_MAX_TASKS` control request limits. Compose passes these values only to the API container; credentials are excluded from source control, image builds, and browser bundles. Recreate the API container after changing settings.
+
+Reports are generated as Markdown drafts. The project owner can edit the title and choose **Save to Reports**; saved drafts appear on their profile and open in the existing report editor. Questions and generation are read-only operations and respect project visibility. Saving checks ownership again. Conversation history stays in the browser component and is cleared when changing projects.
+
+### Stack operations
+
 ```bash
 docker compose ps
 docker compose logs -f apiserver

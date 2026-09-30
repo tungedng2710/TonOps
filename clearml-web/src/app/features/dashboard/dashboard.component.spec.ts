@@ -116,7 +116,7 @@ describe('DashboardComponent', () => {
     expect(store.dispatch.calls.count()).toBeGreaterThan(initialDispatchCount);
     expect(store.dispatch).toHaveBeenCalledWith(getRecentProjects());
     expect(store.dispatch).toHaveBeenCalledWith(getRecentExperiments());
-    expect(store.dispatch).toHaveBeenCalledWith(getRecentReports());
+    expect(store.dispatch).not.toHaveBeenCalledWith(getRecentReports());
   }));
 
   it('should show welcome dialog on first login and dispatch firstLogin(false) after closing', () => {
@@ -135,10 +135,4 @@ describe('DashboardComponent', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/workers-and-queues');
   });
 
-  it('should set width via setWidth', () => {
-    component.setWidth(1024);
-    expect(component.width).toBe(1024);
-  });
 });
-
-

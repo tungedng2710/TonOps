@@ -1,0 +1,21 @@
+// Shared material for the shell, floating controls, and project folders.
+@mixin surface($strong: false) {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-surface);
+  @if $strong {
+    background: var(--glass-surface-strong);
+  }
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: #f8faff;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: #f8faff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
