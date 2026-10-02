@@ -1,0 +1,11 @@
+path: /root/tungn197/AI-Traffic-Analysis/data/vehicle_30oct2025
+train: train/images
+val: valid/images
+test: test/images
+
+names:
+  0: bicycle
+  1: bus
+  2: car
+  3: motorbike
+  4: truck

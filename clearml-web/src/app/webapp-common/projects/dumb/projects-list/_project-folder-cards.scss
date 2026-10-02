@@ -1,14 +1,14 @@
 @use "src/app/webapp-common/assets/fonts/variables" as icons;
 @use "liquid-glass" as glass;
 
-@mixin project-folder-cards {
+@mixin project-folder-cards($card-selector: "sm-project-card") {
   --card-tab1-bg: rgba(250, 252, 255, 0.82);
   --card-tab1-hover-bg: rgba(244, 249, 255, 0.94);
   --card-tab2-bg: rgba(211, 228, 252, 0.8);
   --card-tab2-bg-hover: rgba(202, 221, 249, 0.94);
   --card-footer-bg: rgba(235, 243, 255, 0.34);
 
-  :is(sm-project-card, sm-plus-card) .card .card-container {
+  :is(#{$card-selector}, sm-plus-card) .card .card-container {
     @include glass.surface;
     height: 188px;
     border-radius: 18px;
@@ -19,7 +19,7 @@
     }
   }
 
-  sm-project-card {
+  #{$card-selector} {
     display: block;
     min-width: 0;
     height: 208px;
@@ -160,7 +160,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    sm-project-card {
+    #{$card-selector} {
       transition: none;
 
       &:hover,

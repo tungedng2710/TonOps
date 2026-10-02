@@ -40,7 +40,32 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Examples
-/examples/
+# Example datasets and generated training artifacts (keep code and configs)
+/examples/**/data/
+/examples/**/datasets/
+/examples/**/images/
+/examples/**/labels/
+/examples/**/runs/
+/examples/**/weights/
+/examples/**/checkpoints/
+/examples/**/artifacts/
+/examples/**/*.pt
+/examples/**/*.pth
+/examples/**/*.ckpt
+/examples/**/*.onnx
+/examples/**/*.safetensors
+/examples/**/*.h5
+/examples/**/*.hdf5
+/examples/**/*.npy
+/examples/**/*.npz
+/examples/**/*.parquet
+/examples/**/*.zip
+/examples/**/*.tar
+/examples/**/*.tar.gz
+/examples/**/*.tgz
+/examples/**/*.7z
+/examples/**/*.cache
+
+# Local shell scripts
 *.sh
 !restart_all.sh

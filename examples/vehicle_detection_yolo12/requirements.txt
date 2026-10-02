@@ -1,0 +1,2 @@
+clearml==2.1.12
+ultralytics==8.4.160

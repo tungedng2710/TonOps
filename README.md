@@ -61,6 +61,45 @@ To move existing registered model files and task output artifacts, run `python s
 
 ## Operate
 
+### Example pipelines and model endpoints
+
+Run two small pipelines using scikit-learn's bundled Iris and Wine datasets:
+
+```bash
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate tungn197
+python scripts/example-models.py --self-check
+python scripts/example-models.py
+```
+
+The script prompts for the `admin` password, runs prepare → train → evaluate steps locally without an Agent, and uploads artifacts and published models through the authenticated fileserver. The **Pipelines** page shows both runs under `Examples`; **Model Endpoints** shows two live classifiers while the script remains running. Each endpoint reports actual request counts and latency every 30 seconds. Ctrl+C unregisters the endpoints; pipeline runs and models remain available. Running the script again creates new pipeline runs and model versions.
+
+For a remote server, pass `--api-url`, `--web-url`, and `--files-url`. To allow access from another machine, pass `--bind 0.0.0.0 --public-url http://<reachable-host>:7870`; the demo prediction service has no authentication, so expose it only on a trusted network. Port `7870` must be reachable from the client. Passwords can also be supplied through the `EXAMPLES_PASSWORD` environment variable.
+
+```bash
+curl http://localhost:7870/health
+curl http://localhost:7870/predict/iris \
+  -H 'Content-Type: application/json' \
+  -d '{"instances": [[5.1, 3.5, 1.4, 0.2]]}'
+curl http://localhost:7870/predict/wine \
+  -H 'Content-Type: application/json' \
+  -d '{"instances": [[14.23, 1.71, 2.43, 15.6, 127, 2.8, 3.06, 0.28, 2.29, 5.64, 1.04, 3.92, 1065]]}'
+```
+
+### YOLO12 object detection example
+
+The [Ultralytics YOLO12](https://docs.ultralytics.com/models/yolo12/) example runs prepare → train → evaluate with `yolo12n.pt` and `/root/tungn197/AI-Traffic-Analysis/data/vehicle_30oct2025`. It registers the full dataset in ClearML under `Examples`: 1,926 training, 135 validation, and 44 test images, with bicycle, bus, car, motorbike, and truck annotations. The source YAML contains paths from another checkout; the example uploads a portable configuration and leaves the source files unchanged. Training uses the train split; metrics use only the validation split. The test split is retained for later evaluation.
+
+```bash
+conda activate tungn197
+python scripts/example-yolo12.py --device 1 --epochs 1 --disable-cudnn
+curl http://localhost:7872/predict/yolo12
+```
+
+The script prompts for the admin password. Its default public URLs use this deployment's `27.66.108.30` host; override `--api-url`, `--web-url`, `--files-url`, and `--public-url` for another deployment. GET `/predict/yolo12` detects vehicles in a validation image from the registered dataset. POST to the same route with JSON containing `image_base64` and optional `confidence` to detect objects in your own image. Responses include class labels, confidence scores, and bounding boxes in original image pixels. The demo endpoint has no authentication and should be accessible only on a trusted network.
+
+The default training device is CPU; use `--device 1` only when GPU 1 is available. `--disable-cudnn` uses native CUDA kernels to work around this environment's cuDNN version mismatch. The one-epoch example at 640px demonstrates the workflow and is not a production accuracy benchmark. Use `--train-only` to create the dataset, pipeline, and model without starting a service; results are saved to `docker-data/examples/yolo12/vehicle_30oct2025/result.json`. To reuse an existing dataset on a new run, pass `--dataset-id <dataset ID>`. To restart the endpoint without training, pass `--model-id <model ID> --dataset-id <dataset ID>`. Keep the process running so it continues reporting endpoint metrics. Ctrl+C unregisters it; pipeline runs and models remain in the web app.
+
 ### Project AI
 
 Project overview includes **Ask AI** and **Generate report**. The API server retrieves tasks and metric summaries from the project and readable subprojects. Answers show which tasks were included; large projects use a bounded snapshot of the most recently updated tasks. Metric summaries include latest, first, minimum, maximum, and mean values when recorded, rather than complete event histories.

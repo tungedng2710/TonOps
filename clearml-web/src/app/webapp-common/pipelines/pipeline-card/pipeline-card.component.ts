@@ -19,7 +19,10 @@ import {PipelineCardMenuComponent} from '@common/pipelines/pipeline-card-menu/pi
 @Component({
     selector: 'sm-pipeline-card',
     templateUrl: './pipeline-card.component.html',
-    styleUrls: ['./pipeline-card.component.scss'],
+    styleUrls: [
+      '../../shared/ui-components/panel/project-card/project-card.component.scss',
+      './pipeline-card.component.scss'
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CircleCounterComponent,

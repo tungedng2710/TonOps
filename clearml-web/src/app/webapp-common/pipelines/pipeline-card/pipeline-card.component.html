@@ -1,7 +1,11 @@
 <sm-card class="project-card"
+  role="link"
+  tabindex="0"
+  [attr.aria-label]="'Open pipeline ' + (project.name | shortProjectName)"
+  (keydown)="onCardKeydown($event)"
   (click)="projectClicked()"
-  [isExample]="!['All Tasks'].includes(project.name) && !isRootProject && (!project.company || ! project.company.id)"
-  [showFolder]="false"
+  [isExample]="!['All Tasks'].includes(project.name) && !isRootProject() && (!project.company || ! project.company.id)"
+  [showFolder]="true"
   [oneTabMode]="true"
   [subFolderTitle]="project?.sub_projects?.length + ' sub projects'"
   >
@@ -20,7 +24,7 @@
   <div header-content [class.rename-state]="editName.active()">
     <div class="d-flex justify-content-between align-items-center card-name">
       <sm-inline-edit #editName
-        class="title edit-name dark"
+        class="title edit-name"
         [originalText]="project.name | shortProjectName"
         [editable]="true"
         [minLength]="1"
@@ -30,7 +34,7 @@
         [inlineDisabled]="true"
         (textChanged)="prepareProjectNameForChange($event)"
         >
-        <span class="d-flex align-items-center">
+        <span class="d-flex align-items-center w-100 pipeline-title">
           <span class="project-name"
             [smTooltip]="project.name | cleanProjectPath"
             smShowTooltipIfEllipsis
@@ -41,6 +45,9 @@
           class="al-icon al-ico-project-path sm ms-2"></i>
         }</span>
       </sm-inline-edit>
+      @if (project.visibility) {
+        <span class="visibility-label">{{ project.visibility }}</span>
+      }
       @if (!hideMenu()) {
         <sm-pipeline-card-menu
           class="menu-wrapper"
@@ -55,40 +62,48 @@
         ></sm-pipeline-card-menu>
       }
     </div>
-    @if (project.stats?.active?.last_task_run) {
-      <span
-        class="last-run"
-        [smTooltip]="project.stats?.active?.last_task_run | date: timeFormatString"
-        matTooltipPosition="after"
-      >Last run {{project.stats?.active?.last_task_run | timeAgo}}</span>
-    } @else {
-      <div class="last-run">No pipeline runs yet</div>
-    }
+    <div class="project-owner">
+      @if (project.isRoot || isRootProject()) {
+        <span class="owner-avatar" aria-hidden="true"><i class="al-icon al-ico-projects-outlined"></i></span>
+        <span class="owner-name">All project owners</span>
+      } @else {
+        <span class="owner-avatar" aria-hidden="true">{{ ownerInitial }}</span>
+        <span class="owner-label">Owner</span>
+        <span class="owner-name" [smTooltip]="ownerName" smShowTooltipIfEllipsis>{{ ownerName }}</span>
+      }
+    </div>
   </div>
   <div class="d-flex justify-content-around w-100">
     <ng-template></ng-template>
     <sm-circle-counter
-      [counter]="project.stats?.active?.status_count.in_progress"
+      [counter]="project.stats?.active?.status_count?.in_progress ?? 0"
       label="RUNNING"
-      [type]="project.stats?.active?.status_count.in_progress? circleTypeEnum.running : circleTypeEnum.empty"
+      [type]="project.stats?.active?.status_count?.in_progress? circleTypeEnum.running : circleTypeEnum.empty"
     ></sm-circle-counter>
     <sm-circle-counter
-      [counter]="project.stats?.active?.status_count.queued"
+      [counter]="project.stats?.active?.status_count?.queued ?? 0"
       label="PENDING"
-      [type]="project.stats?.active?.status_count.queued ? circleTypeEnum.pending : circleTypeEnum.empty"
+      [type]="project.stats?.active?.status_count?.queued ? circleTypeEnum.pending : circleTypeEnum.empty"
     ></sm-circle-counter>
     <sm-circle-counter
-      [counter]="project.stats?.active?.status_count?.completed"
+      [counter]="project.stats?.active?.status_count?.completed ?? 0"
       label="COMPLETED"
       [type]="project.stats?.active?.status_count?.completed? circleTypeEnum.completed : circleTypeEnum.empty"
     ></sm-circle-counter>
     <sm-circle-counter
-      [counter]="project.stats?.active?.status_count.failed"
+      [counter]="project.stats?.active?.status_count?.failed ?? 0"
       label="FAILED"
-      [type]="project.stats?.active?.status_count.failed ? circleTypeEnum.failed : circleTypeEnum.empty"
+      [type]="project.stats?.active?.status_count?.failed ? circleTypeEnum.failed : circleTypeEnum.empty"
     ></sm-circle-counter>
   </div>
   <div footer class="footer-tags">
+    @if (project.stats?.active?.last_task_run) {
+      <span class="last-run" [smTooltip]="project.stats.active.last_task_run | date: timeFormatString">
+        Last run {{ project.stats.active.last_task_run | timeAgo }}
+      </span>
+    } @else {
+      <span class="last-run">No runs yet</span>
+    }
     @if (!hideMenu()) {
       <sm-tag-list
         class="w-100"
