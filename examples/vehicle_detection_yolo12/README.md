@@ -1,5 +1,7 @@
 # Build an object detection project with TonOps
 
+[English](README.md) | [Tiếng Việt](README.vi.md)
+
 This walkthrough uses YOLO12 to show how to manage a detection project in TonOps:
 connect your account, version your dataset, send training to a GPU worker,
 compare experiments, and run predictions with a registered model. Replace the
