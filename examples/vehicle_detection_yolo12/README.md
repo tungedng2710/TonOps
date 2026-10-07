@@ -214,6 +214,108 @@ This command lets you inspect a selected model on new images. To serve it as an
 application, use the same Model ID and inference logic in your service and
 choose authentication, networking, and deployment settings for that application.
 
+## 8. Frequently asked questions
+
+### Must all code and data be stored on the server running TonOps?
+
+No. The TonOps services, original dataset, and training process can run on
+different machines. Each machine needs connectivity and credentials for the
+services it uses.
+
+| Component | Possible location |
+| --- | --- |
+| Project source | The user's machine or a Git repository; this example submits a copy of the training script with the task |
+| Original data | The user's machine, a shared drive, or the team's storage system |
+| Registered datasets and uploaded checkpoints | RustFS or the configured artifact storage, which can run separately from the TonOps server |
+| Training process | The user's GPU machine or a GPU worker on another host |
+| Experiment information | TonOps services manage task state, parameters, logs, metrics, and references to datasets/models |
+
+In this guide's queued workflow, `register` uploads a versioned dataset to
+storage. The worker downloads that version by Dataset ID and retrieves the
+training code from the task. You do not need to manually copy the entire project
+and original dataset into a directory on the TonOps server. The Docker image
+must also be available locally on the worker or through its registry.
+
+For direct training on your own machine, you can read local data and use TonOps
+to track the experiment. Starting training does not automatically register the
+original dataset; dataset registration and result uploads are separate actions
+in this example.
+
+### What if users want to train on their own machines?
+
+Choose between running code directly and letting an agent manage execution.
+
+**Run directly with TonOps tracking.** Configure your account and server
+addresses in `~/clearml.conf` as in step 1. Install CUDA-enabled PyTorch suitable
+for your machine, then install the example packages and run training:
+
+```bash
+source .venv/tonops-example/bin/activate
+python -m pip install -r examples/vehicle_detection_yolo12/requirements.txt
+python examples/vehicle_detection_yolo12/train.py \
+  --data /path/to/vehicles/data.yaml --epochs 1 --imgsz 320 --batch 2
+```
+
+That YAML must reference data on your machine; set `path` to the actual dataset
+root. `train.py` does not accept `--dataset-root`. To download a registered
+version instead, replace `--data /path/to/vehicles/data.yaml` with
+`--dataset-id "$TONOPS_DATASET_ID"`.
+
+Training runs on your machine. The script creates a task in
+`Vehicle Detection/YOLO12`, reports logs/metrics to TonOps, and uploads artifacts
+and the checkpoint to configured storage. This mode needs no ClearML Agent,
+Docker, or queue. The current `train.py` requires an NVIDIA GPU with CUDA and
+uses device `0` as visible to the process.
+
+**Run an agent on your machine.** For the same queued Docker workflow as other
+workers, install the agent and build the image on your machine using the
+[GPU worker guide](../../docs/clearml-gpu-worker.md). Use a dedicated queue to
+choose where training runs:
+
+```bash
+python scripts/clearml-gpu-worker.py start --queue my-gpu --gpus 0 --detached
+python examples/vehicle_detection_yolo12/project.py submit \
+  --project "$TONOPS_PROJECT" --queue my-gpu \
+  --dataset-id "$TONOPS_DATASET_ID" --epochs 1 --imgsz 320 --batch 2 \
+  --output-uri "$TONOPS_OUTPUT_URI" --wait
+```
+
+Have only the agent on your machine listen to `my-gpu` if tasks must run there.
+The TonOps server manages the task; the machine hosting the agent performs training.
+
+### Why does submitting a task not start training on my machine?
+
+`project.py submit` creates a task and puts it in a queue. It does not start a
+worker or train in the client process. Check **Workers & Queues** or run
+`project.py workers` to confirm a worker is online and listening to the correct
+queue. When multiple workers listen to the same queue, another worker may take
+the task; use a dedicated queue to select a specific machine.
+
+### Can I use local data without uploading it to RustFS?
+
+Yes, when running directly with `train.py --data /path/to/vehicles/data.yaml`.
+The training machine reads images and labels from local paths. Artifacts and
+checkpoints uploaded by the script still need accessible storage.
+
+For a worker on another machine or inside Docker, client paths are not
+automatically available in the training environment. This guide uses Dataset
+IDs and registered data to make the dataset accessible. Shared-drive workflows
+require you to configure access, container mounts, and matching YAML paths.
+
+### Which TonOps services must a user's machine reach?
+
+Submission and training clients need the API for authentication and task
+updates. Dataset/model downloads and result uploads need the corresponding
+storage service, such as RustFS or the Files server. Users access the Web app
+to review and manage experiments. This guide's default ports are API `7862`,
+Web `7861`, Files `7863`, and RustFS S3 `7868`; use your deployment's actual
+addresses and ports.
+
+When the server runs elsewhere, replace `localhost` with a hostname or IP
+reachable from your machine. Configure API and storage credentials on each
+client/worker that uses those services; server configuration does not
+automatically configure users' machines.
+
 ## Code to adapt for your project
 
 | File | Responsibility |

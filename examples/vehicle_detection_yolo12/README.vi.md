@@ -222,6 +222,108 @@ Lệnh này giúp bạn kiểm tra mô hình đã chọn trên các ảnh mới.
 một ứng dụng, sử dụng cùng Model ID và logic suy luận trong dịch vụ của bạn,
 đồng thời lựa chọn cách xác thực, cấu hình mạng và triển khai phù hợp với ứng dụng.
 
+## 8. Câu hỏi thường gặp
+
+### Có cần tất cả code và dữ liệu lưu trên server triển khai TonOps không?
+
+Không. Máy chạy các dịch vụ TonOps, máy chứa dữ liệu và máy huấn luyện có thể
+là các máy khác nhau. Chúng cần kết nối được đến các dịch vụ liên quan và có
+thông tin xác thực phù hợp.
+
+| Thành phần | Có thể đặt ở đâu? |
+| --- | --- |
+| Mã nguồn dự án | Máy của người dùng hoặc Git repository; ví dụ này gửi bản mã huấn luyện kèm tác vụ để worker thực thi |
+| Dữ liệu gốc | Máy của người dùng, ổ đĩa dùng chung hoặc hệ thống lưu trữ của nhóm |
+| Bộ dữ liệu đã đăng ký và checkpoint đã tải lên | RustFS hoặc nơi lưu trữ artifact được cấu hình; có thể triển khai riêng với server TonOps |
+| Tiến trình huấn luyện | Máy GPU của người dùng hoặc worker GPU trên một máy khác |
+| Thông tin thử nghiệm | Các dịch vụ TonOps quản lý trạng thái tác vụ, tham số, log, chỉ số và liên kết đến dữ liệu/mô hình |
+
+Trong quy trình dùng hàng đợi của hướng dẫn này, `register` tải một bản dữ liệu
+đã được quản lý phiên bản lên nơi lưu trữ. Worker lấy bản đó bằng Dataset ID
+và tải mã huấn luyện từ tác vụ. Bạn không cần chép thủ công toàn bộ dự án và
+dữ liệu gốc vào thư mục trên server TonOps. Docker image cũng phải có sẵn trên
+máy worker hoặc trong registry mà worker truy cập được.
+
+Nếu chạy trực tiếp trên máy của mình, bạn có thể đọc dữ liệu từ ổ đĩa cục bộ
+và dùng TonOps để theo dõi thử nghiệm. Dữ liệu gốc không tự động được đăng ký
+chỉ vì bạn bắt đầu huấn luyện; việc đăng ký bộ dữ liệu và tải kết quả lên là
+các thao tác riêng trong ví dụ.
+
+### Nếu người dùng muốn huấn luyện tại máy của họ thì sao?
+
+Có hai cách, tùy bạn muốn chạy mã trực tiếp hay để agent quản lý việc thực thi.
+
+**Chạy trực tiếp và theo dõi kết quả bằng TonOps.** Cấu hình tài khoản và địa
+chỉ server trong `~/clearml.conf` như bước 1. Cài PyTorch hỗ trợ CUDA phù hợp
+với máy của bạn, rồi cài các gói của ví dụ và chạy mã huấn luyện:
+
+```bash
+source .venv/tonops-example/bin/activate
+python -m pip install -r examples/vehicle_detection_yolo12/requirements.txt
+python examples/vehicle_detection_yolo12/train.py \
+  --data /path/to/vehicles/data.yaml --epochs 1 --imgsz 320 --batch 2
+```
+
+Tệp YAML ở đây phải trỏ đúng đến dữ liệu trên máy của bạn; đặt `path` thành
+đường dẫn gốc thực tế của bộ dữ liệu. Lệnh `train.py` không có tùy chọn
+`--dataset-root`. Nếu muốn tải một phiên bản đã đăng ký, thay
+`--data /path/to/vehicles/data.yaml` bằng `--dataset-id "$TONOPS_DATASET_ID"`.
+
+Huấn luyện diễn ra trên máy của bạn. Script tạo tác vụ trong dự án
+`Vehicle Detection/YOLO12`, gửi log/chỉ số đến TonOps và tải artifact cùng
+checkpoint lên nơi lưu trữ đã cấu hình. Cách này không cần ClearML Agent,
+Docker hoặc hàng đợi. `train.py` hiện yêu cầu GPU NVIDIA có CUDA và sử dụng
+GPU số `0` mà tiến trình nhìn thấy.
+
+**Chạy agent trên máy của mình.** Nếu muốn dùng cùng quy trình hàng đợi và
+Docker như các worker khác, cài agent và build image trên máy của bạn theo
+[hướng dẫn worker GPU](../../docs/clearml-gpu-worker.md). Dùng một hàng đợi
+riêng để chủ động chọn máy huấn luyện:
+
+```bash
+python scripts/clearml-gpu-worker.py start --queue my-gpu --gpus 0 --detached
+python examples/vehicle_detection_yolo12/project.py submit \
+  --project "$TONOPS_PROJECT" --queue my-gpu \
+  --dataset-id "$TONOPS_DATASET_ID" --epochs 1 --imgsz 320 --batch 2 \
+  --output-uri "$TONOPS_OUTPUT_URI" --wait
+```
+
+Chỉ cho agent trên máy của bạn nhận tác vụ từ `my-gpu` nếu muốn tác vụ chạy
+đúng tại máy đó. Server TonOps quản lý tác vụ; máy có agent thực hiện huấn luyện.
+
+### Vì sao đã gửi tác vụ nhưng máy của tôi chưa bắt đầu huấn luyện?
+
+`project.py submit` tạo tác vụ và đưa vào hàng đợi. Nó không tự khởi động
+worker hoặc chạy huấn luyện trong tiến trình client. Kiểm tra **Workers &
+Queues** hoặc chạy `project.py workers` để xác nhận có worker đang hoạt động
+và nhận đúng hàng đợi. Nếu nhiều worker cùng nhận một hàng đợi, một worker
+khác có thể lấy tác vụ; dùng hàng đợi riêng khi cần chọn máy cụ thể.
+
+### Có thể chỉ dùng dữ liệu trên máy của tôi mà không tải lên RustFS không?
+
+Có, với cách chạy trực tiếp bằng `train.py --data /path/to/vehicles/data.yaml`.
+Máy huấn luyện đọc ảnh và nhãn từ đường dẫn cục bộ. Các artifact và checkpoint
+mà script tải lên vẫn cần nơi lưu trữ có thể truy cập được.
+
+Đối với worker trên máy khác hoặc chạy trong Docker, đường dẫn trên máy client
+không tự xuất hiện trong môi trường huấn luyện. Cách dùng Dataset ID trong
+hướng dẫn giải quyết việc này bằng bản dữ liệu đã đăng ký. Nếu dùng ổ đĩa
+chung, bạn cần tự cấu hình quyền truy cập, mount vào container và đường dẫn
+YAML tương ứng.
+
+### Máy người dùng cần kết nối đến dịch vụ nào của TonOps?
+
+Máy gửi tác vụ hoặc máy huấn luyện cần truy cập API để xác thực và cập nhật
+tác vụ. Máy tải dữ liệu, mô hình hoặc kết quả cần truy cập nơi lưu trữ tương
+ứng, chẳng hạn RustFS hoặc Files server. Người dùng truy cập Web để xem và
+quản lý thử nghiệm. Các cổng mặc định trong hướng dẫn là API `7862`, Web
+`7861`, Files `7863` và RustFS S3 `7868`; dùng địa chỉ/cổng thực tế của hệ thống.
+
+Nếu server nằm trên máy khác, thay `localhost` bằng hostname hoặc IP truy cập
+được từ máy của bạn. Cấu hình API và thông tin xác thực lưu trữ trên từng máy
+client/worker cần dùng các dịch vụ đó; cấu hình trên server không tự cấu hình
+các máy người dùng.
+
 ## Các tệp mã nguồn để điều chỉnh cho dự án của bạn
 
 | Tệp | Vai trò |
