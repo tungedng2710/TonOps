@@ -1,4 +1,5 @@
-path: /root/tungn197/AI-Traffic-Analysis/data/vehicle_30oct2025
+# Example dataset layout. Supply its actual root with --dataset-root.
+path: .
 train: train/images
 val: valid/images
 test: test/images

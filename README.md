@@ -1,6 +1,6 @@
-# ClearML with local IAM
+# TonOps stack
 
-This repository contains a ClearML OSS fork with local user management, profile editing, and project visibility. The root [Dockerfile](Dockerfile) builds the checked-in Angular app and packages the checked-in API and fileserver code into one image. [Compose](compose.yaml) runs that image with MongoDB, Redis, Elasticsearch, RustFS, and an async file deletion worker.
+TonOps builds on a ClearML OSS fork with local user management, profile editing, and project visibility. The root [Dockerfile](Dockerfile) builds the checked-in Angular app and packages the checked-in API and fileserver code into one image. [Compose](compose.yaml) runs that image with MongoDB, Redis, Elasticsearch, RustFS, and an async file deletion worker.
 
 ## Start with Docker Compose
 
@@ -43,7 +43,7 @@ sdk {
   aws {
     s3 {
       credentials: [{
-        host: "27.66.108.30:7868"
+        host: "YOUR_RUSTFS_HOST:7868"
         key: "<RUSTFS_ACCESS_KEY>"
         secret: "<RUSTFS_SECRET_KEY>"
         region: "us-east-1"
@@ -53,13 +53,20 @@ sdk {
     }
     boto3.s3.addressing_style: "path"
   }
-  development.default_output_uri: "s3://27.66.108.30:7868/tonops-artifacts"
+  development.default_output_uri: "s3://YOUR_RUSTFS_HOST:7868/tonops-artifacts"
 }
 ```
 
 To move existing registered model files and task output artifacts, run `python scripts/migrate-rustfs-artifacts.py` to preview, then `python scripts/migrate-rustfs-artifacts.py --apply`. The migration verifies each uploaded object before updating its URI and writes a rollback manifest under `CLEARML_DATA_ROOT/config`. Project deletion schedules the registered RustFS model and artifact objects for asynchronous removal; check `docker compose logs async_delete` if an object remains. Original fileserver files from migration are retained as a backup.
 
 ## Operate
+
+### ClearML Agent and GPU worker
+
+Follow the [GPU worker setup and YOLO12 job guide](docs/clearml-gpu-worker.md) to
+install the agent, configure NVIDIA Docker, create a GPU queue, launch a worker,
+and submit/check a containerized training job. It includes a small COCO8 smoke
+run and vehicle training using a portable ClearML Dataset ID.
 
 ### Example pipelines and model endpoints
 
@@ -86,19 +93,20 @@ curl http://localhost:7870/predict/wine \
   -d '{"instances": [[14.23, 1.71, 2.43, 15.6, 127, 2.8, 3.06, 0.28, 2.29, 5.64, 1.04, 3.92, 1065]]}'
 ```
 
-### YOLO12 object detection example
+### Object detection project with YOLO12
 
-The [Ultralytics YOLO12](https://docs.ultralytics.com/models/yolo12/) example runs prepare → train → evaluate with `yolo12n.pt` and `/root/tungn197/AI-Traffic-Analysis/data/vehicle_30oct2025`. It registers the full dataset in ClearML under `Examples`: 1,926 training, 135 validation, and 44 test images, with bicycle, bus, car, motorbike, and truck annotations. The source YAML contains paths from another checkout; the example uploads a portable configuration and leaves the source files unchanged. Training uses the train split; metrics use only the validation split. The test split is retained for later evaluation.
+Follow the [TonOps object detection walkthrough](examples/vehicle_detection_yolo12/README.md)
+to configure your account, validate and version a YOLO dataset, submit GPU training,
+compare runs, and use a registered model for prediction. The example uses your
+API credentials and a ClearML Dataset ID so the worker can fetch data from RustFS.
+It includes a one-epoch COCO8 check before training your own dataset.
 
 ```bash
-conda activate tungn197
-python scripts/example-yolo12.py --device 1 --epochs 1 --disable-cudnn
-curl http://localhost:7872/predict/yolo12
+python examples/vehicle_detection_yolo12/project.py --help
 ```
 
-The script prompts for the admin password. Its default public URLs use this deployment's `27.66.108.30` host; override `--api-url`, `--web-url`, `--files-url`, and `--public-url` for another deployment. GET `/predict/yolo12` detects vehicles in a validation image from the registered dataset. POST to the same route with JSON containing `image_base64` and optional `confidence` to detect objects in your own image. Responses include class labels, confidence scores, and bounding boxes in original image pixels. The demo endpoint has no authentication and should be accessible only on a trusted network.
-
-The default training device is CPU; use `--device 1` only when GPU 1 is available. `--disable-cudnn` uses native CUDA kernels to work around this environment's cuDNN version mismatch. The one-epoch example at 640px demonstrates the workflow and is not a production accuracy benchmark. Use `--train-only` to create the dataset, pipeline, and model without starting a service; results are saved to `docker-data/examples/yolo12/vehicle_30oct2025/result.json`. To reuse an existing dataset on a new run, pass `--dataset-id <dataset ID>`. To restart the endpoint without training, pass `--model-id <model ID> --dataset-id <dataset ID>`. Keep the process running so it continues reporting endpoint metrics. Ctrl+C unregisters it; pipeline runs and models remain in the web app.
+The [GPU worker guide](docs/clearml-gpu-worker.md) covers agent installation,
+Docker runtime configuration, GPU allocation, and worker operations.
 
 ### Project AI
 

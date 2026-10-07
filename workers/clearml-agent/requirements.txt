@@ -1,0 +1,2 @@
+clearml-agent==3.0.3
+clearml[s3]==2.1.12

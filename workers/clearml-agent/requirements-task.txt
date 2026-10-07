@@ -1,0 +1,6 @@
+# CUDA-enabled torch/torchvision are already provided by the base image.
+torch==2.7.1
+torchvision==0.22.1
+clearml[s3]==2.1.12
+ultralytics==8.4.160
+PyYAML==6.0.2

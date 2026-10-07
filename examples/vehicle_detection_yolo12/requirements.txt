@@ -1,2 +1,2 @@
-clearml==2.1.12
+-r requirements-client.txt
 ultralytics==8.4.160
