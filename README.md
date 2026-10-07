@@ -1,6 +1,6 @@
 # TonOps stack
 
-TonOps builds on a ClearML OSS fork with local user management, profile editing, and project visibility. The root [Dockerfile](Dockerfile) builds the checked-in Angular app and packages the checked-in API and fileserver code into one image. [Compose](compose.yaml) runs that image with MongoDB, Redis, Elasticsearch, RustFS, and an async file deletion worker.
+TonOps builds on a ClearML OSS fork with local user management, profile editing, and project visibility. The root [Dockerfile](Dockerfile) builds the checked-in Angular app and packages the checked-in API and fileserver code into one image. [Compose](compose.yaml) runs that image with MongoDB, Redis, Elasticsearch, RustFS, Gitea, and an async file deletion worker.
 
 ## Start with Docker Compose
 
@@ -27,12 +27,21 @@ The password file is read only by the API container. IAM creates the `admin` acc
 | Web app | <http://localhost:7861> |
 | API | <http://localhost:7862> |
 | Files | <http://localhost:7863> |
+| Gitea | <http://localhost:7864> |
 | RustFS S3 API | <http://localhost:7868> |
 | RustFS console | <http://localhost:7869/rustfs/console/> |
 
 Set `CLEARML_WEB_PORT`, `CLEARML_API_PORT`, and `CLEARML_FILES_PORT` in `.env` to change host ports. Set `CLEARML_FILES_HOST` to the URL that SDK clients use for the fileserver, so artifact cleanup recognizes it. The web app proxies `/api` and `/files` to the corresponding containers.
 
 Data is stored under `CLEARML_DATA_ROOT` (default `./docker-data`) and survives `docker compose down`. For a host using the older `/opt/clearml` layout, set `CLEARML_DATA_ROOT=/opt/clearml` before starting this Compose stack. Stop the older stack first because it uses the same host ports. Do not run `docker compose down -v` when you want to retain data.
+
+Gitea starts with the stack and stores its repositories, SQLite database, and configuration under `CLEARML_DATA_ROOT/gitea`. Open <http://localhost:7864> to finish the initial installation using SQLite3 and create a Gitea administrator account. Gitea accounts are managed separately from TonOps accounts. Git cloning and pushing use HTTP; SSH is disabled. Set `GITEA_PUBLIC_HOST` to a reachable hostname or IP for remote clients, and `GITEA_PORT` to change the host port. `GITEA_IMAGE` selects the image version. The container continues to listen on port `3000` internally. This follows the [official Gitea Docker setup](https://docs.gitea.com/installation/install-with-docker/).
+
+To add Gitea to an already running stack without rebuilding the other services:
+
+```bash
+docker compose up -d gitea
+```
 
 RustFS data is stored under `RUSTFS_DATA_ROOT` in `.env`. Set `RUSTFS_PUBLIC_HOST` to the hostname or IP that training clients and browsers can reach. The S3 endpoint is `http://RUSTFS_PUBLIC_HOST:RUSTFS_API_PORT`; the Compose stack creates `RUSTFS_BUCKET` automatically. The console uses the RustFS admin access and secret keys from `.env`. Keep `.env` private.
 
@@ -60,6 +69,18 @@ sdk {
 To move existing registered model files and task output artifacts, run `python scripts/migrate-rustfs-artifacts.py` to preview, then `python scripts/migrate-rustfs-artifacts.py --apply`. The migration verifies each uploaded object before updating its URI and writes a rollback manifest under `CLEARML_DATA_ROOT/config`. Project deletion schedules the registered RustFS model and artifact objects for asynchronous removal; check `docker compose logs async_delete` if an object remains. Original fileserver files from migration are retained as a backup.
 
 ## Operate
+
+### Gitea CI/CD with YOLO12
+
+Follow the [YOLO12 Gitea CI/CD example](examples/vehicle_detection_yolo12/cicd/README.md)
+to create a private example repository and start its Actions runner. The pipeline
+tests the existing detection code, trains YOLO12n on COCO8, checks validation
+metrics, saves the checkpoint, builds a serving image, and deploys a prediction
+API on port `7865`. Pushes to `main` deploy; pull requests test and build.
+
+```bash
+python3 scripts/setup-gitea-yolo12.py --username tungn197
+```
 
 ### ClearML Agent and GPU worker
 
@@ -125,7 +146,7 @@ docker compose up -d --build             # Rebuild after source changes
 docker compose down                       # Stop without deleting data
 ```
 
-Or run `./restart_all.sh` to rebuild, restart, and wait for the web, API, fileserver, and RustFS endpoints. Pass `--skip-build` to reuse the existing image or `--force-recreate` to recreate every container.
+Or run `./restart_all.sh` to rebuild, restart, and wait for the web, API, fileserver, RustFS, and Gitea endpoints. Pass `--skip-build` to reuse the existing image or `--force-recreate` to recreate every container.
 
 The login and Create Account background comes from `brand_assets/background.png`. After replacing that file, rebuild the image and recreate the webserver so it serves the new artwork:
 

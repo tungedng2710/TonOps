@@ -49,6 +49,7 @@ Thumbs.db
 /examples/**/weights/
 /examples/**/checkpoints/
 /examples/**/artifacts/
+/examples/**/cicd/build/
 /examples/**/*.pt
 /examples/**/*.pth
 /examples/**/*.ckpt

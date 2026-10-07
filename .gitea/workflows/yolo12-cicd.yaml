@@ -1,0 +1,49 @@
+name: YOLO12 CI/CD example
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  yolo12:
+    runs-on: yolo12-cpu
+    timeout-minutes: 30
+    env:
+      REVISION: ${{ gitea.sha }}
+      REPOSITORY: ${{ gitea.repository }}
+      SERVER_URL: ${{ gitea.server_url }}
+    steps:
+      - name: Check out the triggering commit
+        env:
+          CHECKOUT_TOKEN: ${{ gitea.token }}
+        run: |
+          git init .
+          git remote add origin "${SERVER_URL}/${REPOSITORY}.git"
+          header="$(printf 'x-access-token:%s' "$CHECKOUT_TOKEN" | base64 -w0)"
+          git -c "http.extraHeader=Authorization: Basic $header" fetch --depth=1 origin "$REVISION"
+          git checkout --detach FETCH_HEAD
+      - name: Test dataset validation and YOLO12 training behavior
+        run: python -m unittest discover -s tests -v
+      - name: Train YOLO12n on COCO8 and check mAP50
+        run: python examples/vehicle_detection_yolo12/cicd/ci.py --revision "$REVISION"
+      - name: Save the checkpoint, metrics, and smoke image
+        uses: https://github.com/actions/upload-artifact@v3
+        with:
+          name: yolo12-model-${{ gitea.sha }}
+          path: |
+            examples/vehicle_detection_yolo12/cicd/build/best.pt
+            examples/vehicle_detection_yolo12/cicd/build/metrics.json
+            examples/vehicle_detection_yolo12/cicd/build/sample.jpg
+          if-no-files-found: error
+          retention-days: 14
+      - name: Build a serving image tagged with the commit
+        run: |
+          docker build --target serving --build-arg MODEL_REVISION="$REVISION" \
+            -f examples/vehicle_detection_yolo12/cicd/Dockerfile \
+            -t "tonops/yolo12-demo:$REVISION" examples/vehicle_detection_yolo12
+      - name: Deploy and test health and image prediction
+        if: gitea.ref == 'refs/heads/main' && gitea.event_name != 'pull_request'
+        run: |
+          python examples/vehicle_detection_yolo12/cicd/deploy.py \
+            --image "tonops/yolo12-demo:$REVISION" --revision "$REVISION"

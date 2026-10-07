@@ -7,6 +7,10 @@ connect your account, version your dataset, send training to a GPU worker,
 compare experiments, and run predictions with a registered model. Replace the
 vehicle classes and dataset paths with those from your own project.
 
+For an automated Gitea test → train → build → deploy example using this training
+code, see the [CI/CD walkthrough](cicd/README.md). Its small COCO8 CPU run deploys
+a prediction API on port `7865`.
+
 The commands below run from the **repository root**. Use
 `python examples/vehicle_detection_yolo12/project.py --help` to see the project CLI.
 

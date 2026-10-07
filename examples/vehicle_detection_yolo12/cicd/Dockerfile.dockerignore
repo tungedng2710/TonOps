@@ -1,0 +1,8 @@
+*
+!cicd/
+!cicd/Dockerfile
+!cicd/requirements.txt
+!cicd/serve.py
+!cicd/build/
+!cicd/build/best.pt
+!cicd/build/metrics.json

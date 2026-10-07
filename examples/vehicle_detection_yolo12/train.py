@@ -38,6 +38,17 @@ def dataset_yaml(dataset_id):
     return str(target)
 
 
+def train_detector(args, data, run_name, device="0", project="runs"):
+    """Shared training path for the ClearML GPU task and the CI CPU smoke run."""
+    from ultralytics import YOLO
+
+    model = YOLO(args.model)
+    model.train(data=data, epochs=args.epochs, imgsz=args.imgsz, batch=args.batch,
+                workers=args.workers, fraction=args.fraction, device=device, seed=42,
+                amp=False, project=project, name=run_name, plots=True)
+    return model
+
+
 def main():
     args = parse_args()
     from clearml import OutputModel, Task
@@ -66,12 +77,7 @@ def main():
             task.upload_artifact("dataset", {"dataset_id": args.dataset_id}, wait_on_upload=True)
             task.connect_configuration(str(Path(data).resolve()), name="Dataset")
 
-        from ultralytics import YOLO
-
-        model = YOLO(args.model)
-        model.train(data=data, epochs=args.epochs, imgsz=args.imgsz, batch=args.batch,
-                    workers=args.workers, fraction=args.fraction, device="0", seed=42,
-                    amp=False, project="runs", name=task.id, plots=True)
+        model = train_detector(args, data, task.id)
         # Container device 0 is the first GPU allocated by the agent, regardless
         # of the physical host index. The image supplies a consistent cuDNN stack.
         metrics = {key: float(value) for key, value in model.trainer.metrics.items()}

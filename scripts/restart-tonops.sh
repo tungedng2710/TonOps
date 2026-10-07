@@ -59,7 +59,7 @@ COMPOSE_ARGS=(up -d)
 if [[ "$RECREATE" == true ]]; then
   COMPOSE_ARGS+=(--force-recreate)
 fi
-docker compose "${COMPOSE_ARGS[@]}" rustfs rustfs_init mongo redis elasticsearch apiserver fileserver webserver async_delete
+docker compose "${COMPOSE_ARGS[@]}" gitea rustfs rustfs_init mongo redis elasticsearch apiserver fileserver webserver async_delete
 
 wait_for_url() {
   local label=$1
@@ -69,7 +69,7 @@ wait_for_url() {
     if ((SECONDS >= deadline)); then
       echo "$label did not become ready within 180 seconds." >&2
       docker compose ps >&2
-      docker compose logs --tail=80 apiserver fileserver webserver >&2
+      docker compose logs --tail=80 apiserver fileserver webserver gitea >&2
       return 1
     fi
     sleep 3
@@ -80,8 +80,10 @@ api_port="$(docker compose port apiserver 8008 | sed 's/.*://')"
 web_port="$(docker compose port webserver 80 | sed 's/.*://')"
 files_port="$(docker compose port fileserver 8081 | sed 's/.*://')"
 rustfs_port="$(docker compose port rustfs 9000 | sed 's/.*://')"
+gitea_port="$(docker compose port gitea 3000 | sed 's/.*://')"
 wait_for_url "API server" "http://127.0.0.1:${api_port}/debug.ping"
 wait_for_url "web app" "http://127.0.0.1:${web_port}/"
 wait_for_url "fileserver" "http://127.0.0.1:${files_port}/"
 wait_for_url "RustFS" "http://127.0.0.1:${rustfs_port}/health"
+wait_for_url "Gitea" "http://127.0.0.1:${gitea_port}/"
 docker compose ps

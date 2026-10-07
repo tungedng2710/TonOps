@@ -10,6 +10,30 @@ x-api-environment: &api-environment
   CLEARML_SERVER_DEPLOYMENT_TYPE: linux
 
 services:
+  gitea:
+    image: ${GITEA_IMAGE:-docker.gitea.com/gitea:28.1.0}
+    restart: unless-stopped
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__database__PATH: /data/gitea/gitea.db
+      GITEA__server__DOMAIN: ${GITEA_PUBLIC_HOST:-localhost}
+      GITEA__server__ROOT_URL: http://${GITEA_PUBLIC_HOST:-localhost}:${GITEA_PORT:-7864}/
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__server__LOCAL_ROOT_URL: http://localhost:3000/
+      GITEA__server__DISABLE_SSH: "true"
+    volumes:
+      - ${CLEARML_DATA_ROOT:-./docker-data}/gitea:/data
+    ports:
+      - ${GITEA_PORT:-7864}:3000
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:3000/]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   rustfs:
     image: ${RUSTFS_IMAGE:-rustfs/rustfs:latest}
     restart: unless-stopped

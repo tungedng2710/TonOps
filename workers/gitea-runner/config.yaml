@@ -1,0 +1,17 @@
+log:
+  level: info
+runner:
+  file: /data/.runner
+  capacity: 1
+  timeout: 30m
+  shutdown_timeout: 1m
+  labels:
+    - yolo12-cpu:docker://tonops/yolo12-ci:local
+cache:
+  enabled: false
+container:
+  # Jobs reach the local Gitea URL and the demo's published port on this host.
+  network: host
+  privileged: false
+  docker_host: unix:///var/run/docker.sock
+  force_pull: false

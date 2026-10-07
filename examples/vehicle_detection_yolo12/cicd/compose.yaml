@@ -1,0 +1,9 @@
+name: tonops-yolo12-demo
+services:
+  detector:
+    image: ${YOLO12_IMAGE:?Set YOLO12_IMAGE to the validated serving image}
+    restart: unless-stopped
+    ports:
+      - ${YOLO12_PORT:-7865}:8000
+    cpus: 2
+    mem_limit: 2g

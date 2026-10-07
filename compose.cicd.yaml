@@ -1,0 +1,14 @@
+# Optional repository-scoped runner. Start after running setup-gitea-yolo12.py.
+services:
+  gitea_runner:
+    image: ${GITEA_RUNNER_IMAGE:-docker.gitea.com/runner:2.3.0}
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      gitea: {condition: service_healthy}
+    environment:
+      CONFIG_FILE: /config.yaml
+    volumes:
+      - ${CLEARML_DATA_ROOT:-./docker-data}/gitea-runner:/data
+      - ./workers/gitea-runner/config.yaml:/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
