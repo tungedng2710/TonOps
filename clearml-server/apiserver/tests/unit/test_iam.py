@@ -222,6 +222,68 @@ class LocalIAMTest(unittest.TestCase):
         directory = search_profiles(SimpleNamespace(data={"search": "admin"}), "company", None)
         self.assertEqual([owner.id], [user["id"] for user in directory["users"]])
 
+    def test_profile_lookup_by_username_preserves_visibility_and_company_scope(self):
+        from apiserver.services.iam import get_profile
+
+        owner = create_user(company="company", username="alex.smith", password="Correct-Horse-1")
+        viewer = create_user(company="company", username="viewer", password="Correct-Horse-2")
+        create_user(company="other", username="external", password="Correct-Horse-3")
+        now = datetime.utcnow()
+        for visibility in ("public", "private"):
+            Project(id=visibility, company="company", user=owner.id, name=visibility, basename=visibility,
+                    visibility=visibility, created=now).save()
+        call = SimpleNamespace(data={"username": " ALEX.SMITH "}, identity=SimpleNamespace(user=viewer.id))
+        result = get_profile(call, "company", None)
+        self.assertEqual(owner.id, result["user"]["id"])
+        self.assertEqual("alex.smith", result["user"]["username"])
+        self.assertEqual(["public"], [project["id"] for project in result["projects"]])
+        call.identity.user = owner.id
+        self.assertEqual(2, len(get_profile(call, "company", None)["projects"]))
+        for username in ("external", "missing"):
+            call.data = {"username": username}
+            with self.assertRaises(APIError):
+                get_profile(call, "company", None)
+        owner.update(status="disabled")
+        call.data = {"username": owner.username}
+        with self.assertRaises(APIError):
+            get_profile(call, "company", None)
+
+    def test_profile_search_never_returns_a_directory_and_only_matches_active_members(self):
+        from apiserver.services.iam import search_profiles
+
+        viewer = create_user(company="company", username="viewer", password="Correct-Horse-1")
+        match = create_user(company="company", username="alex.one", password="Correct-Horse-2")
+        disabled = create_user(company="company", username="alex.disabled", password="Correct-Horse-3")
+        disabled.update(status="disabled")
+        create_user(company="other", username="alex.external", password="Correct-Horse-4")
+        call = SimpleNamespace(data={}, identity=SimpleNamespace(user=viewer.id, role=Role.user))
+        for search in (None, "", "  ", "a", " a "):
+            call.data = {} if search is None else {"search": search}
+            result = search_profiles(call, "company", None)
+            self.assertEqual([], result["users"])
+            self.assertEqual(0, result["total"])
+        call.data = {"search": " ALEX ", "page_size": 1}
+        result = search_profiles(call, "company", None)
+        self.assertEqual(1, result["total"])
+        self.assertEqual([match.id], [person["id"] for person in result["users"]])
+        self.assertNotIn("email", result["users"][0])
+        self.assertNotIn("password_hash", result["users"][0])
+        call.data["page"] = 1
+        self.assertEqual([], search_profiles(call, "company", None)["users"])
+
+    def test_profile_request_accepts_exactly_one_lookup_key(self):
+        import jsonschema
+        from apiserver.service_repo import ServiceRepo
+        from apiserver.utilities.partial_version import PartialVersion
+
+        endpoint = ServiceRepo._get_endpoint("iam.get_profile", PartialVersion("2.36"))
+        schema = endpoint.request_schema_validator.schema
+        for data in ({"username": "alex.smith"}, {"user_id": "legacy-id"}):
+            jsonschema.validate(data, schema)
+        for data in ({}, {"username": ""}, {"username": "alex", "user_id": "id"}):
+            with self.assertRaises(jsonschema.ValidationError):
+                jsonschema.validate(data, schema)
+
     def test_rustfs_download_requires_access_to_registered_model(self):
         owner = create_user(company="company", username="owner", password="Correct-Horse-1")
         viewer = create_user(company="company", username="viewer", password="Correct-Horse-2")

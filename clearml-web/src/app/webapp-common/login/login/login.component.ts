@@ -29,9 +29,9 @@ import {CrumbTypeEnum} from '@common/layout/breadcrumbs/breadcrumbs.component';
 import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {NgOptimizedImage, NgTemplateOutlet} from '@angular/common';
-import {MatFormField, MatLabel} from '@angular/material/form-field';
+import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
-import {MatButton} from '@angular/material/button';
+import {MatButton, MatIconButton} from '@angular/material/button';
 import {minLengthTrimmed} from '@common/shared/validators/minLengthTrimmed';
 import {User} from '~/business-logic/model/users/user';
 import {Title} from '@angular/platform-browser';
@@ -55,6 +55,8 @@ import {ApiIamService} from '~/business-logic/api-services/iam.service';
         MatLabel,
         MatInput,
         MatButton,
+        MatIconButton,
+        MatSuffix,
         NgTemplateOutlet,
         RouterLink
     ]
@@ -95,6 +97,7 @@ export class LoginComponent {
   public loginModeEnum = loginModes;
 
   protected loginFailed = signal(false);
+  protected passwordVisible = signal(false);
   protected showSpinner = signal<boolean>(null);
   protected selfSignupEnabled = signal(false);
   protected loginTitle = signal<string>(this.isInvite ? '' : 'Login');
@@ -105,7 +108,7 @@ export class LoginComponent {
   private mustChangePassword = false;
 
   get buttonCaption() {
-    return this.loginMode() === loginModes.simple ? 'START' : 'LOGIN';
+    return this.loginMode() === loginModes.simple ? 'Continue' : 'Sign in';
   }
 
   constructor() {
@@ -184,6 +187,10 @@ export class LoginComponent {
   }
 
   login() {
+    if (this.loginForm.invalid || this.showSpinner()) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
     this.showSpinner.set(true);
     if (this.loginMode() === loginModes.password) {
       const user = this.loginForm.controls.name.value.trim();

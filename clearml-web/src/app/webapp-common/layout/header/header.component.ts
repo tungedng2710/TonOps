@@ -29,6 +29,7 @@ import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {NgOptimizedImage} from '@angular/common';
 import {TooltipDirective} from '@common/shared/ui-components/indicators/tooltip/tooltip.directive';
 import {MatIconButton} from '@angular/material/button';
+import {openProfileSearch as showProfileSearch} from '~/features/profiles/profile-search';
 
 @Component({
   selector: 'sm-header',
@@ -87,6 +88,7 @@ export class HeaderComponent implements OnInit {
   );
 
   protected contextNavbar = this.store.selectSignal(selectHeaderMenu);
+  openProfileSearch() { void showProfileSearch(this.dialog); }
     contextNavbarLength = computed(() => {
     return this.contextNavbar()?.length;
   });

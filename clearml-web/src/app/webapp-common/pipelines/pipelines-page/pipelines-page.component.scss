@@ -5,7 +5,6 @@
 :host {
   display: block;
   height: 100%;
-  margin-inline: 16px;
   overflow-y: auto;
   overflow-x: hidden;
   background: transparent;
@@ -15,10 +14,10 @@
 
 :host ::ng-deep .sm-card-list-layout.projects {
   @include folder-cards.project-folder-cards("sm-pipeline-card");
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 304px));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   align-content: start;
   gap: 24px 20px;
-  padding: 20px 24px 40px;
+  padding: 20px 16px 40px;
 
   &.in-empty-state {
     min-height: 100%;

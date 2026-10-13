@@ -18,8 +18,9 @@ export class ApiIamService {
   status() { return this.post<IamServiceStatus>('status'); }
   signup(request: IamSignupRequest) { return this.post<{user: IamUser}>('signup', request); }
   me() { return this.post<{user: IamUser}>('me'); }
-  searchProfiles(search = '', page = 0) { return this.post<IamPage<PublicProfile>>('search_profiles', {search, page, page_size: 30}); }
-  getProfile(userId: string) { return this.post<{user: PublicProfile; projects: ProfileProject[]}>('get_profile', {user_id: userId}); }
+  searchProfiles(search: string, page = 0) { return this.post<IamPage<PublicProfile>>('search_profiles', {search, page, page_size: 30}); }
+  getProfile(username: string) { return this.post<{user: PublicProfile; projects: ProfileProject[]}>('get_profile', {username}); }
+  getProfileById(userId: string) { return this.post<{user: PublicProfile; projects: ProfileProject[]}>('get_profile', {user_id: userId}); }
   listUsers(request: object) { return this.post<IamPage<IamUser>>('list_users', request); }
   getUser(userId: string) { return this.post<{user: IamUser}>('get_user', {user_id: userId}); }
   createUser(request: object) { return this.post<{user: IamUser}>('create_user', request); }

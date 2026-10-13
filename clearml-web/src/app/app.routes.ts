@@ -8,6 +8,7 @@ import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {map} from 'rxjs/operators';
 import {AppComponent} from '~/app.component';
 import {experimentsProviders} from '~/features/experiments/shared/experiments.providers';
+import {CrumbTypeEnum} from '@common/layout/breadcrumbs/breadcrumbs.component';
 
 
 const authenticationRequiredGuard: CanActivateFn = (route) => {
@@ -30,7 +31,12 @@ export const routes: Routes = [
   {
     path: '', component: AppComponent,
     children: [
-      {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
+      {path: '', redirectTo: 'home', pathMatch: 'full'},
+      {
+        path: 'home',
+        loadComponent: () => import('./features/home/home.component').then(c => c.HomeComponent),
+        data: {search: false, staticBreadcrumb: [[{name: 'HOME', type: CrumbTypeEnum.Feature}]]},
+      },
       {
         path: 'dashboard',
         loadChildren: () => import('./features/dashboard/dashboard.routes').then(r => r.routes),
@@ -47,9 +53,13 @@ export const routes: Routes = [
         data: {search: false, workspaceNeutral: false, },
       },
       {
-        path: 'users',
+        path: 'user',
         data: {search: false, workspaceNeutral: true},
         loadChildren: () => import('./features/profiles/profiles.routes').then(r => r.routes)
+      },
+      {
+        path: 'users',
+        loadChildren: () => import('./features/profiles/profiles.routes').then(r => r.legacyRoutes)
       },
       {
         path: 'projects',
@@ -158,11 +168,6 @@ export const routes: Routes = [
         loadChildren: () => import('./webapp-common/serving/serving.routes').then(r => r.routes),
         data: {autoSearchTab: 'modelEndpoints'},
         canDeactivate: [resetContextMenuGuard]
-      },
-      {
-        path: 'enterprise',
-        loadChildren: () => import('@common/enterprise-visibility/enterprise.routes').then(r => r.routes),
-        canDeactivate: [resetContextMenuGuard],
       },
     ]
   },

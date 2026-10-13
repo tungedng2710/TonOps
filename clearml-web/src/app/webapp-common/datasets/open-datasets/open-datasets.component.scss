@@ -3,6 +3,9 @@
 
 :host {
   .sm-card-list-layout {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    padding-inline: 16px;
+
     &.in-empty-state {
       height: 100%;
       grid-template-rows: 64px 1fr;
@@ -24,4 +27,12 @@
     margin-bottom: -12px;
   }
   @include empty.empty-card-mixin();
+}
+
+:host ::ng-deep .sm-card-list-layout sm-open-dataset-card {
+  min-width: 0;
+
+  .card { width: 100%; }
+  .card-name .title { min-width: 0; flex: 1; }
+  .project-name { max-width: 100%; }
 }

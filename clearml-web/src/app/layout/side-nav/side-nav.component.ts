@@ -6,7 +6,6 @@ import {selectCurrentUser} from '@common/core/reducers/users-reducer';
 import {ConfigurationService} from '@common/shared/services/configuration.service';
 import {selectFirstRouterConfig} from '@common/core/reducers/router-reducer';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {selectHideEnterpriseFeatures} from '@common/core/reducers/view.reducer';
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from '@angular/material/tooltip';
 import {TooltipDirective} from '@common/shared/ui-components/indicators/tooltip/tooltip.directive';
 import {NgOptimizedImage} from '@angular/common';
@@ -39,7 +38,6 @@ export class SideNavComponent {
   protected environment = this.configService.configuration;
   protected defaultNestedModeForFeature = this.store.selectSignal(selectDefaultNestedModeForFeature);
   protected currentUser = this.store.selectSignal(selectCurrentUser);
-  protected hideEnterpriseFeatures = this.store.selectSignal(selectHideEnterpriseFeatures);
   private resize = toSignal(fromEvent(window, 'resize'));
   protected scrolling = computed(() => {
     this.resize();

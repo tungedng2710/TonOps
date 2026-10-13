@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
-import {FormsModule} from '@angular/forms';
 import {Router, RouterLink, ActivatedRoute} from '@angular/router';
 import {Store} from '@ngrx/store';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -15,11 +14,13 @@ import {excludedKey} from '@common/shared/utils/tableParamEncode';
 import {MatDialog} from '@angular/material/dialog';
 import {MatButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
+import {headerActions} from '@common/core/actions/router.actions';
+import {openProfileSearch as showProfileSearch} from './profile-search';
 
 @Component({
   selector: 'sm-profiles',
   standalone: true,
-  imports: [FormsModule, RouterLink, ReportCardComponent, MatButton, MatIcon],
+  imports: [RouterLink, ReportCardComponent, MatButton, MatIcon],
   templateUrl: './profiles.component.html',
   styleUrl: './profiles.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,8 +34,6 @@ export class ProfilesComponent {
   private dialog = inject(MatDialog);
   private destroyRef = inject(DestroyRef);
   currentUser = this.store.selectSignal(selectCurrentUser);
-  search = '';
-  people = signal<PublicProfile[]>([]);
   profile = signal<PublicProfile | null>(null);
   projects = signal<ProfileProject[]>([]);
   reports = signal<IReport[]>([]);
@@ -45,39 +44,16 @@ export class ProfilesComponent {
   private readonly reportsPageSize = 6;
   loading = signal(false);
   error = signal('');
-  total = signal(0);
-  page = signal(0);
-  totalPages = () => Math.max(1, Math.ceil(this.total() / 30));
   private requestId = 0;
 
   constructor() {
+    this.store.dispatch(headerActions.reset());
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe(params => {
-      const id = params.get('userId');
-      if (id) this.loadProfile(id);
-      else this.findPeople(0);
+      this.loadProfile(params.get('username'));
     });
   }
 
-  findPeople(page = 0) {
-    const request = ++this.requestId;
-    this.profile.set(null);
-    this.loading.set(true);
-    this.error.set('');
-    this.iam.searchProfiles(this.search.trim(), page).subscribe({
-      next: result => {
-        if (request !== this.requestId) return;
-        this.people.set(result.users ?? []);
-        this.total.set(result.total);
-        this.page.set(page);
-        this.loading.set(false);
-      },
-      error: () => {
-        if (request !== this.requestId) return;
-        this.error.set('Unable to load people.');
-        this.loading.set(false);
-      }
-    });
-  }
+  openProfileSearch() { void showProfileSearch(this.dialog); }
 
   loadReports() {
     const person = this.profile();
@@ -124,7 +100,7 @@ export class ProfilesComponent {
     this.router.navigate(['/reports', report.project?.id || '*', report.id]);
   }
 
-  private loadProfile(id: string) {
+  private loadProfile(username: string) {
     const request = ++this.requestId;
     this.profile.set(null);
     this.projects.set([]);
@@ -135,9 +111,13 @@ export class ProfilesComponent {
     this.hasMoreReports.set(false);
     this.loading.set(true);
     this.error.set('');
-    this.iam.getProfile(id).subscribe({
+    this.iam.getProfile(username).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: result => {
         if (request !== this.requestId) return;
+        if (username !== result.user.username) {
+          void this.router.navigate(['/user', result.user.username], {replaceUrl: true});
+          return;
+        }
         this.profile.set(result.user);
         this.projects.set(result.projects ?? []);
         this.loading.set(false);

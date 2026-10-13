@@ -39,6 +39,8 @@ export class SignupComponent {
   protected submitting = signal(false);
   protected complete = signal(false);
   protected error = signal('');
+  protected passwordVisible = signal(false);
+  protected confirmPasswordVisible = signal(false);
 
   protected form = new FormGroup({
     username: new FormControl('', {

@@ -1,84 +1,92 @@
 <main class="signup-page">
-  <section class="signup-card" aria-labelledby="signup-title">
+  <section class="signup-card auth-panel" aria-labelledby="signup-title">
     <div class="brand-lockup">
       <img
         [ngSrc]="environment().branding.logo"
         [priority]="true"
-        width="48"
-        height="48"
+        width="52"
+        height="52"
         alt="TonOps logo">
-      <span>TonOps</span>
+      <div class="brand-copy"><span class="brand-name">TonOps</span><span class="brand-caption">Your MLOps workspace</span></div>
     </div>
 
     @if (checkingAvailability()) {
-      <div class="state-panel">
+      <div class="state-panel auth-state" role="status">
         <mat-spinner diameter="28"></mat-spinner>
-        <p>Checking registration availability…</p>
+        <p id="signup-title">Checking registration availability…</p>
       </div>
     } @else if (!signupEnabled()) {
-      <div class="state-panel">
+      <div class="state-panel auth-state">
         <h1 id="signup-title">Registration unavailable</h1>
         <p>Self-service signup is not enabled for this TonOps instance.</p>
         <a mat-flat-button routerLink="/login">Back to sign in</a>
       </div>
     } @else if (complete()) {
-      <div class="state-panel success">
-        <div class="success-mark" aria-hidden="true">✓</div>
+      <div class="state-panel auth-state success">
+        <div class="state-mark success-mark" aria-hidden="true">✓</div>
         <h1 id="signup-title">Account created</h1>
         <p>Your TonOps account is ready. Sign in with your new username and password.</p>
         <a mat-flat-button routerLink="/login">Continue to sign in</a>
       </div>
     } @else {
-      <header>
+      <header class="auth-heading">
         <h1 id="signup-title">Create your account</h1>
-        <p>Join your team’s MLOps workspace.</p>
+        <p>Bring your projects, experiments, and team together.</p>
       </header>
 
-      <form [formGroup]="form" (ngSubmit)="signup()">
-        <div class="field-grid">
-          <mat-form-field appearance="outline">
+      <form class="auth-form" [formGroup]="form" (ngSubmit)="signup()">
+        <div class="field-grid auth-fields">
+          <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
             <mat-label>Username</mat-label>
-            <input matInput formControlName="username" autocomplete="username">
+            <input matInput formControlName="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64">
             @if (form.controls.username.touched && form.controls.username.invalid) {
               <mat-error>Use 3–64 letters, numbers, dots, dashes, or underscores.</mat-error>
             }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
             <mat-label>Display name <span class="optional">(optional)</span></mat-label>
-            <input matInput formControlName="display_name" autocomplete="name">
+            <input matInput formControlName="display_name" autocomplete="name" maxlength="128">
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" floatLabel="auto" class="full-width" subscriptSizing="dynamic">
             <mat-label>Email</mat-label>
-            <input matInput formControlName="email" type="email" autocomplete="email">
+            <input matInput formControlName="email" type="email" autocomplete="email" maxlength="254">
             @if (form.controls.email.touched && form.controls.email.invalid) {
               <mat-error>Enter a valid email address.</mat-error>
             }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
             <mat-label>Password</mat-label>
-            <input matInput formControlName="password" type="password" autocomplete="new-password">
+            <input matInput formControlName="password" [type]="passwordVisible() ? 'text' : 'password'" autocomplete="new-password" maxlength="128">
+            <button mat-icon-button matSuffix class="password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="passwordVisible()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>@if (passwordVisible()) { <path d="m3 3 18 18"/> }</svg>
+            </button>
+            <mat-hint>At least 12 characters</mat-hint>
             @if (form.controls.password.touched && form.controls.password.invalid) {
               <mat-error>Password must be at least 12 characters.</mat-error>
             }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
             <mat-label>Confirm password</mat-label>
-            <input matInput formControlName="confirm_password" type="password" autocomplete="new-password">
-            @if (form.controls.confirm_password.touched && !passwordsMatch()) {
-              <mat-error>Passwords do not match.</mat-error>
-            }
+            <input matInput formControlName="confirm_password" [type]="confirmPasswordVisible() ? 'text' : 'password'" autocomplete="new-password" maxlength="128" [attr.aria-invalid]="form.controls.confirm_password.touched && !passwordsMatch() ? true : null" [attr.aria-describedby]="form.controls.confirm_password.touched && !passwordsMatch() ? 'password-match-error' : null">
+            <button mat-icon-button matSuffix class="password-toggle" type="button" (click)="confirmPasswordVisible.set(!confirmPasswordVisible())" [attr.aria-label]="confirmPasswordVisible() ? 'Hide confirm password' : 'Show confirm password'" [attr.aria-pressed]="confirmPasswordVisible()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>@if (confirmPasswordVisible()) { <path d="m3 3 18 18"/> }</svg>
+            </button>
           </mat-form-field>
         </div>
+
+        @if (form.controls.confirm_password.touched && !passwordsMatch()) {
+          <div class="form-error" id="password-match-error" role="alert">Passwords do not match.</div>
+        }
 
         @if (error()) {
           <div class="form-error" role="alert">{{ error() }}</div>
         }
 
-        <button mat-flat-button type="submit" [disabled]="submitting()">
+        <button mat-flat-button class="auth-submit" type="submit" [disabled]="submitting()">
           @if (submitting()) {
             <mat-spinner diameter="18"></mat-spinner>
           }
@@ -86,7 +94,7 @@
         </button>
       </form>
 
-      <p class="auth-switch">Already have an account? <a routerLink="/login">Sign in</a></p>
+      <footer class="auth-footer"><p class="auth-switch">Already have an account? <a routerLink="/login">Sign in</a></p></footer>
     }
   </section>
 </main>

@@ -11,8 +11,11 @@ from mongoengine import Q
 
 from apiserver.apierrors import errors
 from apiserver.bll.project.access import can_write, readable_query, require_read, restricted
+from apiserver.config_repo import config
 from apiserver.database.model.project import Project
 from apiserver.database.model.task.task import Task, TaskType
+
+log = config.logger(__file__)
 
 SENSITIVE_NAME = re.compile(r"password|secret|token|api.?key|access.?key|credential|authorization|connection.?string", re.I)
 MAX_CONTEXT_CHARS = 60000
@@ -162,7 +165,14 @@ Produce the final report promptly.""" if report else ""
             raise errors.server_error.InternalError("The AI returned no answer. Please try again.")
         return content.strip()[:100000]
     except requests.Timeout:
+        log.warning("Project AI provider request timed out")
         raise errors.server_error.InternalError("The AI request timed out. Please try again.") from None
+    except requests.ConnectionError:
+        # Exception text can contain credentials embedded in the provider URL.
+        log.warning("Project AI provider connection failed; check LLM_BASE_URL and provider availability")
+        raise errors.service_unavailable.AiUnavailable(
+            "Cannot connect to the AI server. Ask the administrator to check the AI server and LLM_BASE_URL."
+        ) from None
     except (requests.RequestException, ValueError, KeyError, IndexError, TypeError):
         # Never surface upstream response bodies, request headers, or the bearer token.
         raise errors.server_error.InternalError("The AI service could not answer. Please try again.") from None

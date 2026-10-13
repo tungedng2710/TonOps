@@ -5,39 +5,81 @@
 </div>
 
 @if (currentUser()) {
-  <div #container class="items-container" [class.on-scrolling]="scrolling()">
-    <a class="item al-ico-queues"
+  <div #container class="items-container" [class.on-scrolling]="scrolling()" role="navigation" aria-label="Main navigation">
+    <a class="item home-link"
+       routerLink="/home"
+       routerLinkActive="active"
+       ariaCurrentWhenActive="page"
+       aria-label="Home"
+       smTooltip="HOME">
+      <svg class="sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/>
+      </svg>
+    </a>
+    <a class="item"
        routerLink="/workers-and-queues"
        routerLinkActive="active"
+       ariaCurrentWhenActive="page"
+       aria-label="Workers and queues"
        smTooltip="WORKERS & QUEUES"
-    ></a>
-    <a class="item al-ico-model-endpoints"
+    >
+      <svg class="sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="7" rx="2"/>
+        <rect x="3" y="14" width="18" height="7" rx="2"/>
+        <path d="M7 6.5h.01M7 17.5h.01M12 6.5h5M12 17.5h5M7 10v4m10-4v4"/>
+      </svg>
+    </a>
+    <a class="item"
        [routerLink]="'/endpoints/active'"
        [class.active]="baseRouteConfig() ==='endpoints'"
+       [attr.aria-current]="baseRouteConfig() === 'endpoints' ? 'page' : null"
+       aria-label="Model endpoints"
        smTooltip="MODEL ENDPOINTS"
        data-id="modelEndpointsIcon"
-    ></a>
-    <a class="item al-ico-datasets"
+    >
+      <svg class="sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="9" y="2" width="6" height="6" rx="2"/>
+        <rect x="2" y="16" width="6" height="6" rx="2"/>
+        <rect x="16" y="16" width="6" height="6" rx="2"/>
+        <path d="M12 8v4M5 16v-2a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/>
+      </svg>
+    </a>
+    <a class="item"
        [routerLink]="defaultNestedModeForFeature()?.['datasets']? '/datasets/simple/*/projects' : '/datasets'"
        [class.active]="baseRouteConfig() ==='datasets'"
+       [attr.aria-current]="baseRouteConfig() === 'datasets' ? 'page' : null"
+       aria-label="Datasets"
        smTooltip="DATASETS"
-    ></a>
-    <a class="item al-ico-projects"
+    >
+      <svg class="sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <ellipse cx="12" cy="5" rx="8" ry="3"/>
+        <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/>
+      </svg>
+    </a>
+    <a class="item"
        smTooltip="PROJECTS"
        routerLink="/dashboard"
        [class.active]="['dashboard','reports', 'projects'].includes(baseRouteConfig())"
-    ></a>
-    <a class="item al-ico-pipelines"
+       [attr.aria-current]="['dashboard','reports', 'projects'].includes(baseRouteConfig()) ? 'page' : null"
+       aria-label="Projects"
+    >
+      <svg class="sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 7V5a2 2 0 0 1 2-2h4l3 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>
+      </svg>
+    </a>
+    <a class="item"
        [routerLink]="defaultNestedModeForFeature()?.['pipelines']? '/pipelines/*/projects' : '/pipelines'"
        [class.active]="baseRouteConfig() ==='pipelines'"
+       [attr.aria-current]="baseRouteConfig() === 'pipelines' ? 'page' : null"
+       aria-label="Pipelines"
        smTooltip="PIPELINES"
-    ></a>
-    @if (!hideEnterpriseFeatures()) {
-      <a class="item al-ico-enterprise-rocket lm"
-         routerLink="enterprise"
-         routerLinkActive="active"
-         smTooltip="EXPLORE TONOPS ENTERPRISE"
-      ></a>
-    }
+    >
+      <svg class="sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2" y="9" width="6" height="6" rx="2"/>
+        <rect x="16" y="2" width="6" height="6" rx="2"/>
+        <rect x="16" y="16" width="6" height="6" rx="2"/>
+        <path d="M8 12h2a2 2 0 0 0 2-2V7a2 2 0 0 1 2-2h2M8 12h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h2"/>
+      </svg>
+    </a>
   </div>
 }

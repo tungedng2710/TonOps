@@ -1,9 +1,10 @@
 <main class="profiles-page">
   <header class="page-header">
-    <a routerLink="/users" class="back-link">People</a>
+    <span>Profile</span>
     @if (profile(); as person) {
       <span class="divider">/</span><span>{{ person.username }}</span>
     }
+    <button type="button" class="profile-search-button" (click)="openProfileSearch()">Find a profile</button>
   </header>
 
   @if (loading()) { <p class="status">Loading…</p> }
@@ -75,32 +76,5 @@
         </section>
       </div>
     </div>
-  } @else if (!loading() && !error()) {
-    <section class="directory">
-      <h1>People</h1>
-      <p>Find people and explore their projects and reports.</p>
-      <form (ngSubmit)="findPeople(0)" class="search-form">
-        <input name="search" [(ngModel)]="search" type="search" placeholder="Search by name or username" aria-label="Search people">
-        <button type="submit">Search</button>
-      </form>
-      <div class="people-list">
-        @for (person of people(); track person.id) {
-          <a [routerLink]="['/users', person.id]" class="person-row">
-            @if (person.avatar) {
-              <img class="avatar" [src]="person.avatar" alt="">
-            } @else {
-              <div class="avatar placeholder">{{ person.display_name.charAt(0).toUpperCase() }}</div>
-            }
-            <span class="person-name">{{ person.display_name }}<small>{{ person.username }}</small></span>
-            @if (person.role === 'admin') { <span class="role">Admin</span> }
-          </a>
-        } @empty { <p class="empty">No people found.</p> }
-      </div>
-      <div class="pagination">
-        <button type="button" [disabled]="page() === 0" (click)="findPeople(page() - 1)">Previous</button>
-        <span>{{ page() + 1 }} / {{ totalPages() }}</span>
-        <button type="button" [disabled]="(page() + 1) * 30 >= total()" (click)="findPeople(page() + 1)">Next</button>
-      </div>
-    </section>
   }
 </main>

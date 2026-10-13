@@ -1,0 +1,38 @@
+<section class="profile-search">
+  <header>
+    <div><span class="eyebrow">MAKE A CONNECTION</span><h2>Find a profile</h2></div>
+    <button class="close-button" type="button" aria-label="Close profile search" (click)="dialogRef.close()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>
+    </button>
+  </header>
+  <p>Search by name or username to visit someone’s profile.</p>
+  <form (ngSubmit)="findProfiles()">
+    <div class="search-field">
+      <label for="profile-search-input">Name or username</label>
+      <input id="profile-search-input" name="search" [(ngModel)]="search" (ngModelChange)="clearResults()" type="search" maxlength="128" autocomplete="off" placeholder="e.g. alex" aria-describedby="profile-search-hint">
+    </div>
+    <button class="search-button" type="submit" [disabled]="search.trim().length < 2 || loading()">{{ loading() ? 'Searching…' : 'Search' }}</button>
+  </form>
+  <p class="hint" id="profile-search-hint">Enter at least 2 characters. Results appear after you search.</p>
+  @if (loading()) { <p class="status" role="status">Searching profiles…</p> }
+  @if (error()) { <p class="status error" role="alert">Unable to search profiles. Please try again.</p> }
+  @if (searched() && !error() && !loading()) {
+    <div class="search-results">
+      @for (person of people(); track person.id) {
+        <a class="person-row" [routerLink]="['/user', person.username]" (click)="dialogRef.close()">
+          @if (person.avatar) { <img class="avatar" [src]="person.avatar" alt=""> }
+          @else { <span class="avatar placeholder">{{ person.display_name.charAt(0).toUpperCase() }}</span> }
+          <span class="person-name">{{ person.display_name }}<small>&#64;{{ person.username }}</small></span>
+          <svg class="result-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+        </a>
+      } @empty { <p class="status">No matching profiles found.</p> }
+    </div>
+    @if (total() > 30) {
+      <div class="pagination">
+        <button type="button" [disabled]="page() === 0 || loading()" (click)="findProfiles(page() - 1)">Previous</button>
+        <span>{{ page() + 1 }} / {{ totalPages() }}</span>
+        <button type="button" [disabled]="(page() + 1) * 30 >= total() || loading()" (click)="findProfiles(page() + 1)">Next</button>
+      </div>
+    }
+  }
+</section>

@@ -53,9 +53,22 @@ $item-margin: 20px;
     border-radius: 12px;
     color: #5c789c;
     transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
-    // ICON SIZE
-    &:before {
-      font-size: $icon-size;
+    .sidebar-icon {
+      display: block;
+      width: $icon-size;
+      height: $icon-size;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    &:focus-visible {
+      // The app-wide reset clears outlines with !important.
+      outline: 2px solid #659eec !important;
+      outline-offset: 2px;
     }
 
     &:hover {
@@ -88,5 +101,12 @@ $item-margin: 20px;
     width: $icon-size;
     height: $icon-size;
     background-size: $icon-size;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .item {
+      transition: none;
+      &:hover { transform: none; }
+    }
   }
 }

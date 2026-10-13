@@ -11,6 +11,7 @@ from apiserver.bll.iam import (
     create_user as create_local_user,
     enabled,
     generate_temporary_password,
+    normalize_username,
     self_signup_enabled,
     serialize_user,
     set_password,
@@ -163,10 +164,12 @@ def _public_profile(user: User, backend_users: dict) -> dict:
 def search_profiles(call: APICall, company_id: str, _):
     _require_enabled()
     page, page_size = _page(call.data)
-    query = Q(company=company_id) & Q(username__ne=None) & Q(status="active")
     search = (call.data.get("search") or "").strip()
-    if search:
-        query &= Q(username__icontains=search) | Q(name__icontains=search)
+    # Profile discovery is a search flow, not a member directory.
+    if len(search) < 2:
+        return {"users": [], "total": 0, "page": page, "page_size": page_size}
+    query = Q(company=company_id) & Q(username__ne=None) & Q(status="active")
+    query &= Q(username__icontains=search) | Q(name__icontains=search)
     users = User.objects(query)
     total = users.count()
     items = list(users.order_by("username")[page * page_size:(page + 1) * page_size])
@@ -177,7 +180,14 @@ def search_profiles(call: APICall, company_id: str, _):
 @endpoint("iam.get_profile", validate_schema=True)
 def get_profile(call: APICall, company_id: str, _):
     _require_enabled()
-    user = _user(call.data["user_id"], company_id)
+    if "username" in call.data:
+        username = normalize_username(call.data["username"])
+        user = User.objects(company=company_id, username=username).first()
+        if not user:
+            raise errors.bad_request.InvalidUserId(user=username)
+    else:
+        # Keep existing API clients and old bookmarked profile links working.
+        user = _user(call.data["user_id"], company_id)
     if user.status != "active":
         raise errors.bad_request.InvalidUserId(user=user.id)
     details = BackendUser.objects(id=user.id, company=company_id).first()

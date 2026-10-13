@@ -1,6 +1,20 @@
 @use "variables";
 @use "mixins/empty";
 
+:host-context(sm-nested-pipeline-page),
+:host-context(sm-nested-open-datasets-page) {
+  .sm-card-list-layout {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    padding-inline: 16px;
+  }
+
+  ::ng-deep .sm-card-list-layout sm-nested-card {
+    min-width: 0;
+
+    .card { width: 100%; }
+  }
+}
+
 :host {
   display: block;
   height: 100%;

@@ -1,0 +1,145 @@
+<svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="home-folder" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h5l3 3h6a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></symbol>
+    <symbol id="home-tasks" viewBox="0 0 24 24"><path d="m3 6 2 2 3-4m-5 9 2 2 3-4m4-5h9m-9 7h9m-9 7h9M4 20h3"/></symbol>
+    <symbol id="home-play" viewBox="0 0 24 24"><path d="m9 7 8 5-8 5Z"/><circle cx="12" cy="12" r="10"/></symbol>
+    <symbol id="home-alert" viewBox="0 0 24 24"><path d="M12 8v5m0 3v.1M10.3 4.5 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 4.5a2 2 0 0 0-3.4 0Z"/></symbol>
+    <symbol id="home-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+    <symbol id="home-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5m-4.7-4A8 8 0 0 1 18 5l2 2M4 17l2 2a8 8 0 0 0 13.7-3"/></symbol>
+    <symbol id="home-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  </defs>
+</svg>
+<main class="home-page">
+  <header class="welcome reveal">
+    <div class="welcome-copy">
+      <span class="eyebrow">YOUR WORKSPACE, IN FOCUS</span>
+      <h1>{{ greeting() }}, {{ user()?.name || 'there' }}<span class="greeting-dot">.</span></h1>
+      <p>A little clarity for everything you’re building.</p>
+      <div class="welcome-actions">
+        <a class="primary-action" routerLink="/projects">Browse projects <svg class="icon"><use href="#home-arrow"/></svg></a>
+        <a class="text-action" routerLink="/user">My profile</a>
+      </div>
+    </div>
+    <div class="welcome-aside">
+      <time>{{ now() | date:'EEEE, MMMM d' }}</time>
+      <div class="orbit-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="orbit-core"><svg class="icon"><use href="#home-folder"/></svg></div>
+        <span class="orbit-node node-one"></span><span class="orbit-node node-two"></span>
+      </div>
+      <span class="workspace-caption">One place. Your next big idea.</span>
+    </div>
+  </header>
+
+  <div class="section-heading reveal">
+    <div><h2>At a glance</h2><p>Your tasks across projects you own or contribute to.</p></div>
+    <div class="refresh-controls">
+      @if (snapshot()) { <span class="update-time">Updated {{ snapshot().updatedAt | date:'HH:mm' }}</span> }
+      <button class="refresh-button" type="button" (click)="refresh()" [disabled]="loading()" aria-label="Refresh dashboard" [attr.aria-busy]="loading()">
+        <svg class="icon" [class.refreshing]="loading()"><use href="#home-refresh"/></svg>
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span>{{ snapshot() ? 'Unable to refresh. Showing the last available update.' : 'Unable to load your dashboard. Please try again.' }}</span>
+      <button type="button" (click)="refresh()">Try again</button>
+    </div>
+  }
+
+  @if (!snapshot() && loading()) {
+    <div class="loading-state" role="status" aria-label="Loading your dashboard">
+      <div class="stats-grid">@for (item of [1, 2, 3, 4]; track item) { <div class="skeleton skeleton-stat"></div> }</div>
+      <div class="dashboard-grid"><div class="skeleton skeleton-panel"></div><div class="skeleton skeleton-panel"></div></div>
+      <span class="sr-only">Loading your projects and activity…</span>
+    </div>
+  }
+
+  @if (snapshot()) {
+    <div class="stats-grid">
+      <article class="stat-card reveal blue">
+        <span class="stat-icon"><svg class="icon"><use href="#home-folder"/></svg></span>
+        <span class="stat-label">Your projects</span><strong>{{ projects().length | number }}</strong><span class="stat-detail">Owned or contributed to</span>
+      </article>
+      <article class="stat-card reveal violet">
+        <span class="stat-icon"><svg class="icon"><use href="#home-tasks"/></svg></span>
+        <span class="stat-label">Total tasks</span><strong>{{ totalTasks() | number }}</strong><span class="stat-detail">Your non-archived tasks</span>
+      </article>
+      <article class="stat-card reveal green">
+        <span class="stat-icon"><svg class="icon"><use href="#home-play"/></svg></span>
+        <span class="stat-label">Running now</span><strong>{{ runningCount() | number }}</strong><span class="stat-detail"><span class="live-dot" [class.is-live]="runningCount() > 0"></span>{{ queuedCount() | number }} waiting in queue</span>
+      </article>
+      <article class="stat-card reveal rose">
+        <span class="stat-icon"><svg class="icon"><use href="#home-alert"/></svg></span>
+        <span class="stat-label">Needs attention</span><strong>{{ failedCount() | number }}</strong><span class="stat-detail">{{ failedCount() ? 'Failed tasks to revisit' : 'No failed tasks' }}</span>
+      </article>
+    </div>
+
+    <div class="dashboard-grid">
+      <section class="panel overview-panel reveal" aria-labelledby="task-overview-heading">
+        <div class="panel-heading"><div><span class="eyebrow">THE BIG PICTURE</span><h2 id="task-overview-heading">Task overview</h2></div><span class="soft-badge">Non-archived tasks</span></div>
+        <div class="overview-body">
+          <div class="donut-wrap">
+            <div class="donut" [style.background]="donut()" role="img" [attr.aria-label]="chartDescription()">
+              <div class="donut-center"><strong>{{ totalTasks() | number }}</strong><span>total tasks</span></div>
+            </div>
+            <p class="completion-note"><span>{{ completedPercent() }}%</span> completed</p>
+          </div>
+          <div class="chart-legend">
+            @for (status of statuses(); track status.label) {
+              <div class="legend-row"><span class="legend-dot" [style.background]="status.color"></span><span>{{ status.label }}</span><strong>{{ status.count | number }}</strong></div>
+            }
+          </div>
+        </div>
+        <p class="panel-footnote">Completed includes completed, published, and closed tasks.</p>
+      </section>
+
+      <section class="panel activity-panel reveal" aria-labelledby="activity-heading">
+        <div class="panel-heading"><div><span class="eyebrow">WHAT’S BEEN HAPPENING</span><h2 id="activity-heading">Recent activity</h2></div><span class="soft-badge">Latest updates</span></div>
+        <div class="activity-list">
+          @for (task of snapshot().activities; track task.id) {
+            <a class="activity-row" [routerLink]="['/projects', task.project?.id || '*', 'tasks', task.id]">
+              <span class="activity-marker" [attr.data-status]="task.status"><svg class="icon"><use [attr.href]="task.status === 'failed' ? '#home-alert' : task.status === 'in_progress' ? '#home-play' : '#home-tasks'"/></svg></span>
+              <div class="activity-copy"><strong [title]="task.name">{{ task.name }}</strong><span [title]="task.project?.name">{{ task.project?.name || 'No project' }}</span></div>
+              <div class="activity-meta"><span class="status-pill" [attr.data-status]="task.status">{{ statusLabel(task.status) }}</span><time [attr.datetime]="task.last_update" [title]="task.last_update | date:'medium'">{{ relativeTime(task.last_update) }}</time></div>
+            </a>
+          } @empty {
+            <div class="empty-state"><span class="empty-icon"><svg class="icon"><use href="#home-tasks"/></svg></span><h3>Your next update starts here</h3><p>Activity will appear as you create and run tasks in your projects.</p><a routerLink="/projects">Explore projects <span aria-hidden="true">→</span></a></div>
+          }
+        </div>
+        <p class="panel-footnote">Latest task updates · refreshes every minute</p>
+      </section>
+
+      <section class="panel projects-panel reveal" aria-labelledby="projects-heading">
+        <div class="panel-heading"><div><span class="eyebrow">PICK UP WHERE YOU LEFT OFF</span><h2 id="projects-heading">Your projects</h2></div><a class="section-link" routerLink="/projects">View all <svg class="icon"><use href="#home-arrow"/></svg></a></div>
+        <div class="project-grid">
+          @for (project of visibleProjects(); track project.id; let index = $index) {
+            <a class="project-card" [routerLink]="['/projects', project.id, 'overview']" [style.--project-hue]="210 + index * 27">
+              <div class="project-card-top"><span class="folder-icon"><svg class="icon"><use href="#home-folder"/></svg></span><span class="project-visibility">{{ project.visibility || 'public' }}</span></div>
+              <h3 [title]="project.name">{{ project.name }}</h3>
+              <p class="project-owner" [title]="ownerName(project)">{{ ownerName(project) }}</p>
+              <div class="project-card-footer"><span>{{ projectTaskCount(project) | number }} of your tasks</span>@if (projectRunning(project)) { <span class="project-running">{{ projectRunning(project) }} running</span> } @else { <svg class="icon"><use href="#home-arrow"/></svg> }</div>
+            </a>
+          } @empty {
+            <div class="empty-state"><span class="empty-icon"><svg class="icon"><use href="#home-folder"/></svg></span><h3>A fresh start</h3><p>Create a project or contribute to one to make this space your own.</p><a routerLink="/projects">Go to projects <span aria-hidden="true">→</span></a></div>
+          }
+        </div>
+      </section>
+
+      <section class="panel running-panel reveal" aria-labelledby="running-heading">
+        <div class="panel-heading"><div><span class="eyebrow">IN MOTION</span><h2 id="running-heading">Active work</h2></div><span class="soft-badge"><span class="live-dot" [class.is-live]="runningCount() > 0"></span>{{ runningCount() + queuedCount() | number }} tasks</span></div>
+        <div class="running-list">
+          @for (task of snapshot().running; track task.id) {
+            <a class="running-row" [routerLink]="['/projects', task.project?.id || '*', 'tasks', task.id]">
+              <span class="running-dot" [class.queued]="task.status === 'queued'"></span><div class="activity-copy"><strong [title]="task.name">{{ task.name }}</strong><span>{{ task.project?.name || 'No project' }}</span></div><span class="status-pill" [attr.data-status]="task.status">{{ statusLabel(task.status) }}</span>
+            </a>
+          } @empty {
+            <div class="empty-state compact"><span class="empty-icon green"><svg class="icon"><use href="#home-check"/></svg></span><h3>All quiet for now</h3><p>Your running and queued tasks will appear here.</p></div>
+          }
+        </div>
+        @if (runningCount() + queuedCount() > 8) { <p class="panel-footnote">Showing the 8 most recently updated active tasks.</p> }
+      </section>
+    </div>
+  }
+</main>

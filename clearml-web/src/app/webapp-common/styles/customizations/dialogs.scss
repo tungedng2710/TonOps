@@ -18,6 +18,11 @@ html.cdk-global-scrollblock {
   --mat-dialog-container-min-width: 430px;
   --mat-dialog-actions-alignment: center;
 
+  &.profile-search-dialog {
+    --mat-dialog-container-min-width: 0;
+    --mat-dialog-container-small-max-width: calc(100vw - 32px);
+  }
+
   // Dialog sizes (Use with panelClass config property)
   // ------------
   // Small

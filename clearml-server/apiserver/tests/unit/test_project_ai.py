@@ -131,6 +131,30 @@ class ProjectAiTests(unittest.TestCase):
             ), self.assertRaises(APIError):
                 assistant.complete({}, "Show metrics")
 
+    def test_connection_failure_reports_service_unavailable_without_leaking_details(self):
+        failure = requests.ConnectionError("http://user:private-key@llm/v1 refused connection")
+        with patch.dict(os.environ, {"LLM_BASE_URL": "http://llm/v1", "LLM_API_KEY": "private-key"}), patch.object(
+            assistant.requests, "post", side_effect=failure
+        ), patch.object(assistant.log, "warning") as warning, self.assertRaises(APIError) as result:
+            assistant.complete({}, "Show metrics")
+
+        self.assertEqual(result.exception.code, 503)
+        self.assertIn("Cannot connect to the AI server", str(result.exception))
+        self.assertIn("LLM_BASE_URL", str(result.exception))
+        self.assertNotIn("private-key", str(result.exception))
+        self.assertNotIn("private-key", str(warning.call_args))
+        warning.assert_called_once()
+
+    def test_connect_timeout_keeps_timeout_message(self):
+        # ConnectTimeout is also a ConnectionError; handle it as a timeout first.
+        with patch.dict(os.environ, {"LLM_BASE_URL": "http://llm/v1", "LLM_API_KEY": "private-key"}), patch.object(
+            assistant.requests, "post", side_effect=requests.ConnectTimeout("private-key")
+        ), self.assertRaises(APIError) as result:
+            assistant.complete({}, "Show metrics")
+
+        self.assertIn("timed out", str(result.exception))
+        self.assertNotIn("private-key", str(result.exception))
+
     def test_report_retains_metrics_that_only_exist_in_summary(self):
         response = MagicMock(status_code=200)
         response.json.return_value = {"choices": [{"finish_reason": "stop", "message": {"content": "Report"}}]}
