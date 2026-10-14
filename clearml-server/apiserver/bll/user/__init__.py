@@ -5,6 +5,7 @@ from apiserver.apimodels.users import CreateRequest
 from apiserver.config.info import get_version
 from apiserver.database.errors import translate_errors_context
 from apiserver.database.model.user import User
+from apiserver.database.model.datastudio import DataStudioConnection
 
 
 class UserBLL:
@@ -25,6 +26,7 @@ class UserBLL:
     @staticmethod
     def delete(user_id: str):
         with translate_errors_context("deleting user"):
+            DataStudioConnection.objects(user=user_id).delete()
             res = User.objects(id=user_id).delete()
             if not res:
                 raise errors.bad_request.InvalidUserId(id=user_id)

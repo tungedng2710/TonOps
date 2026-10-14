@@ -15,6 +15,7 @@
     "build-widgets": "ng build --project report-widgets --configuration production",
     "fetch": "./scripts/get-remote-build.sh",
     "test": "ng test",
+    "test:datastudio": "ng test trains-webapp --main= --ts-config=tsconfig.datastudio-spec.json --karma-config=karma.datastudio.conf.cjs --include=src/app/features/settings/datastudio/datastudio.component.spec.ts --styles=src/app/webapp-common/styles/style.scss --watch=false --polyfills=zone.js --polyfills=zone.js/testing",
     "lint": "ng lint",
     "e2e": "ng e2e --port 4300",
     "bundle-report": "ng build --configuration production --stats-json && pnpm dlx webpack-bundle-analyzer build/stats.json",

@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {"types": ["jasmine", "node"]},
+  "files": ["src/app/features/settings/datastudio/datastudio.component.spec.ts"]
+}

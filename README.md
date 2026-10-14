@@ -129,6 +129,39 @@ python examples/vehicle_detection_yolo12/project.py --help
 The [GPU worker guide](docs/clearml-gpu-worker.md) covers agent installation,
 Docker runtime configuration, GPU allocation, and worker operations.
 
+### DataStudio connection
+
+Open **Settings → DataStudio** to connect your DataStudio username and personal
+API token with read access. TonOps verifies that the token belongs to the entered
+username, saves the connection for your TonOps account, and lists the datasets
+visible to that DataStudio account. Refresh checks the credential again. **View
+revisions** lists immutable snapshots and links to their DataStudio pages.
+**Disconnect** removes the saved credential. Opening DataStudio still uses its
+own browser login; the connection does not create a shared login session.
+
+The API server uses `DATASTUDIO_API_URL` (including `/api/v1`), while browser links
+use `DATASTUDIO_WEB_URL`. Compose defaults to the DataStudio service on this host
+at port `8001`, using `host.docker.internal`, and its web app on port `3000`.
+Set the web URL to a hostname reachable by your users when accessing remotely.
+These deployment URLs are set by the administrator; users enter only their own
+username and token. After changing them, recreate the API container.
+
+Tokens are encrypted in a separate MongoDB collection and never appear in user
+profiles, preferences, task parameters, or connection responses. The API generates
+`datastudio-token.key` in its persistent config directory on first connection.
+Back up that private key with MongoDB: losing it requires users to reconnect.
+Deployments with multiple API replicas can supply the same Fernet key through
+`DATASTUDIO_TOKEN_KEY` or share `DATASTUDIO_TOKEN_KEY_FILE`. If the API URL changes,
+users must reconnect before any saved credential is sent to the new service.
+
+This feature connects accounts and browses datasets and revisions. Importing a
+revision into a ClearML Dataset or submitting training is a separate workflow.
+
+Focused checks: run `PYTHONPATH=clearml-server python -m pytest
+clearml-server/apiserver/tests/unit/test_datastudio.py -q` from the repository
+root and `npm run test:datastudio` from `clearml-web`. Set `CHROME_BIN` if Chrome
+is not on the default path.
+
 ### Project AI
 
 Project overview includes **Ask AI** and **Generate report**. The API server retrieves tasks and metric summaries from the project and readable subprojects. Answers show which tasks were included; large projects use a bounded snapshot of the most recently updated tasks. Metric summaries include latest, first, minimum, maximum, and mean values when recorded, rather than complete event histories.

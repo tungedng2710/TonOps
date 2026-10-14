@@ -20,6 +20,7 @@ from apiserver.bll.iam import (
 from apiserver.config_repo import config
 from apiserver.database.model.auth import Role, User
 from apiserver.database.model.iam import IAMAuditEvent, IAMGroup, IAMGroupMember
+from apiserver.database.model.datastudio import DataStudioConnection
 from apiserver.database.model.user import User as BackendUser
 from apiserver.database.model.project import Project
 from apiserver.database import utils as database_utils
@@ -384,6 +385,7 @@ def delete_user(call: APICall, company_id: str, _):
     with redis.lock(f"iam:last-admin:{company_id}", timeout=10, blocking_timeout=5):
         _protect_last_admin(user, deleting=True)
         IAMGroupMember.objects(company=company_id, user_id=user.id).delete()
+        DataStudioConnection.objects(company=company_id, user=user.id).delete()
         BackendUser.objects(company=company_id, id=user.id).delete()
         user.delete()
     audit(

@@ -1,0 +1,32 @@
+:host { display: block; color: var(--color-on-surface); }
+.datastudio-page { width: min(100%, 1100px); margin: 0 auto; padding: 44px 36px 80px; }
+.page-heading { margin-bottom: 28px; }
+.eyebrow { color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .13em; }
+h1 { margin: 0 0 8px; font-size: clamp(28px, 3vw, 36px); font-weight: 700; }
+.page-heading > p:last-child, .card-heading p, .dataset-details p { color: var(--color-on-surface-variant); }
+.connection-card, .datasets-card, .revisions-card { padding: 28px; margin-bottom: 24px; border: 1px solid var(--color-outline-variant); border-radius: 20px; background: var(--color-surface-container-low); }
+.card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+h2 { margin: 0 0 8px; font-size: 19px; font-weight: 650; overflow-wrap: anywhere; }
+p { margin: 6px 0; line-height: 1.5; }
+.connection-fields { display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; }
+mat-form-field { width: 100%; min-width: 0; }
+.form-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; }
+button { flex-shrink: 0; }
+.muted { color: var(--color-on-surface-variant); font-size: 13px; }
+.feedback { margin: 16px 0; }
+.form-error { color: var(--color-error); }
+.form-success { color: var(--color-primary); }
+.dataset-row, .revision-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 0; border-top: 1px solid var(--color-outline-variant); }
+.dataset-details { min-width: 0; }
+.dataset-details p { overflow-wrap: anywhere; font-size: 13px; }
+a { color: var(--color-primary); }
+.dataset-name { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.dataset-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; font-size: 12px; }
+.badge { padding: 4px 10px; border-radius: 20px; background: var(--color-surface-container-high); font-size: 12px; }
+.empty-state { padding: 20px 0; color: var(--color-on-surface-variant); }
+@media (max-width: 760px) {
+  .datastudio-page { padding: 28px 18px 56px; }
+  .connection-fields { grid-template-columns: 1fr; }
+  .form-actions, .dataset-row { align-items: flex-start; flex-direction: column; }
+  .connection-card, .datasets-card, .revisions-card { padding: 22px; }
+}

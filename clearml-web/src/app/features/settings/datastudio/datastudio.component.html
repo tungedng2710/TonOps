@@ -1,0 +1,107 @@
+<div class="datastudio-page" [attr.aria-busy]="busy()">
+  <div class="page-heading">
+    <p class="eyebrow">CONNECTED SERVICES</p>
+    <h1>DataStudio</h1>
+    <p>Connect your account to browse datasets and their immutable revisions.</p>
+  </div>
+
+  <section class="connection-card" aria-label="DataStudio connection">
+    <div class="card-heading">
+      <div>
+        <h2>Your connection</h2>
+        @if (connection()?.connected) {
+          <p>Connected as <strong>{{ connection().username }}</strong></p>
+          <p class="muted">Last verified {{ connection().checked_at | date:'medium' }}</p>
+        } @else {
+          <p>Enter your DataStudio username and a personal API token with read access.</p>
+        }
+      </div>
+      @if (connection()?.username) {
+        <button mat-stroked-button type="button" (click)="disconnect()" [disabled]="busy()">Disconnect</button>
+      }
+    </div>
+
+    @if (connection() && !connection().configured) {
+      <p class="form-error" role="status">DataStudio is not configured for this workspace. Ask your administrator to configure the service.</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="connect()">
+        <div class="connection-fields">
+          <mat-form-field appearance="outline">
+            <mat-label>DataStudio username</mat-label>
+            <input matInput formControlName="username" autocomplete="off" spellcheck="false" maxlength="64" [readonly]="busy()">
+            @if (form.controls.username.invalid) { <mat-error>Enter a valid DataStudio username.</mat-error> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Personal API token</mat-label>
+            <input matInput type="password" formControlName="token" autocomplete="new-password" spellcheck="false" placeholder="ds_pat_…" [readonly]="busy()">
+            <mat-hint>Create a token in DataStudio → Account settings.</mat-hint>
+            @if (form.controls.token.invalid) { <mat-error>Enter a token starting with ds_pat_.</mat-error> }
+          </mat-form-field>
+        </div>
+        <div class="form-actions">
+          <p class="muted">Your token is stored encrypted and is never shown again.</p>
+          <button mat-flat-button type="submit" [disabled]="form.invalid || busy() || !connection()?.configured">
+            {{ connection()?.connected ? 'Update connection' : 'Connect DataStudio' }}
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+
+  @if (error()) { <p class="form-error feedback" role="alert">{{ error() }}</p> }
+  @if (message()) { <p class="form-success feedback" role="status">{{ message() }}</p> }
+  @if (busy()) { <p class="muted feedback" role="status">Loading DataStudio…</p> }
+
+  @if (connection()?.connected) {
+    <section class="datasets-card" aria-label="DataStudio datasets">
+      <div class="card-heading">
+        <div>
+          <h2>Available datasets</h2>
+          <p>Datasets visible to your connected DataStudio account.</p>
+        </div>
+        <button mat-stroked-button type="button" (click)="refresh()" [disabled]="busy()">Refresh</button>
+      </div>
+      @if (loaded() && !datasets().length) {
+        <p class="empty-state">No datasets are available yet. Upload a dataset in DataStudio, then refresh.</p>
+      }
+      <div class="dataset-list">
+        @for (dataset of datasets(); track dataset.id) {
+          <article class="dataset-row">
+            <div class="dataset-details">
+              <a class="dataset-name" [href]="datasetUrl(dataset)" target="_blank" rel="noopener noreferrer">{{ dataset.namespace }}/{{ dataset.slug }}</a>
+              <p>{{ dataset.description || 'No description' }}</p>
+              <div class="dataset-meta">
+                <span class="badge">{{ dataset.visibility }}</span>
+                @if (dataset.data_stage) { <span class="badge">{{ dataset.data_stage.replaceAll('_', ' ') }}</span> }
+                @if (dataset.latest_revision) { <span>Revision <code>{{ dataset.latest_revision.revision_id }}</code> · {{ dataset.latest_revision.status }}</span> }
+              </div>
+            </div>
+            <button mat-stroked-button type="button" (click)="showRevisions(dataset)" [disabled]="busy()">View revisions</button>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  @if (selected()) {
+    <section class="revisions-card" aria-label="Dataset revisions">
+      <div class="card-heading">
+        <div>
+          <h2>{{ selected().namespace }}/{{ selected().slug }}</h2>
+          <p>Select a revision to open its snapshot in DataStudio.</p>
+        </div>
+      </div>
+      @if (!busy() && !revisions().length) { <p class="empty-state">This dataset has no revisions yet.</p> }
+      @for (revision of revisions(); track revision.revision_id) {
+        <div class="revision-row">
+          <div>
+            <a [href]="datasetUrl(selected(), revision.revision_id)" target="_blank" rel="noopener noreferrer"><code>{{ revision.revision_id }}</code></a>
+            <p>{{ revision.commit_message }}</p>
+            <p class="muted">{{ revision.created_at | date:'medium' }}</p>
+          </div>
+          <span class="badge">{{ revision.status }}</span>
+        </div>
+      }
+    </section>
+  }
+</div>

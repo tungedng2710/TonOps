@@ -21,6 +21,14 @@ export const routes: Routes = [
         pathMatch: 'full'
       },
       {path: 'profile', redirectTo: 'account', pathMatch: 'full'},
+      {
+        path: 'datastudio',
+        loadComponent: () => import('./datastudio/datastudio.component').then(m => m.DataStudioComponent),
+        data: {staticBreadcrumb: [[settingsBreadcrumb, {
+          name: 'DataStudio',
+          type: CrumbTypeEnum.SubFeature
+        }]]}
+      },
       {path: 'account',
         loadComponent: () => import('./containers/admin/profile-name/profile-name.component').then(m => m.ProfileNameComponent),
         data: {

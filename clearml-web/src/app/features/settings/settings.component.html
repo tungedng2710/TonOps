@@ -6,6 +6,7 @@
     </div>
     <mat-list class="pointer" aria-label="Settings sections">
       <mat-list-item routerLinkActive="active" routerLink="account">Account settings</mat-list-item>
+      <mat-list-item routerLinkActive="active" routerLink="datastudio">DataStudio</mat-list-item>
       <mat-list-item routerLinkActive="active" routerLink="webapp-configuration">Configuration</mat-list-item>
       @if (iamEnabled() && currentUser()?.role === 'admin') {
         <mat-list-item routerLinkActive="active" routerLink="user-management">User Management</mat-list-item>

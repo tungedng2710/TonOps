@@ -120,6 +120,8 @@ services:
         CLEARML_SERVER_BASE: ${CLEARML_SERVER_BASE:-clearml/server:latest}
     command: [apiserver]
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       mongo: {condition: service_healthy}
       redis: {condition: service_healthy}
@@ -137,6 +139,10 @@ services:
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-120}
       LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-8192}
       LLM_MAX_TASKS: ${LLM_MAX_TASKS:-50}
+      DATASTUDIO_API_URL: ${DATASTUDIO_API_URL:-http://host.docker.internal:8001/api/v1}
+      DATASTUDIO_WEB_URL: ${DATASTUDIO_WEB_URL:-http://localhost:3000}
+      DATASTUDIO_TOKEN_KEY: ${DATASTUDIO_TOKEN_KEY:-}
+      DATASTUDIO_TOKEN_KEY_FILE: /opt/clearml/config/datastudio-token.key
       CLEARML__apiserver__pre_populate__enabled: "false"
       CLEARML__services__async_urls_delete__enabled: "true"
       CLEARML__services__async_urls_delete__fileserver__url_prefixes: "[${CLEARML_FILES_HOST:-http://localhost:7863},http://fileserver:8081]"
