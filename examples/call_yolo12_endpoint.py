@@ -20,7 +20,7 @@ DEFAULT_ENDPOINT = "http://27.66.108.30:7872/predict/yolo12"
 
 
 def predict(image_path: Path, endpoint: str, timeout: float) -> dict:
-    """POST the image as base64 JSON and return the prediction response."""
+    """POST the image as base64 JSON and return the prediction response.""" 
     encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
     payload = json.dumps({"image_base64": encoded}).encode("utf-8")
     request = Request(
