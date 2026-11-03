@@ -1,7 +1,7 @@
 @use "auth-layout" as auth;
 
 :host { display: block; height: 100%; @include auth.content; }
-.signup-page { --auth-background: url('../../../../assets/login-background.png'); @include auth.page; }
+.signup-page { @include auth.page; }
 .signup-card { @include auth.panel; }
 .field-grid { grid-template-columns: 1fr 1fr; column-gap: 20px; }
 .full-width { grid-column: 1 / -1; }

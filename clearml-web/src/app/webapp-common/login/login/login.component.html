@@ -1,61 +1,64 @@
 <main class="login-form light-theme">
-  <section class="login-section-inner auth-panel" aria-labelledby="login-title">
-    <div class="brand-lockup">
-      <img [ngSrc]="environment().branding.logo" [priority]="true" width="52" height="52" class="logo" alt="TonOps logo">
-      <div class="brand-copy"><span class="brand-name">TonOps</span><span class="brand-caption">Your MLOps workspace</span></div>
-    </div>
-    @if (!loginMode()) {
-      <div class="auth-state" role="status"><mat-spinner diameter="32"></mat-spinner><p id="login-title">Preparing your workspace…</p></div>
-    } @else if ([loginModeEnum.password, loginModeEnum.simple, loginModeEnum.ssoOnly].includes(loginMode())) {
-      <header class="auth-heading">
-        <h1 id="login-title">{{ (isInvite || showSimpleLogin()) ? (loginTitle() || 'Join your workspace') : 'Welcome back' }}</h1>
-        <p>{{ loginMode() === loginModeEnum.simple ? 'Enter your name to open your workspace.' : 'Sign in to continue with your projects, tasks, and results.' }}</p>
-      </header>
-      @if (notice()) { <div class="auth-notice">{{ notice() }}</div> }
-      <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="login()">
-        <div class="auth-fields">
-          @if (showLogin()) {
-            <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
-              <mat-label>{{ loginMode() === loginModeEnum.password ? 'Username' : 'Full name' }}</mat-label>
-              <input matInput formControlName="name" [matAutocomplete]="auto" [attr.autocomplete]="loginMode() === loginModeEnum.password ? 'username' : 'name'" maxlength="70" autocapitalize="none" spellcheck="false">
-            </mat-form-field>
-          }
-          @if (loginMode() === loginModeEnum.password) {
-            <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
-              <mat-label>Password</mat-label>
-              <input matInput [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="current-password">
-              <button mat-icon-button matSuffix class="password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="passwordVisible()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>@if (passwordVisible()) { <path d="m3 3 18 18"/> }</svg>
-              </button>
-            </mat-form-field>
-          }
-        </div>
-        @if (loginFailed()) { <div class="form-error" role="alert">The username or password is incorrect. Please try again.</div> }
-        @if (showLogin()) {
-          <button mat-flat-button class="auth-submit" type="submit" [disabled]="!loginForm.valid || showSpinner()">
-            @if (showSpinner()) { <mat-spinner diameter="18"></mat-spinner> }
-            {{ buttonCaption }}
-          </button>
-        }
-        <mat-autocomplete #auto="matAutocomplete">
-          @for (option of filteredOptions$ | ngrxPush; track option.name) { <mat-option [value]="option.name">{{ option.name }}</mat-option> }
-        </mat-autocomplete>
-        <ng-content></ng-content>
-      </form>
-      <footer class="auth-footer">
-        @if (!isInvite && loginMode() === loginModeEnum.password && selfSignupEnabled()) {
-          <p class="auth-switch">New to TonOps? <a routerLink="/login/signup">Create account</a></p>
-        }
-        @if (!hideTou()) { <div class="terms-of-use">The security, configuration, and maintenance of this instance are the responsibility of the deploying organization.</div> }
-      </footer>
-    } @else if (errorTemplate()) {
-      <div class="auth-state"><ng-container *ngTemplateOutlet="errorTemplate()"></ng-container></div>
-    } @else {
-      <div class="auth-state">
-        <span class="state-mark" aria-hidden="true">!</span>
-        <h1 id="login-title">Unable to sign in</h1>
-        <p>There’s an issue with server login. Please contact your administrator or support.</p>
+  <sm-auth-showcase />
+  <div class="auth-form-side">
+    <section class="login-section-inner auth-panel" aria-labelledby="login-title">
+      <div class="brand-lockup">
+        <img [ngSrc]="environment().branding.logo" [priority]="true" width="52" height="52" class="logo" alt="TonOps logo">
+        <div class="brand-copy"><span class="brand-name">TonOps</span><span class="brand-caption">Your MLOps workspace</span></div>
       </div>
-    }
-  </section>
+      @if (!loginMode()) {
+        <div class="auth-state" role="status"><mat-spinner diameter="32"></mat-spinner><p id="login-title">Preparing your workspace…</p></div>
+      } @else if ([loginModeEnum.password, loginModeEnum.simple, loginModeEnum.ssoOnly].includes(loginMode())) {
+        <header class="auth-heading">
+          <h1 id="login-title">{{ (isInvite || showSimpleLogin()) ? (loginTitle() || 'Join your workspace') : 'Welcome back' }}</h1>
+          <p>{{ loginMode() === loginModeEnum.simple ? 'Enter your name to open your workspace.' : 'Sign in to continue with your projects, tasks, and results.' }}</p>
+        </header>
+        @if (notice()) { <div class="auth-notice">{{ notice() }}</div> }
+        <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="login()">
+          <div class="auth-fields">
+            @if (showLogin()) {
+              <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
+                <mat-label>{{ loginMode() === loginModeEnum.password ? 'Username' : 'Full name' }}</mat-label>
+                <input matInput formControlName="name" [matAutocomplete]="auto" [attr.autocomplete]="loginMode() === loginModeEnum.password ? 'username' : 'name'" maxlength="70" autocapitalize="none" spellcheck="false">
+              </mat-form-field>
+            }
+            @if (loginMode() === loginModeEnum.password) {
+              <mat-form-field appearance="outline" floatLabel="auto" subscriptSizing="dynamic">
+                <mat-label>Password</mat-label>
+                <input matInput [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="current-password">
+                <button mat-icon-button matSuffix class="password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="passwordVisible()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>@if (passwordVisible()) { <path d="m3 3 18 18"/> }</svg>
+                </button>
+              </mat-form-field>
+            }
+          </div>
+          @if (loginFailed()) { <div class="form-error" role="alert">The username or password is incorrect. Please try again.</div> }
+          @if (showLogin()) {
+            <button mat-flat-button class="auth-submit" type="submit" [disabled]="!loginForm.valid || showSpinner()">
+              @if (showSpinner()) { <mat-spinner diameter="18"></mat-spinner> }
+              {{ buttonCaption }}
+            </button>
+          }
+          <mat-autocomplete #auto="matAutocomplete">
+            @for (option of filteredOptions$ | ngrxPush; track option.name) { <mat-option [value]="option.name">{{ option.name }}</mat-option> }
+          </mat-autocomplete>
+          <ng-content></ng-content>
+        </form>
+        <footer class="auth-footer">
+          @if (!isInvite && loginMode() === loginModeEnum.password && selfSignupEnabled()) {
+            <p class="auth-switch">New to TonOps? <a routerLink="/login/signup">Create account</a></p>
+          }
+          @if (!hideTou()) { <div class="terms-of-use">The security, configuration, and maintenance of this instance are the responsibility of the deploying organization.</div> }
+        </footer>
+      } @else if (errorTemplate()) {
+        <div class="auth-state"><ng-container *ngTemplateOutlet="errorTemplate()"></ng-container></div>
+      } @else {
+        <div class="auth-state">
+          <span class="state-mark" aria-hidden="true">!</span>
+          <h1 id="login-title">Unable to sign in</h1>
+          <p>There’s an issue with server login. Please contact your administrator or support.</p>
+        </div>
+      }
+    </section>
+  </div>
 </main>

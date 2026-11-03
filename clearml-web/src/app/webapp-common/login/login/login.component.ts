@@ -36,6 +36,7 @@ import {minLengthTrimmed} from '@common/shared/validators/minLengthTrimmed';
 import {User} from '~/business-logic/model/users/user';
 import {Title} from '@angular/platform-browser';
 import {ApiIamService} from '~/business-logic/api-services/iam.service';
+import {AuthShowcaseComponent} from '../auth-showcase/auth-showcase.component';
 
 
 @Component({
@@ -44,6 +45,7 @@ import {ApiIamService} from '~/business-logic/api-services/iam.service';
     styleUrls: ['./login.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AuthShowcaseComponent,
         MatAutocompleteTrigger,
         MatProgressSpinner,
         MatAutocomplete,

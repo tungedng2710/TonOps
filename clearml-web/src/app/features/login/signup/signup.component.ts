@@ -12,6 +12,7 @@ import {finalize} from 'rxjs/operators';
 import {ApiIamService} from '~/business-logic/api-services/iam.service';
 import {ConfigurationService} from '@common/shared/services/configuration.service';
 import {Error as ApiError, ErrorService} from '@common/shared/services/error.service';
+import {AuthShowcaseComponent} from '@common/login/auth-showcase/auth-showcase.component';
 
 @Component({
   selector: 'sm-signup',
@@ -19,6 +20,7 @@ import {Error as ApiError, ErrorService} from '@common/shared/services/error.ser
   styleUrls: ['./signup.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AuthShowcaseComponent,
     NgOptimizedImage,
     ReactiveFormsModule,
     RouterLink,

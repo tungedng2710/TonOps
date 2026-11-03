@@ -1,9 +1,8 @@
 @use "auth-layout" as auth;
 
 :host { display: block; height: 100%; @include auth.content; }
-.login-form { --auth-background: url('../../../../assets/login-background.png'); @include auth.page; }
-.login-section-inner { @include auth.panel; }
-.auth-form { justify-content: center; }
+.login-form { @include auth.page; }
+.login-section-inner { --auth-panel-width: 400px; @include auth.panel; }
 .terms-of-use { color: #718198; font-size: 11px; line-height: 1.7; text-align: center; margin-top: 20px; }
 .other-email { margin-top: 16px; }
 input:-webkit-autofill { -webkit-text-fill-color: #192b43; }
