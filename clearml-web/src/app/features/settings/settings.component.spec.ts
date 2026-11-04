@@ -16,7 +16,7 @@ describe('SettingsComponent IAM menu', () => {
       imports: [SettingsComponent],
       providers: [
         provideRouter([]),
-        {provide: Store, useValue: {selectSignal: () => currentUser}},
+        {provide: Store, useValue: {selectSignal: () => currentUser, dispatch: jasmine.createSpy('dispatch')}},
         {provide: ApiIamService, useValue: {status: () => of({enabled: true})}}
       ]
     }).compileComponents();

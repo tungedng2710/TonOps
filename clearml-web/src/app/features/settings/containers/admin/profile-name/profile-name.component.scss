@@ -192,3 +192,21 @@
   .card-actions { align-items: stretch; flex-direction: column; }
   .card-actions button { width: 100%; }
 }
+
+// Presentation of personal information only. Security and credential panel
+// selectors, sizing, controls and handlers retain their existing styles.
+.page-heading {
+  .eyebrow { color: var(--color-on-surface-variant); font-size: 10px; font-weight: 600; letter-spacing: .12em; }
+  h1 { font-size: 30px; font-weight: 650; }
+  > div > p:last-child { font-size: 13px; line-height: 1.7; }
+}
+.identity-card, .personal-card {
+  border-radius: 12px;
+  background: var(--color-surface-container-lowest);
+  box-shadow: none;
+}
+.personal-card {
+  .card-heading h2 { font-size: 17px; font-weight: 600; }
+  .card-actions button { --mat-button-filled-container-shape: 8px; }
+}
+.identity-card .identity-details h2 { font-size: 19px; overflow-wrap: anywhere; }

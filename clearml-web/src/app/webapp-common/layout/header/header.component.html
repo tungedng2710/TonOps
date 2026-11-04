@@ -29,17 +29,17 @@
   @if (!hideMenus()) {
     <div class="right-buttons" data-id="rightSideHeaderpanel">
       @if (!isShareMode()) {
-                <button class="me-2" mat-icon-button data-id="globalSearchButton" (click)="openGlobalSearch()" smTooltip="Search all [ctrl + k]">
+                <button type="button" aria-label="Search workspace" class="me-2" mat-icon-button data-id="globalSearchButton" (click)="openGlobalSearch()" smTooltip="Search all [ctrl + k]">
                     <mat-icon fontSet="al" fontIcon="al-ico-search" data-id="search Icon" ></mat-icon>
                   </button>
       }
       @if (showAutoRefresh()) {
         <sm-refresh-button (setAutoRefresh)="toggleAutoRefresh($event)" class="refresh-button"></sm-refresh-button>
       }
-      <button mat-icon-button #trigger="matMenuTrigger" class="resources-trigger" [class.menu-opened]="trigger.menuOpen" [matMenuTriggerFor]="resourcesMenu">
+      <button type="button" aria-label="Help and resources" mat-icon-button #trigger="matMenuTrigger" class="resources-trigger" [class.menu-opened]="trigger.menuOpen" [matMenuTriggerFor]="resourcesMenu">
         <mat-icon fontSet="al" fontIcon="al-ico-help-outlined" data-id="help Icon"></mat-icon>
       </button>
-      <span class="pointer menu-trigger position-relative" data-id="Avatar" [matMenuTriggerFor]="profileMenu">
+      <button type="button" aria-label="Open profile menu" class="menu-trigger position-relative" data-id="Avatar" [matMenuTriggerFor]="profileMenu">
         @if (user().avatar; as avatar) {
           <img alt="avatar" class="avatar" [src]="avatar">
         } @else {
@@ -50,7 +50,7 @@
         @if (userNotificationPath() || invitesPending()?.length) {
           <div class="user-notification"></div>
         }
-      </span>
+      </button>
       <mat-menu #profileMenu="matMenu" class="user-menu">
         <button mat-menu-item routerLink="/user">
           <mat-icon fontSet="al" fontIcon="al-ico-account"></mat-icon>

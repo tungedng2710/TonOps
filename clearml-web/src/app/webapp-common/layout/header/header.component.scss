@@ -1,16 +1,18 @@
 @use "../../layout/layout";
-@use "liquid-glass" as glass;
+@use "workspace-shell" as shell;
 
 ::ng-deep.mat-mdc-menu-panel.search-menu {
   max-width: fit-content !important;
 }
 :host {
+  @include shell.tokens;
   display: block;
   position: relative;
   height: layout.$top-bar-height;
 
   sm-header-navbar-tabs {
-    height: calc(#{layout.$top-bar-height} - 10px);
+    --mat-tab-container-height: #{layout.$top-bar-height};
+    height: 100%;
   }
 
   .share-view {
@@ -19,15 +21,14 @@
 
   .header-container {
     display: grid;
-    grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr);
-    grid-gap: 32px;
-    @include glass.surface;
-    border-radius: 18px;
-    margin: 10px 16px 0 8px;
-    color: var(--color-primary);
-    height: calc(100% - 10px);
-    width: calc(100% - 24px);
-    padding: 0 20px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto) auto;
+    gap: 20px;
+    border-bottom: 1px solid var(--workspace-shell-border);
+    background: var(--workspace-shell-surface);
+    color: var(--workspace-shell-text);
+    height: 100%;
+    width: 100%;
+    padding: 0 24px;
     align-items: center;
     justify-content: space-between;
 
@@ -36,8 +37,8 @@
     }
 
     &.no-tabs {
-      grid-template-columns:  1fr 0 minmax(150px, auto);
-      grid-gap: 12px;
+      grid-template-columns: minmax(0, 1fr) 0 auto;
+      gap: var(--workspace-shell-gap);
     }
 
     .header-title {
@@ -46,7 +47,7 @@
     }
 
     .spacer {
-      min-width: 50px;
+      min-width: 0;
     }
 
     .left-menu {
@@ -55,17 +56,11 @@
 
     };
 
-    sm-breadcrumbs {
-      display: flex;
-
-      :not(.login) {
-        width: 95%;
-      }
-    }
+    sm-breadcrumbs { display: flex; }
 
     sm-common-search,
     .resources-trigger {
-      margin-right: 14px;
+      margin-right: 4px;
     }
 
     .refresh-button {
@@ -78,13 +73,20 @@
     }
 
     .menu-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 36px;
       height: 36px;
-      border-radius: 50%;
+      flex-shrink: 0;
+      border: 0;
+      border-radius: var(--workspace-shell-radius);
+      background: transparent;
+      cursor: pointer;
       padding: 2px;
 
       &:hover {
-        background-color: var(--color-surface-bright);
+        background-color: var(--workspace-shell-hover);
       }
 
       .avatar {
@@ -100,8 +102,8 @@
         flex: 0 0 32px;
         width: 32px;
         height: 32px;
-        background-color: #eaf3ff;
-        color: #155aa9;
+        background-color: var(--workspace-shell-selected);
+        color: var(--workspace-shell-accent);
         border-radius: 50%;
 
         .al-icon {
@@ -153,6 +155,8 @@
     justify-content: flex-end;
   }
 
+  button:focus-visible { @include shell.focus; }
+
   .user-notification {
     position: absolute;
     left: 0;
@@ -170,10 +174,10 @@
 @media (max-width: 700px) {
   :host .header-container {
     padding: 0 12px;
-    grid-gap: 12px;
+    gap: var(--workspace-shell-gap);
 
     &.no-tabs {
-      grid-template-columns: minmax(0, 1fr) 0 minmax(120px, auto);
+      grid-template-columns: minmax(0, 1fr) 0 auto;
     }
 
     .resources-trigger {

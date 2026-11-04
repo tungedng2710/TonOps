@@ -1,23 +1,23 @@
 <mat-drawer-container class="settings-container">
-  <mat-drawer #settingsDrawer [mode]="narrow() ? 'over' : 'side'" [opened]="!narrow()">
+  <mat-drawer #settingsDrawer id="settings-navigation" [mode]="narrow() ? 'over' : 'side'" [opened]="!narrow()">
     <div class="settings-nav-heading">
-      <span>Settings</span>
-      <small>Manage your workspace</small>
+      <div><span>Settings</span><small>Your account and workspace</small></div>
+      @if (narrow()) { <button mat-button type="button" (click)="settingsDrawer.close()" aria-label="Close settings menu">Close</button> }
     </div>
-    <mat-list class="pointer" aria-label="Settings sections">
-      <mat-list-item routerLinkActive="active" routerLink="account">Account settings</mat-list-item>
-      <mat-list-item routerLinkActive="active" routerLink="datastudio">DataStudio</mat-list-item>
-      <mat-list-item routerLinkActive="active" routerLink="webapp-configuration">Configuration</mat-list-item>
+    <mat-nav-list aria-label="Settings sections">
+      <a mat-list-item routerLinkActive="active" ariaCurrentWhenActive="page" routerLink="account" (click)="narrow() && settingsDrawer.close()">Account settings</a>
+      <a mat-list-item routerLinkActive="active" ariaCurrentWhenActive="page" routerLink="datastudio" (click)="narrow() && settingsDrawer.close()">DataStudio</a>
+      <a mat-list-item routerLinkActive="active" ariaCurrentWhenActive="page" routerLink="webapp-configuration" (click)="narrow() && settingsDrawer.close()">Configuration</a>
       @if (iamEnabled() && currentUser()?.role === 'admin') {
-        <mat-list-item routerLinkActive="active" routerLink="user-management">User Management</mat-list-item>
+        <a mat-list-item routerLinkActive="active" ariaCurrentWhenActive="page" routerLink="user-management" (click)="narrow() && settingsDrawer.close()">User Management</a>
       }
-      <mat-list-item routerLinkActive="active" routerLink="storage-credentials">Storage Cleanup</mat-list-item>
-    </mat-list>
+      <a mat-list-item routerLinkActive="active" ariaCurrentWhenActive="page" routerLink="storage-credentials" (click)="narrow() && settingsDrawer.close()">Storage Cleanup</a>
+    </mat-nav-list>
   </mat-drawer>
   <mat-drawer-content>
     @if (narrow()) {
       <div class="settings-mobile-bar">
-        <button mat-stroked-button type="button" (click)="settingsDrawer.toggle()">Settings menu</button>
+        <button mat-stroked-button type="button" aria-controls="settings-navigation" [attr.aria-expanded]="settingsDrawer.opened" (click)="settingsDrawer.toggle()">Settings menu</button>
       </div>
     }
     <div class="section">

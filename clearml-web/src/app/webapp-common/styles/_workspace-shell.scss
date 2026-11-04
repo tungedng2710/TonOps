@@ -1,0 +1,19 @@
+// Opt in on authenticated shell hosts only. Never emit global theme rules here.
+@mixin tokens {
+  --workspace-shell-surface: var(--color-surface-container-lowest, #fff);
+  --workspace-shell-nav-surface: var(--color-surface-container-low, #f8fafc);
+  --workspace-shell-text: var(--color-on-surface, #1b1c1f);
+  --workspace-shell-muted: var(--color-on-surface-variant, #494b51);
+  --workspace-shell-border: var(--color-outline-variant, #e5e6ea);
+  --workspace-shell-hover: var(--color-surface-container, #f0f1f3);
+  --workspace-shell-accent: #155aa9;
+  --workspace-shell-selected: #e8f0fc;
+  --workspace-shell-radius: 8px;
+  --workspace-shell-gap: 8px;
+}
+
+@mixin focus {
+  // The existing application reset uses outline: none !important.
+  outline: 2px solid var(--workspace-shell-accent) !important;
+  outline-offset: 2px;
+}
