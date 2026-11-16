@@ -84,4 +84,4 @@ export const selectModelPlots = createSelector(selectModelInfo, state => state.p
 
 export const selectModelsPage = createSelector(selectRouterConfig, config => config?.[0] === 'models');
 export const selectModelId = createSelector(selectRouterParams, params => params?.modelId);
-export const selectProjectId = createSelector(selectModelsPage, selectRouterProjectId, (modelsPage, projectId) => modelsPage ? '*' : projectId);
+export const selectProjectId = createSelector(selectModelsPage, selectRouterProjectId, (modelsPage, projectId) => projectId ?? (modelsPage ? '*' : projectId));

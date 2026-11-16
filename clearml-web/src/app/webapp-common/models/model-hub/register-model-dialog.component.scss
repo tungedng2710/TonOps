@@ -1,0 +1,23 @@
+@use '../../styles/workspace-shell' as workspace;
+
+:host {
+  @include workspace.tokens;
+  display: block;
+  color: var(--workspace-shell-text);
+}
+.intro, .hint, label > span { color: var(--workspace-shell-muted); }
+.method-switch { display: flex; gap: 8px; margin: 16px 0 24px; }
+.method-switch button { border: 1px solid var(--workspace-shell-border); background: var(--workspace-shell-surface); padding: 8px 16px; border-radius: 8px; }
+.method-switch button[aria-pressed=true] { color: var(--workspace-shell-accent); background: var(--workspace-shell-selected); border-color: var(--workspace-shell-accent); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.form-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-weight: 500; }
+input, select, textarea { width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid var(--workspace-shell-border); border-radius: 6px; color: inherit; background: var(--workspace-shell-surface); font: inherit; }
+label > span, .hint { font-size: 12px; font-weight: 400; }
+.upload-zone { border: 1px dashed var(--workspace-shell-border); background: var(--workspace-shell-nav-surface); padding: 16px; border-radius: 8px; }
+.code-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+pre { padding: 16px; background: var(--workspace-shell-nav-surface); border: 1px solid var(--workspace-shell-border); border-radius: 8px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.error { color: var(--color-error); overflow-wrap: anywhere; }
+a { color: var(--workspace-shell-accent); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { @include workspace.focus; }
+@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; gap: 0; } }

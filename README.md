@@ -91,6 +91,9 @@ run and vehicle training using a portable ClearML Dataset ID.
 
 ### Example pipelines and model endpoints
 
+To serve existing registered YOLO checkpoints with live endpoint reporting, see
+the [YOLO registry serving example](examples/yolo_serving/README.md).
+
 Run two small pipelines using scikit-learn's bundled Iris and Wine datasets:
 
 ```bash

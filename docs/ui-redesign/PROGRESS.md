@@ -226,3 +226,253 @@ redesigns are complete for this increment.
 
 Next highest-value in-scope slice remains the Projects listing toolbar, filters
 and density, followed by experiment listing/details.
+
+## 2026-11-10 — Explicit request: project artifacts on S3
+
+Completed an operational migration, with no UI/authentication/source changes.
+Copied and SHA-256 verified 327 task artifacts plus 12 fileserver model files;
+updated their links and 79 task output destinations. All 20 project defaults and
+all 83 current task destinations use RustFS. All 334 current task artifacts have
+verified S3 objects; all 339 original source files remain as backups. Repeat
+preview reports nothing remaining to migrate.
+
+Five unavailable local model references and one pre-existing missing S3 model
+placeholder remain unchanged. Browser/SDK workflows and builds were not run.
+Details, the initial resolved streaming error, and the persistent private rollback
+manifest are recorded in [the migration log](../rustfs-artifact-migration-2026-11-10.md).
+Next storage step: recover the unavailable model files and check client upload
+overrides/credentials; the next UI slice remains the Projects listing.
+
+## 2026-11-10 — Model registry hub
+
+Implemented in `/projects/:projectId/models` and existing model General tabs:
+
+- Added registry heading/actions and GUI file/URI registration using existing
+  model and fileserver APIs. Retained the table, search, filters, menus, comparison,
+  permissions, export and detail tabs. No routing or global stylesheet changes.
+- Versions use separate model IDs, native parent links and `version:` tags.
+  Added same-name/project version history with pagination, parent navigation,
+  searchable project selection, SDK/REST snippets and exact-model download code.
+- Uploads register the draft URI before transferring bytes, as required by the
+  fileserver's existing authorization. Failed uploads retain a draft for retry
+  without another create. Filenames are normalized for consistent authorization.
+- Added framework-aware ClearML Serving commands, setup links, endpoint navigation
+  and Python/cURL request examples with JSON validation. The UI explicitly requires
+  an existing inference runtime and preprocessing; it does not start containers.
+- Scoped existing workspace tokens to model components. Below 700px, open model
+  details use the splitter width; the existing close action returns to the list.
+
+Baseline: `main`, app 2.5.0 / Angular 21.2. Preserved pre-existing PLAN.md,
+PROGRESS.md and the untracked RustFS migration note. Used installed Node 22.22.0
+and node_modules directly because pnpm was unavailable; no dependencies changed.
+
+Verification:
+
+- Baseline and final development builds: PASS. Final production build: PASS;
+  only the existing markdown import and five unrelated style-budget warnings.
+- New model-hub files and model General container focused ESLint: PASS. The parent
+  ModelsComponent retains two lint errors (`any` and unused `mode`), reproduced
+  against HEAD using ESLint stdin; no new errors were introduced there.
+- Live SDK reads: PASS under the configured Tung Nguyen account. Existing models
+  and projects are accessible; serving currently reports no endpoints.
+- Live GUI registration: PASS. Uploaded a fitted 1,590-byte scikit-learn model and
+  verified a byte-identical authenticated download. Live model details, version
+  link, code rendering and 390px document overflow check passed. Both test model
+  and uploaded file were deleted (HTTP 200); existing data was preserved.
+- The live harness uses the configured SDK session in a temporary local proxy.
+  Browser-origin CORS headers were adapted only in the harness. Initial attempts
+  exposed Snap Chromium's isolated /tmp and the temporary origin's CORS mismatch;
+  passing file bytes and adapting harness responses resolved them. Failed test
+  drafts/files were cleaned up. No server or auth configuration was edited.
+- Shell capture/auth regression: PASS. Login/signup screenshots at 1440/390px
+  match the baseline byte for byte. Capture-mode navigation/history, empty/loading/
+  error and narrow-screen checks pass. The full shell harness's profile-focus
+  assertion fails on unchanged baseline line 148; capture mode was used consistently
+  before/after without changing that existing harness.
+
+Reproduce from `clearml-web` with installed dependencies:
+
+```bash
+node node_modules/@angular/cli/bin/ng.js build --configuration development --output-path /tmp/tonops-model-hub-final
+CHROME_BIN=/snap/bin/chromium node scripts/ui-model-hub-smoke.mjs --build /tmp/tonops-model-hub-final/browser --artifacts /tmp/tonops-model-hub/fixtures-final
+node node_modules/@angular/cli/bin/ng.js build --configuration production --output-path /tmp/tonops-model-hub-production
+```
+
+Artifacts: `/tmp/tonops-model-hub/{fixtures-final,live-before,live-after,
+baseline-shell,after-shell}/` contains registry/registration/version/serving/upload
+failure/auth screenshots and results. Logs: `/tmp/tonops-model-hub-*.log`.
+The temporary live session is removed after verification and is never committed.
+
+Limits: no live inference runtime or serving execution was provisioned/verified.
+GUI file upload uses the configured HTTP(S) fileserver; S3 uses SDK upload or an
+existing object URI. History groups by exact name/project and displays explicit
+version tags; it does not infer semantic release order or introduce a new schema.
+Full Karma/e2e suites, huge model tables and existing destructive menu operations
+were not exercised. No auth, backend, SDK, dependency or API-contract changes.
+Source builds are local; the running production webserver is unchanged.
+
+Next slice: connect and validate a running inference service, within an explicitly
+authorized deployment scope, so users can exercise the generated request code.
+
+Final verification: the repository fixture harness passes file upload, normalized
+filenames, storage URI registration, SDK/REST rendering, all-project project
+selection, parent/version-tag payloads, version deep links/back, read-only states,
+upload failure/retry without duplicate drafts, version-query failure/retry, empty
+registry, form validation, JSON validation, exact-model download and generated
+serving/request code. Responsive checks passed at 1280/1024/768/390px, including
+waiting for the model list to hide when narrow details expand. No unexpected
+browser runtime errors occurred. Live upload/download/detail checks also passed
+on the final build and all disposable data was cleaned up. Shell auth PNGs remain
+byte-identical. Shell-quote roundtrips, regex escaping, generated Python syntax,
+script syntax, focused new-code lint and `git diff --check`: PASS. Existing parent
+lint errors and baseline shell focus failure remain as documented above.
+
+## 2026-11-10 — Activate the model hub frontend
+
+The user checked Model endpoints and could not see the registry update. The
+registry lives at `/projects/*/models` (all projects) or
+`/projects/:projectId/models`; serving guidance is in a model's General tab.
+The previous source-only handoff left the running frontend on its earlier build.
+
+Deployed the verified production frontend at `http://27.66.108.30:7861` by
+deriving the currently running image and recreating only `webserver`. Copied
+frontend assets while preserving env.js, configuration.json, credentials.json
+and onboarding.json. No repository deployment configuration was changed.
+The API/fileserver containers retain their exact previous IDs and start times;
+all data and inference services remain in place. Runtime configuration, env.js
+and nginx configuration SHA-256 hashes match their pre-deployment values, and
+the served index exactly matches the tested production build.
+
+- Active image: `clearml/local-server:model-hub-20261110-164434`, also tagged
+  `clearml/local-server:dev` for the existing Compose setup.
+- Original image retained as
+  `clearml/local-server:before-model-hub-20261110-164434` for rollback.
+- Deployment manifest: `/tmp/tonops-model-hub-deployment.json`; browser artifacts:
+  `/tmp/tonops-model-hub/deployed-{before,after}/`.
+- Frontend readiness and public registry route: HTTP 200; webserver healthy.
+- Deployed browser check: PASS under the configured account. The all-project
+  registry heading, Register model dialog and SDK/API tab are visible and produce
+  no unexpected runtime errors. No model data was written by this deployment check.
+- Deployed login/signup comparison: PASS, all four 1440/390px PNGs byte-identical
+  to the pre-deployment running app. The first authenticated harness attempt
+  intercepted the proxy path while production uses the API port directly; correcting
+  the test target resolved its login redirect. No auth code/settings were changed.
+- Removed the temporary SDK session file after verification. Rollback image remains.
+
+This supersedes the previous entry's source-only deployment limitation. Serving
+runtime provisioning remains outside this frontend activation.
+
+## 2026-11-10 — Normal-login acceptance test on port 7861
+
+Used the supplied account through the normal login form at
+`http://27.66.108.30:7861`. No mocked responses, injected SDK tokens, modified
+CORS headers or authentication changes. Credentials were supplied through
+non-echoing stdin, held in process memory, and were not written to the repository
+or test artifacts. Tested the actual deployed production app.
+
+Confirmed a live upload blocker that the earlier proxy-assisted test masked:
+the fileserver on 7863 saves the upload but its response lacks
+`Access-Control-Allow-Credentials: true`. Chromium rejects the credentialed
+response, leaving the draft's upload unconfirmed. Independently downloaded the
+file with the authenticated test context and verified identical bytes. This is
+a **FAIL** for GUI upload completion, despite the file reaching storage. The
+earlier adapted-CORS test is not evidence of unmodified browser upload success.
+
+The existing same-origin files proxy also strips the host port and rewrites the
+path, conflicting with registered-model file authorization. No workaround using
+fake URIs, token handling, permissions, backend or auth/server configuration was
+introduced. Correcting the fileserver CORS/deployment dependency requires a
+scope exception to the project's excluded server/auth-configuration boundary.
+
+Found and fixed a separate in-scope defect: joined model APIs return parent
+objects (`{id: ...}`), while the new parent link assumed a string. Normalize the
+parent ID locally before routing. Updated the fixture to reflect the actual
+response and assert the parent link. Also clarified the upload alert: the browser
+could not confirm the upload and the file may already be stored.
+
+Final normal-browser results:
+
+- PASS: normal login as Tung Nguyen and authenticated account identity.
+- PASS: registry visibility, existing-project search, draft/version tags, actual
+  stored file and byte-identical authenticated download.
+- FAIL: GUI upload completion/confirmation because of the CORS header above.
+- PASS: GUI version creation via an existing URI, native parent relationship,
+  corrected parent link and version navigation.
+- PASS: direct REST model registration and refreshed version history.
+- PASS: exact-model download snippet, serving command, Python/cURL request
+  generation and invalid-JSON handling.
+- PASS: 1024/768/390px document layout and expanded narrow model details.
+- PASS: SDK/REST examples and Model endpoints navigation. The API returns zero
+  endpoints, so actual serving/inference execution remains UNVERIFIED.
+- PASS: cleanup of the test file and all three final-run models (HTTP 200 each).
+  Earlier diagnostic runs' temporary models/files were also removed.
+- No unexpected JavaScript page errors or HTTP error statuses occurred; browser
+  console errors explicitly report the known fileserver CORS rejection.
+
+Validation of the scoped corrections: focused new-code ESLint, development and
+production builds, registry fixture browser suite, script syntax and
+`git diff --check`: PASS. All four shell login/signup 1440/390px PNGs remain
+byte-identical to baseline. Builds retain the existing markdown/style warnings.
+Existing parent-component lint errors and baseline shell-focus failure remain
+as previously recorded. No additional backend tests were needed or executed.
+
+Deployed only the corrected frontend over the then-current image. Active image:
+`clearml/local-server:model-hub-tested-20261110-165859` (also `:dev`); rollback:
+`clearml/local-server:before-parent-link-fix-20261110-165859`. API/fileserver
+container identities/start times and runtime config/env.js/nginx hashes remained
+unchanged. No auth source, API contracts or dependency files changed.
+
+Evidence: `/tmp/tonops-model-hub/normal-login/results.json` and screenshots
+`registry-desktop.png`, `upload-confirmation-failed.png`, `versions-desktop.png`,
+`serve-and-call-desktop.png`, `serve-and-call-narrow.png`, `model-endpoints.png`.
+Fixture artifacts: `/tmp/tonops-model-hub/normal-login-fixtures/`; build/lint logs:
+`/tmp/tonops-model-hub-normal-login-*.log`. The temporary normal-login harness
+reads credentials from stdin and contains no saved password or browser state.
+
+Next concrete step: resolve the fileserver CORS configuration dependency under
+explicit authorization, then rerun this normal-login upload test. Inference
+testing additionally needs a running model endpoint.
+
+## 2026-11-10 — Explicit request: serve YOLO models as tungn197
+
+Completed a separate inference deployment authorized by the user's latest
+request. The existing application/auth/backend services were not modified or
+restarted. Reused the installed YOLO runtime and existing account-owned YOLO11n,
+YOLO12n and YOLO26n best checkpoints. Downloaded the registered S3 objects and
+verified SHA-256 against their original training files.
+
+All three models are live on port 7872 in the independent
+`tonops-yolo-serving-inference-1` container with a read-only root filesystem,
+read-only model/credential mount, CPU/memory limits and `unless-stopped` restart
+policy. Native ClearML endpoint references point to their real model IDs;
+heartbeats report actual request counts, uptime/rate and latency every 15 seconds.
+Stale entries expire after 120 seconds. Model metadata contains the live URLs
+and input format; model URI, tags, Draft status and training tasks were preserved.
+
+Verification: five input-contract tests passed both on the host and in the actual
+serving image without networking. Image build, dependency check, Python compile
+and diff whitespace check passed. Real public JSON and multipart predictions
+passed for all three models, with 6/5/7 detections on the bus smoke image at 0.1
+confidence. Invalid base64/image/model/confidence returned 400/400/404/422.
+The existing client script passed. Restarted the service, repeated actual
+predictions and confirmed fresh reports/nonzero counts and latency for all three.
+Normal browser login confirmed all three endpoint rows and YOLO12 details;
+no unexpected runtime errors occurred. The service remains healthy and running.
+
+Code: `examples/yolo_serving/{serve.py,prepare.py,Dockerfile,compose.yaml,README.md}`;
+tests: `tests/test_yolo_serving.py`. The configured account's existing SDK keys
+are in a mode-0600 file under ignored `docker-data`, outside the image/repository;
+no new IAM credentials, auth changes or saved passwords were introduced. An
+initial optional codec auto-install during a host test was removed and disabled;
+corrected tests and the serving runtime do not install packages at request time.
+
+Limits: CPU smoke serving validates deployment mechanics, not production
+accuracy, throughput or a long-duration soak. Prediction URLs are unauthenticated
+under the existing trusted-network demo pattern. Full unrelated app/backend
+suites were not rerun. The pre-existing GUI fileserver CORS blocker is unchanged
+and does not affect these prediction requests.
+
+URLs, exact model IDs, test evidence, private artifact locations and operating/
+stop commands: [YOLO deployment record](../yolo-serving-2026-11-10.md).
+Next serving step: validate these checkpoints on the intended images and workload
+before treating them as production detectors.

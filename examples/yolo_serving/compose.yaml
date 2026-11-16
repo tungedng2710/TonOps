@@ -1,0 +1,21 @@
+name: tonops-yolo-serving
+services:
+  inference:
+    image: tonops/yolo-serving:local
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - "${YOLO_SERVING_PORT:-7872}:8000"
+    environment:
+      SERVING_PUBLIC_URL: ${YOLO_SERVING_PUBLIC_URL:-http://localhost:7872}
+    volumes:
+      - ${YOLO_SERVING_DATA_DIR:-../../docker-data/examples/yolo-serving}:/models:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cpus: 2
+    mem_limit: 3g
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true

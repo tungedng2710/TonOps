@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component, computed, effect, OnDestroy, signal, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, signal, ViewChild} from '@angular/core';
+import {BreakpointObserver} from '@angular/cdk/layout';
 import {isEqual} from 'lodash-es';
 import {combineLatest, Observable} from 'rxjs';
 import {debounceTime, distinctUntilChanged, filter, map, skip, switchMap, withLatestFrom} from 'rxjs/operators';
@@ -70,6 +71,9 @@ import {RouterOutlet} from '@angular/router';
 import {EntityFooterComponent} from '@common/shared/entity-page/entity-footer/entity-footer.component';
 import {PushPipe} from '@ngrx/component';
 import {ModelHeaderComponent} from '@common/models/dumbs/model-header/model-header.component';
+import {RegisterModelDialogComponent} from './model-hub/register-model-dialog.component';
+import {MatButtonModule} from '@angular/material/button';
+import {headerActions} from '@common/core/actions/router.actions';
 
 
 @Component({
@@ -84,10 +88,21 @@ import {ModelHeaderComponent} from '@common/models/dumbs/model-header/model-head
     ModelsTableComponent,
     EntityFooterComponent,
     PushPipe,
-    ModelHeaderComponent
+    ModelHeaderComponent,
+    MatButtonModule
   ]
 })
 export class ModelsComponent extends BaseEntityPageComponent implements OnDestroy {
+  protected readonly managementView = this.route.pathFromRoot.some(route => route.snapshot.data.modelManagement);
+  protected narrowScreen = toSignal(inject(BreakpointObserver).observe('(max-width: 700px)').pipe(
+    map(result => result.matches)), {initialValue: false});
+  protected registerModel(api = false) {
+    this.dialog.open(RegisterModelDialogComponent, {width: '680px', maxWidth: '95vw',
+      data: {project: this.selectedProject(), api}}).afterClosed().subscribe(result => {
+      if (result) this.refreshList(false);
+    });
+  }
+
   public readonly originalTableColumns = MODELS_TABLE_COLS;
   public entityTypeEnum = EntityTypeEnum;
   private modelsFeature = false;
@@ -441,7 +456,11 @@ export class ModelsComponent extends BaseEntityPageComponent implements OnDestro
   }
 
   compareExperiments() {
-    this.router.navigate(
+    if (this.managementView) {
+      return this.router.navigate(['/models', 'compare-models', this.projectId(),
+        {ids: this.checkedModels().map(model => model.id).join(',')}, 'models-details']);
+    }
+    return this.router.navigate(
       [
         `compare-models`,
         {ids: this.checkedModels().map(experiment => experiment.id).join(',')},
@@ -534,11 +553,11 @@ export class ModelsComponent extends BaseEntityPageComponent implements OnDestro
     effect(() => {
       const selectedProject = this.selectedProject();
       if (selectedProject) {
-        if (this.modelsFeature) {
+        if (this.managementView || this.modelsFeature) {
           this.store.dispatch(setBreadcrumbsOptions({
             breadcrumbOptions: {
               showProjects: false,
-              featureBreadcrumb: {name: 'Models'},
+              featureBreadcrumb: {name: this.managementView ? 'Model management' : 'Models', url: this.managementView ? 'models' : undefined},
             }
           }));
         } else {
@@ -571,5 +590,10 @@ export class ModelsComponent extends BaseEntityPageComponent implements OnDestro
         }
       }
     });
+  }
+
+  override setupHeaderTabs(entitiesType: string, archive: boolean) {
+    if (this.managementView) this.store.dispatch(headerActions.reset());
+    else super.setupHeaderTabs(entitiesType, archive);
   }
 }

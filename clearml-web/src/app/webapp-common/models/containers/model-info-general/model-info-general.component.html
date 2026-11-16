@@ -1,3 +1,4 @@
+@if (selectedModel(); as model) { <sm-model-hub-panel [model]="model"></sm-model-hub-panel> }
 <sm-model-general-info
   [model]="selectedModel()"
   [editable]="!isExample()"

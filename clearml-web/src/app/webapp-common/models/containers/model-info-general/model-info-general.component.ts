@@ -4,6 +4,7 @@ import {selectSelectedModel} from '../../reducers';
 import {isExample} from '@common/shared/utils/shared-utils';
 import {updateModelDetails} from '../../actions/models-info.actions';
 import {ModelGeneralInfoComponent} from '@common/models/dumbs/model-general-info/model-general-info.component';
+import {ModelHubPanelComponent} from '../../model-hub/model-hub-panel.component';
 
 
 @Component({
@@ -12,7 +13,8 @@ import {ModelGeneralInfoComponent} from '@common/models/dumbs/model-general-info
   styleUrls: ['./model-info-general.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    ModelGeneralInfoComponent
+    ModelGeneralInfoComponent,
+    ModelHubPanelComponent
   ]
 })
 export class ModelInfoGeneralComponent {

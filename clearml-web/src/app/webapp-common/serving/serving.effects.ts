@@ -308,7 +308,7 @@ export class ServingEffects {
         relativeTo: baseUrl
       });
     } else {
-      this.router.navigate(['endpoints', 'active'], {queryParamsHandling: 'preserve', replaceUrl});
+      this.router.navigate(['/models', 'endpoints', 'active'], {queryParamsHandling: 'preserve', replaceUrl});
     }
   }
 
@@ -481,7 +481,7 @@ export class ServingEffects {
           return this.modelsApi.modelsGetAllEx({id: [modelId.value], only_fields: ['project', 'name']})
             .pipe(
               map(res => ({name: res.models[0].name, projectId: res.models[0].project.id})),
-              map(({name, projectId}) => ({name, link: `/projects/${projectId}/models/${modelId.value}/output/general`}))
+              map(({name, projectId}) => ({name, link: `/models/registry/${projectId}/${modelId.value}/output/general`}))
             );
         } else if (taskId) {
           return this.tasksApi.tasksGetAllEx({id: [taskId.value], only_fields: ['project', 'name']})

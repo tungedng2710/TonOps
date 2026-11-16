@@ -39,7 +39,7 @@ const project = {id: 'fixture-project', name: longProjectName, user: {id: 'fixtu
 const task = {id: 'fixture-task', name: 'Vehicle detector training with a long experiment name',
   project: {id: project.id, name: project.name}, status: 'in_progress', type: 'training', last_update: project.last_update};
 const navLinks = [['Home', '/home'], ['Workers and queues', '/workers-and-queues'],
-  ['Model endpoints', '/endpoints/active'], ['Datasets', '/datasets'], ['Projects', '/dashboard'], ['Pipelines', '/pipelines']];
+  ['Model management', '/models'], ['Datasets', '/datasets'], ['Projects', '/dashboard'], ['Pipelines', '/pipelines']];
 let currentPage;
 
 async function fixturePage({authenticated = true, state = 'empty', nested = false} = {}) {

@@ -3,11 +3,12 @@ import {CrumbTypeEnum, IBreadcrumbsLink} from '@common/layout/breadcrumbs/breadc
 import {servingProviders} from './serving.providers';
 
 export const routes: Routes = [
+  {path: '', pathMatch: 'full', redirectTo: 'active'},
   {
     path: '',
     data: {
       staticBreadcrumb: [[{
-        name: 'MODEL ENDPOINTS',
+        name: 'Model management',
         type: CrumbTypeEnum.Feature
       } as IBreadcrumbsLink]]
     },
@@ -28,7 +29,7 @@ export const routes: Routes = [
                 data: {
                   minimized: true,
                   staticBreadcrumb: [[{
-                    name: 'MODEL ENDPOINTS',
+                    name: 'Model management',
                     type: CrumbTypeEnum.Feature
                   } as IBreadcrumbsLink]]
                 }

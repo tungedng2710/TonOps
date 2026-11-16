@@ -1,9 +1,25 @@
-@use "../layout/layout";
+@use '../styles/workspace-shell' as workspace;
 
 :host {
+  @include workspace.tokens;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  .registry-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px; border-bottom: 1px solid var(--workspace-shell-border); background: var(--workspace-shell-surface); }
+  .registry-title { min-width: 0; }
+  .eyebrow { font-size: 10px; letter-spacing: 1.5px; font-weight: 600; color: var(--workspace-shell-muted); }
+  h1 { font-size: 26px; font-weight: 600; line-height: 1.25; margin: 6px 0; color: var(--workspace-shell-text); }
+  h2 { font-size: 16px; font-weight: 600; margin: 0; }
+  .registry-heading.management-view { padding: 12px 24px; min-height: 60px; }
+  p { margin: 0; color: var(--workspace-shell-muted); font-size: 13px; }
+  .registry-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  sm-model-header { display: block; flex-shrink: 0; overflow-x: auto; }
+  button:focus-visible { @include workspace.focus; }
   .models-body {
     width: 100%;
-    height: calc(100% - #{layout.$project-header-height});
+    flex: 1;
+    min-height: 0;
     transition: height 0.3s;
   }
 
@@ -18,4 +34,9 @@
       max-width: 0 !important;
     }
   }
+}
+
+@media (max-width: 700px) {
+  :host .registry-heading { align-items: flex-start; flex-direction: column; padding: 16px; }
+  :host h1 { font-size: 22px; }
 }

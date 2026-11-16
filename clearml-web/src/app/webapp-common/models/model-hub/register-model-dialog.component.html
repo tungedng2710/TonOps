@@ -1,0 +1,60 @@
+<h2 mat-dialog-title>{{ data.parent ? 'Add model version' : 'Register model' }}</h2>
+<mat-dialog-content>
+  <p class="intro">Bring your weights into the registry. Validate a draft before publishing it.</p>
+  <div class="method-switch" role="group" aria-label="Registration method">
+    <button type="button" [attr.aria-pressed]="tab() === 'gui'" [disabled]="busy()" (click)="tab.set('gui')">Upload or link</button>
+    <button type="button" [attr.aria-pressed]="tab() === 'api'" [disabled]="busy()" (click)="tab.set('api')">Python SDK / API</button>
+  </div>
+  @if (error()) { <p role="alert" class="error">{{ error() }}</p> }
+  @if (busy()) { <p role="status">{{ draftId() ? 'Uploading model file…' : 'Registering draft…' }} Keep this dialog open.</p> }
+  @if (tab() === 'gui') {
+    <form id="register-model-form" (ngSubmit)="submit()">
+      <fieldset [disabled]="busy() || !!draftId()">
+        <div class="form-grid">
+          <label>Model name<input name="name" [(ngModel)]="name" required maxlength="256" placeholder="e.g. vehicle-detector"></label>
+          <label>Version<input name="version" [(ngModel)]="version" required maxlength="64" placeholder="e.g. 1.0.0"></label>
+        </div>
+        @if (data.project?.id && data.project.id !== '*') {
+          <p class="project-context">Project: <strong>{{ data.project.name }}</strong></p>
+        } @else {
+          <sm-paginated-entity-selector name="project" label="Project" [isRequired]="true" [data]="projects()"
+            [(ngModel)]="project" [createNewSuffix]="false"
+            (getEntities)="searchProjects($event)" (loadMore)="searchProjects($event, true)"></sm-paginated-entity-selector>
+        }
+        <label>Framework<input name="framework" [(ngModel)]="framework" placeholder="e.g. PyTorch, ONNX, ScikitLearn"></label>
+        <label>Model source<select name="source" aria-label="Model source" [(ngModel)]="source">
+          <option value="file" [disabled]="!uploadAvailable">Upload a file</option>
+          <option value="uri">Link existing storage</option>
+        </select></label>
+        @if (source === 'file') {
+          <label class="upload-zone">Model weights or model package<input type="file" (change)="chooseFile($event)" required>
+            <span>Uploaded to this server's configured fileserver. For S3 uploads, use the SDK or link an existing object.</span>
+          </label>
+        } @else {
+          <label>Storage URI<input name="uri" [(ngModel)]="uri" required placeholder="s3://bucket/model.pt">
+            <span>Register an existing HTTP(S), S3, GS or Azure object. This does not upload or validate the file.</span>
+          </label>
+        }
+        <label>Description<textarea name="comment" [(ngModel)]="comment" rows="2" placeholder="What changed in this version?"></textarea></label>
+      </fieldset>
+      <p class="hint">Versions are separate ClearML models with a <code>version:</code> tag. New versions retain a link to their parent.</p>
+      @if (data.parent) { <p class="hint">Parent model: <code>{{ data.parent.id }}</code></p> }
+    </form>
+  } @else {
+    <p>Install <code>clearml</code> and run <code>clearml-init</code> with this server's configuration. Upload from a training script or CI job:</p>
+    <div class="code-heading"><strong>Python · upload and register</strong><sm-copy-clipboard [clipboardText]="apiExample" label="Copy code"></sm-copy-clipboard></div>
+    <pre><code>{{ apiExample }}</code></pre>
+    <p class="hint">The SDK uses the ClearML API and your configured storage. Each version has its own model ID. Use <code>base_model_id</code> to preserve lineage.</p>
+    <details><summary>REST API · register an existing storage object</summary>
+      <div class="code-heading"><strong>cURL · create draft</strong><sm-copy-clipboard [clipboardText]="restExample" label="Copy API request"></sm-copy-clipboard></div>
+      <pre><code>{{ restExample }}</code></pre>
+    </details>
+    <a href="https://clear.ml/docs/latest/docs/references/api/models/" target="_blank" rel="noopener noreferrer">Model REST API reference ↗</a>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close [disabled]="busy()">{{ draftId() ? 'Keep draft and close' : 'Close' }}</button>
+  @if (tab() === 'gui') {
+    <button mat-flat-button type="submit" form="register-model-form" [disabled]="busy()">{{ draftId() ? 'Retry upload' : 'Register draft' }}</button>
+  }
+</mat-dialog-actions>

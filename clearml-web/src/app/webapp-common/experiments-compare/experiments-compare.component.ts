@@ -86,6 +86,7 @@ export class ExperimentsCompareComponent implements OnInit, OnDestroy {
   private titleCasePipe = new TitleCasePipe();
   protected readonly entityType = this.activatedRoute.snapshot.data.entityType;
   protected readonly modelsFeature = this.activatedRoute.snapshot.data?.setAllProject;
+  private readonly managementView = this.activatedRoute.pathFromRoot.some(route => route.snapshot.data.modelManagement);
   protected selectedProject$ = this.store.select(selectSelectedProject);
   protected routeConfig$ = this.store.select(selectRouterConfig);
   protected showGlobalLegend$ = this.store.select(selectShowGlobalLegend);
@@ -163,11 +164,11 @@ export class ExperimentsCompareComponent implements OnInit, OnDestroy {
         datasets: 'datasets/simple',
         pipelines: 'pipelines'
       };
-      if (this.modelsFeature) {
+      if (this.modelsFeature || this.managementView) {
         this.store.dispatch(setBreadcrumbsOptions({
           breadcrumbOptions: {
             showProjects: false,
-            featureBreadcrumb: {name: 'Models', url: 'models'},
+            featureBreadcrumb: {name: this.managementView ? 'Model management' : 'Models', url: 'models'},
             subFeatureBreadcrumb: {
               name: `Compare ${this.titleCasePipe.transform(this.entityType)}s`
             },
@@ -289,6 +290,7 @@ export class ExperimentsCompareComponent implements OnInit, OnDestroy {
   }
 
   buildUrl(target: { name: string; tags?: string[]; systemTags?: string[], id: string, project?: { id: string } }) {
+    if (this.managementView) return ['/models', 'registry', target.project?.id || '*', target.id];
     const projectOrPipeline = this.activatedRoute.root.firstChild.firstChild.routeConfig.path.replace('datasets', 'datasets/simple/');
     const targetEntity = this.activatedRoute.snapshot.parent.data.entityType === EntityTypeEnum.model ? EntityTypeEnum.model : EntityTypeEnum.experiment;
     return [`/${projectOrPipeline}`, target.project?.id || '*', `${targetEntity}s`, target.id];
@@ -299,7 +301,9 @@ export class ExperimentsCompareComponent implements OnInit, OnDestroy {
     contextMenu = contextMenu.map(route => {
       return {
         ...route,
-        link: route.header === entitiesType ? undefined : [base === 'datasets' ? 'datasets/simple': base === 'pipelines'? 'pipelines' : 'projects', projectId, `compare-${comparedEntity}s`, {ids: experiments}, route.featureLink ?? route.header],
+        link: route.header === entitiesType ? undefined : this.managementView
+          ? ['/models', 'compare-models', projectId, {ids: experiments}, route.featureLink ?? route.header]
+          : [base === 'datasets' ? 'datasets/simple': base === 'pipelines'? 'pipelines' : 'projects', projectId, `compare-${comparedEntity}s`, {ids: experiments}, route.featureLink ?? route.header],
       };
     });
     this.store.dispatch(headerActions.setTabs({contextMenu, active: entitiesType}));

@@ -48,6 +48,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/projects/projects.routes').then(r => r.routes),
       },
       {
+        path: 'models',
+        data: {search: true, modelManagement: true},
+        loadChildren: () => import('./features/model-management/model-management.routes').then(r => r.routes)
+      },
+      {
         path: 'settings',
         loadChildren: () => import('./features/settings/settings.routes').then(r => r.routes),
         data: {search: false, workspaceNeutral: false, },
@@ -95,7 +100,7 @@ export const routes: Routes = [
               {
                 path: 'models',
                 data: {autoSearchTab: 'models'},
-                loadChildren: () => import('./webapp-common/models/models.routes').then(r => r.routes),
+                loadChildren: () => import('./features/model-management/legacy-model.routes').then(r => r.legacyModelRoutes),
                 canDeactivate: [resetContextMenuGuard]
               },
               {path: 'compare-experiments', redirectTo: 'compare-tasks'},
@@ -108,7 +113,7 @@ export const routes: Routes = [
               {
                 path: 'compare-models',
                 data: {entityType: EntityTypeEnum.model, autoSearchTab: 'models' },
-                loadChildren: () => import('./webapp-common/experiments-compare/experiments-compare.routes').then(r => r.routes)
+                loadChildren: () => import('./features/model-management/legacy-model.routes').then(r => r.legacyComparisonRoutes)
               },
             ]
           },
@@ -165,7 +170,7 @@ export const routes: Routes = [
       {path: 'workers-and-queues', loadChildren: () => import('./features/workers-and-queues/workers-and-queues.routes').then(r => r.routes)},
       {
         path: 'endpoints',
-        loadChildren: () => import('./webapp-common/serving/serving.routes').then(r => r.routes),
+        loadChildren: () => import('./features/model-management/legacy-model.routes').then(r => r.legacyEndpointRoutes),
         data: {autoSearchTab: 'modelEndpoints'},
         canDeactivate: [resetContextMenuGuard]
       },

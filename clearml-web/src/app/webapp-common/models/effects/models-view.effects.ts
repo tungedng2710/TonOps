@@ -623,7 +623,8 @@ export class ModelsViewEffects {
       activeChild = activeChild.firstChild;
     }
     let baseUrl = this.route;
-    while (baseUrl.snapshot.routeConfig?.path !== 'models') {
+    while (baseUrl.firstChild && !baseUrl.snapshot.data.modelRegistry &&
+      !(baseUrl.snapshot.routeConfig?.path === 'models' && !baseUrl.snapshot.data.modelManagement)) {
       baseUrl = baseUrl.firstChild;
     }
     selectedModel ?
@@ -631,7 +632,7 @@ export class ModelsViewEffects {
         queryParamsHandling: 'preserve',
         relativeTo: baseUrl
       }) :
-      this.router.navigate(['projects', modelProject, 'models'], {queryParamsHandling: 'preserve', replaceUrl});
+      this.router.navigate(baseUrl.snapshot.data.modelRegistry ? ['/models', 'registry', modelProject || '*'] : ['projects', modelProject, 'models'], {queryParamsHandling: 'preserve', replaceUrl});
   }
 
   isSelectedModelInCheckedModels(checkedModels, selectedModel) {

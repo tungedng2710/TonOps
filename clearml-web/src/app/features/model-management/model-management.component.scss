@@ -1,0 +1,33 @@
+@use '../../webapp-common/styles/workspace-shell' as workspace;
+
+:host {
+  @include workspace.tokens;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  color: var(--workspace-shell-text);
+  background: var(--workspace-shell-surface);
+}
+.management-heading { padding: 20px 24px 18px; }
+.eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 1.4px; color: var(--workspace-shell-muted); }
+h1 { margin: 6px 0; font-size: 26px; line-height: 1.25; font-weight: 600; }
+p { margin: 0; color: var(--workspace-shell-muted); font-size: 13px; }
+.management-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 0 24px; min-height: 46px; padding: 0 24px; border-bottom: 1px solid var(--workspace-shell-border); }
+.management-navigation > a { padding: 12px 0; border-bottom: 2px solid transparent; color: var(--workspace-shell-muted); font-weight: 500; text-decoration: none; }
+.management-navigation > a.active { color: var(--workspace-shell-accent); border-bottom-color: var(--workspace-shell-accent); }
+.endpoint-views, .project-scope { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 12px; }
+.endpoint-views a { padding: 4px 12px; border-radius: 6px; color: var(--workspace-shell-muted); text-decoration: none; }
+.endpoint-views a.selected { color: var(--workspace-shell-accent); background: var(--workspace-shell-selected); }
+.project-scope { min-width: 0; color: var(--workspace-shell-muted); }
+.project-scope span { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-scope a { flex-shrink: 0; color: var(--workspace-shell-accent); }
+.management-content { flex: 1; min-height: 0; min-width: 0; position: relative; }
+a:focus-visible { @include workspace.focus; }
+@media (max-width: 700px) {
+  .management-heading { padding: 16px; }
+  h1 { font-size: 22px; }
+  .management-navigation { padding: 0 16px; gap: 0 16px; }
+  .endpoint-views, .project-scope { flex-basis: 100%; margin: 0 0 10px; }
+  .project-scope span { max-width: 65%; }
+}

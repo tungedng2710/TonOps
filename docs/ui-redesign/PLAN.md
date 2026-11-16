@@ -148,3 +148,129 @@ and excluded auth/onboarding experiences remain unchanged.
 - [x] Implement and critique profiles.
 - [x] Implement and critique settings.
 - [x] Verify boundaries, build/tests, and record results (see PROGRESS.md).
+
+## Explicit operational request — project artifacts on S3 (2026-11-10)
+
+The user requested storage migration separately from UI redesign. Limit this
+operation to existing registered artifact/model URIs and output destinations;
+leave authentication and application source unchanged. Preflight source files
+and task activity, copy and hash-verify all accessible files, conditionally update
+links, retain sources and a private rollback manifest, and verify final records.
+
+- [x] Inspect and preview the running stack; identify unavailable local models.
+- [x] Copy and SHA-256 verify 339 files, then update registered links/destinations.
+- [x] Verify all 334 current task artifact objects and record model exceptions.
+- [x] Record results and recovery details in
+  `docs/rustfs-artifact-migration-2026-11-10.md`.
+
+## Model hub — 2026-11-10 (UI implementation and verification complete)
+
+- Objective: improve existing `/projects/:projectId/models` registry and model
+  details, retaining the NgRx table, search, comparison, publishing, archive,
+  permissions and deep links. Add GUI file/URI registration, SDK/API examples,
+  native parent lineage and version tags, and serving command/call examples.
+- Implementation: scoped registry heading/actions; registration dialog using
+  existing model/fileserver APIs; model detail hub with version navigation and
+  deployment guidance. Keep all existing detail tabs and fields.
+- Boundaries: no backend, SDK, dependencies, API contracts, shell/global theme,
+  guards or authentication changes. DO NOT TOUCH `/login` and `/login/signup`,
+  login feature, auth services/state, account/onboarding and global styles.
+- Risks: fileserver requires a registered URI before upload; retain failed drafts
+  for retry and explain partial failures. Versions use existing parent and tags;
+  never infer release order from pagination. Existing serving APIs monitor
+  endpoints, not provision inference servers; show explicit setup requirements.
+- Verification: baseline/final Angular builds, focused lint, browser checks with
+  fixtures for success/failure/retry/version payloads, desktop/narrow screenshots,
+  shell/auth regression checks, and configured-account live checks where possible.
+- Done: functional controls and truthful states, no auth diff, checks/results
+  recorded in PROGRESS.md. Preserve earlier pre-existing documentation edits.
+- Completed: registry registration, versions, SDK/REST/download/serving snippets,
+  retry/error/read-only states and responsive details. Development/production
+  builds, isolated browser suite, live GUI upload/download/cleanup and auth image
+  comparisons passed. Existing lint/focus failures and deployment limits are
+  recorded in PROGRESS.md. No inference runtime was provisioned.
+
+### Activate model hub in the running web app (2026-11-10)
+
+The user checked the running application and could not see the source update.
+Deploy the verified production frontend by deriving the current local image and
+recreating only the webserver. Retain the original image for rollback and keep
+backend images/containers, runtime configuration, authentication and data intact.
+Capture the running login/signup pages before/after, verify registry navigation
+under the configured account, and record the actual URL and deployment result.
+
+Completed: frontend image activated, only webserver recreated, runtime hashes and
+backend container identities preserved, authenticated registry checks passed, and
+the four deployed login/signup screenshots remain pixel-identical. Direct entry:
+`http://27.66.108.30:7861/projects/*/models`. Rollback details are in PROGRESS.md.
+
+### Normal-login acceptance test (2026-11-10)
+
+Test the deployed public web app on port 7861 with the supplied account through
+the normal login form. Use no injected SDK token, mocked API response or CORS
+override. Exercise GUI upload, project selection, authenticated download, adding
+a version, REST registration, serving snippets, validation and narrow layouts.
+Create only clearly labeled disposable models in an existing owned project and
+remove their files/records afterward. Test authentication as-is; do not edit it.
+Record actual results and separate snippet generation from live inference.
+
+Normal-login test found a live dependency: credentialed GUI uploads save the file
+but the fileserver response omits Access-Control-Allow-Credentials. The existing
+/files proxy strips the host port and rewrites the URI path, which conflicts with
+registered-model file authorization. Do not work around this by changing token
+handling, permissions, temporary fake URIs or auth/deployment configuration. Keep
+those excluded areas unchanged and report the dependency. Continue testing all
+remaining registry workflows with disposable models and clean up after testing.
+
+The live API also returns joined parent objects rather than only strings. Normalize
+that value locally in the model hub so parent navigation uses the actual model ID.
+Clarify upload confirmation errors without claiming the saved file is absent.
+Build/lint these scoped corrections, deploy only frontend assets over the current
+image, rerun the normal-login acceptance test, and retain the CORS blocker.
+
+Completed normal-login acceptance testing: login, registry, version creation,
+REST registration, parent navigation, code generation and narrow layouts passed;
+all disposable data was removed. Scoped parent-link/message fixes are deployed.
+GUI upload confirmation remains failed pending the excluded server CORS change;
+actual inference remains unverified because there are no endpoints. Results and
+artifacts are recorded in PROGRESS.md.
+
+### Explicit serving request — tungn197 YOLO models (2026-11-10)
+
+The user now explicitly requests deploying YOLO models under tungn197. This
+authorizes a separate inference deployment; authentication/account changes and
+unrelated UI work remain excluded. Reuse the existing YOLO runtime and owned
+YOLO11/YOLO12/YOLO26 best checkpoints. Download and hash-check the registered
+weights, serve real image inference on a free port, register native endpoint
+references/heartbeat metrics using the configured account, and keep the service
+running with a restart policy. Preserve existing applications and model status.
+Verify real detections, invalid input handling, persistence and visibility on
+Model endpoints, then document URLs, request examples and operating commands.
+
+Completed: three owned best checkpoints served on 7872, independent Docker
+deployment with automatic restart, matching checkpoint hashes, actual remote
+JSON/multipart predictions, input validation, live ClearML metrics, restart
+recovery and normal-login browser verification. No model lifecycle or auth
+changes. Details: `docs/yolo-serving-2026-11-10.md`.
+
+## Unified Model Management — 2026-11-10 (in progress)
+
+- User request: combine model hub and endpoints into a top-level management page,
+  outside Projects. Add one sidebar destination with Model hub and Endpoints
+  views, retaining endpoint loading/monitor views and all registry detail tabs.
+- Canonical routes: `/models/registry/:projectId` (`*` for all projects),
+  `/models/endpoints/active`, `/models/endpoints/loading`, and model comparison.
+  Legacy `/projects/:projectId/models/**` and `/endpoints/**` redirect while
+  preserving suffixes, query parameters and project context.
+- Reuse existing Angular/NgRx tables, effects, split panels, forms, permissions,
+  charts and APIs. Limit effect changes to navigation destinations. Preserve
+  comparison, full-screen/minimized views, sorting/filtering and browser history.
+- Changes: scoped management layout/tabs, sidebar entry, canonical routes and
+  compatibility redirects, project-tab removal, navigation links/breadcrumbs.
+- Excluded: login/signup/onboarding, guards/auth configuration, API contracts,
+  runtime/model services, unrelated pre-existing work. Leave the known upload
+  CORS dependency unchanged. Existing YOLO endpoints must remain healthy.
+- Verify: baseline/final builds, focused lint, fixture navigation and regression
+  checks, normal-login browser test against live registry/YOLO endpoints, desktop/
+  narrow layouts, legacy redirects/queries, auth screenshot equality. Deploy only
+  the frontend with rollback retained and record results in PROGRESS.md.

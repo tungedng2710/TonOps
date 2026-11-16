@@ -339,6 +339,10 @@ export class ServingComponent extends BaseEntityPageComponent implements OnDestr
   }
 
   private setContextMenu() {
+    if (this.route.pathFromRoot.some(route => route.snapshot.data.modelManagement)) {
+      this.store.dispatch(headerActions.reset());
+      return;
+    }
     this.route.url
       .pipe(
         takeUntilDestroyed(),

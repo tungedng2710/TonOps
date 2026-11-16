@@ -100,6 +100,7 @@ export class ModelInfoComponent implements OnDestroy {
   private isArchived = this.route.snapshot.queryParams.archive === 'true';
   protected minimized = this.route.snapshot.firstChild?.data.minimized;
   private modelsFeature = this.route.snapshot.data?.setAllProject;
+  private managementView = this.route.pathFromRoot.some(route => route.snapshot.data.modelManagement);
   public toMaximize: boolean;
   links = infoModelsTabsLinks;
 
@@ -195,12 +196,16 @@ export class ModelInfoComponent implements OnDestroy {
   maximize() {
     const last = this.route.snapshot.firstChild.url[0].path;
     this.store.dispatch(headerActions.reset());
-    return this.router.navigate(['output', last], {relativeTo: this.route, ...(this.isArchived && {queryParams: {archive: true}})});
+    this.toMaximize = true;
+    return this.router.navigate(['output', last], {relativeTo: this.route, ...(this.isArchived && {queryParams: {archive: true}})})
+      .finally(() => this.toMaximize = false);
   }
 
   minimizeView() {
     const last = this.route.snapshot.firstChild.url[0].path;
-    return this.router.navigate(['..', last], {relativeTo: this.route, queryParamsHandling: 'preserve'});
+    this.toMaximize = true;
+    return this.router.navigate(['..', last], {relativeTo: this.route, queryParamsHandling: 'preserve'})
+      .finally(() => this.toMaximize = false);
   }
 
   setAutoRefresh($event: boolean) {
@@ -217,11 +222,11 @@ export class ModelInfoComponent implements OnDestroy {
         ])
       )
       .subscribe(([selectedProject, params, config]) => {
-        if (this.modelsFeature) {
+        if (this.managementView || this.modelsFeature) {
           this.store.dispatch(setBreadcrumbsOptions({
             breadcrumbOptions: {
               showProjects: false,
-              featureBreadcrumb: {name: 'Models'},
+              featureBreadcrumb: {name: this.managementView ? 'Model management' : 'Models', url: this.managementView ? 'models' : undefined},
             }
           }));
         } else {

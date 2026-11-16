@@ -1,7 +1,9 @@
 :host {
+  display: block;
+  height: 100%;
+  overflow: auto;
   sm-model-general-info {
-    height: 100%;
-    overflow: auto;
+    height: auto;
     padding: 24px;
   }
 }

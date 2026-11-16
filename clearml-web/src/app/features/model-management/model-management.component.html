@@ -1,0 +1,25 @@
+<header class="management-heading">
+  <span class="eyebrow">MLOPS WORKSPACE</span>
+  <h1>Model management</h1>
+  <p>Register, version and serve models across your projects.</p>
+</header>
+<nav class="management-navigation" aria-label="Model management views">
+  <a [routerLink]="hubUrl()" [class.active]="!endpointsView()"
+     [attr.aria-current]="!endpointsView() ? 'page' : null">Model hub</a>
+  <a [routerLink]="endpointsUrl()" [class.active]="endpointsView()"
+     [attr.aria-current]="endpointsView() ? 'page' : null">Endpoints</a>
+  @if (projectScoped()) {
+    <div class="project-scope"><span>{{ project()?.name || 'Selected project' }}</span>
+      <a routerLink="/models/registry/*">All projects</a>
+    </div>
+  }
+  @if (endpointsView()) {
+    <div class="endpoint-views" aria-label="Endpoint state">
+      <a routerLink="/models/endpoints/active" [class.selected]="!loadingView()"
+         [attr.aria-current]="!loadingView() ? 'page' : null">Active</a>
+      <a routerLink="/models/endpoints/loading" [class.selected]="loadingView()"
+         [attr.aria-current]="loadingView() ? 'page' : null">Loading</a>
+    </div>
+  }
+</nav>
+<div class="management-content"><router-outlet></router-outlet></div>

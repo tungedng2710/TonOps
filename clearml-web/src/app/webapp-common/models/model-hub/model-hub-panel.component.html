@@ -1,0 +1,71 @@
+<section class="hub-panel" aria-label="Model hub">
+  <div class="panel-heading">
+    <div><span class="eyebrow">MODEL REGISTRY</span><h2>Build on this model</h2></div>
+    <span class="version-badge">{{ versionLabel(model()) }}</span>
+  </div>
+  <nav class="hub-tabs" aria-label="Model workflows">
+    <button type="button" [attr.aria-pressed]="tab() === 'versions'" (click)="tab.set('versions')">Versions</button>
+    <button type="button" [attr.aria-pressed]="tab() === 'use'" (click)="tab.set('use')">Use model</button>
+    <button type="button" [attr.aria-pressed]="tab() === 'serve'" (click)="tab.set('serve')">Serve & call</button>
+  </nav>
+  @switch (tab()) {
+    @case ('versions') {
+      <div class="section-heading"><p>Models with the same name in this project, newest first. Each version has its own ID.</p>
+        <button mat-stroked-button [disabled]="readOnly()" (click)="addVersion()">Add version</button>
+      </div>
+      @if (parentId(); as parent) {
+        <p class="hint">Derived from <a [routerLink]="['/models', 'registry', model().project?.id || '*', parent, 'general']">parent {{ parent }}</a></p>
+      }
+      <div class="version-list">
+        @for (version of versions(); track version.id) {
+          <a class="version-row" [class.current]="version.id === model().id" [attr.aria-current]="version.id === model().id ? 'page' : null"
+             [routerLink]="['/models', 'registry', model().project?.id || '*', version.id, 'general']">
+            <div><strong>{{ versionLabel(version) }}</strong><code>{{ version.id.slice(0, 8) }}</code></div>
+            <span class="status" [class.published]="version.ready">{{ version.ready ? 'Published' : 'Draft' }}</span>
+            @if (version.system_tags?.includes('archived')) { <span>Archived</span> }
+            <time>{{ version.created | date:'mediumDate' }}</time>
+            @if (version.id === model().id) { <span class="current-label">Current</span> }
+          </a>
+        }
+      </div>
+      @if (loading()) { <p role="status">Loading versions…</p> }
+      @if (error()) { <p role="alert">Unable to load versions. <button type="button" (click)="reload.update(increment)">Retry</button></p> }
+      @if (!loading() && !error() && !versions().length) { <p>No matching versions found. This model's details remain available below.</p> }
+      @if (hasMore() && !error()) { <button mat-button [disabled]="loading()" (click)="page.update(increment)">Load more versions</button> }
+      <p class="hint">Use the existing model menu to publish after validation, edit tags, archive or delete. Publishing marks a model ready for use; serving requires a running inference service.</p>
+    }
+    @case ('use') {
+      <p>Retrieve this exact model version from your configured ClearML environment.</p>
+      <div class="code-heading"><strong>Python · download weights</strong><sm-copy-clipboard [clipboardText]="useCode()" label="Copy code"></sm-copy-clipboard></div>
+      <pre><code>{{ useCode() }}</code></pre>
+    }
+    @case ('serve') {
+      <p>Deploy this version with ClearML Serving, then generate a request for your endpoint.</p>
+      <p class="notice">A running ClearML Serving service, inference containers and model-specific preprocessing are required. These commands configure that service; this page does not start containers or verify endpoint health.</p>
+      <div class="form-grid">
+        <label>Serving service ID<input [ngModel]="serviceId()" (ngModelChange)="serviceId.set($event)" placeholder="Existing service ID"></label>
+        <label>Serving engine<select aria-label="Serving engine" [ngModel]="engine()" (ngModelChange)="engine.set($event)">
+          <option value="sklearn">Scikit-learn</option><option value="xgboost">XGBoost</option>
+          <option value="lightgbm">LightGBM</option><option value="triton">Triton (ONNX / PyTorch / TensorFlow)</option><option value="custom">Custom</option>
+        </select></label>
+        <label>Endpoint name<input [ngModel]="endpointName()" (ngModelChange)="endpointName.set($event)"></label>
+      </div>
+      <div class="code-heading"><strong>Deployment command</strong><sm-copy-clipboard [clipboardText]="deployCode()" label="Copy command"></sm-copy-clipboard></div>
+      <pre><code>{{ deployCode() }}</code></pre>
+      <div class="resource-links"><a routerLink="/models/endpoints/active">View model endpoints →</a>
+        <a href="https://clear.ml/docs/latest/docs/clearml_serving/clearml_serving_setup/" target="_blank" rel="noopener noreferrer">Serving setup ↗</a>
+        <a href="https://clear.ml/docs/latest/docs/clearml_serving/clearml_serving_cli/" target="_blank" rel="noopener noreferrer">Engine configuration ↗</a></div>
+      <h3>Call your endpoint</h3>
+      <label>Inference URL<input type="url" [ngModel]="endpointUrl()" (ngModelChange)="endpointUrl.set($event)" placeholder="https://inference.example/serve/my-model"></label>
+      <label>JSON request body<textarea rows="3" [ngModel]="payload()" (ngModelChange)="payload.set($event)" spellcheck="false"></textarea></label>
+      <p class="hint">Use the input schema defined by your preprocessing code. Add any authentication headers required by your deployment.</p>
+      @if (!payloadValid()) { <p role="alert">Enter valid JSON to generate request examples.</p> }
+      @if (validUrl() && payloadValid()) {
+        <div class="code-heading"><strong>cURL</strong><sm-copy-clipboard [clipboardText]="curlCode()" label="Copy cURL"></sm-copy-clipboard></div>
+        <pre><code>{{ curlCode() }}</code></pre>
+        <div class="code-heading"><strong>Python · requests</strong><sm-copy-clipboard [clipboardText]="pythonCode()" label="Copy Python"></sm-copy-clipboard></div>
+        <pre><code>{{ pythonCode() }}</code></pre>
+      } @else if (!validUrl()) { <p class="hint">Enter an HTTP(S) inference URL to generate Python and cURL examples.</p> }
+    }
+  }
+</section>
