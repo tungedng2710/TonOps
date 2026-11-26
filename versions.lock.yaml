@@ -1,0 +1,20 @@
+# Core image pins. Loaded after compose.mlflow.yaml by the Makefile.
+services:
+  postgres:
+    image: docker.io/library/postgres:17.12-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73
+  rustfs:
+    image: &rustfs docker.io/rustfs/rustfs:1.0.6@sha256:ee717072290bec9b11abfc0365f8310b00df1cd9b3639943edae47bdef05044a
+  storage-init:
+    image: *rustfs
+  storage-policy-test:
+    image: *rustfs
+  gitea:
+    image: &gitea docker.gitea.com/gitea:28.4.0-rootless@sha256:15ab7fadb44981a2b781f40c712cad07066197f395100ea1c6326e14e5bb073a
+  git-init:
+    image: *gitea
+  git-test:
+    image: *gitea
+  mlflow:
+    build:
+      args:
+        PYTHON_IMAGE: docker.io/library/python:3.12.13-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2

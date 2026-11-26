@@ -1,5 +1,19 @@
 # Authenticated UI redesign — first increment
 
+## Restore signed-in project access — 2026-11-26 (complete)
+
+- Restore the routes, startup redirects, sidebar and project visibility copy
+  from `4f07f43`. Remove the guest Projects and Playground pages, their API
+  service and schema, guest feature tests, and feature-specific instructions.
+- Preserve signed-in Projects and its existing visibility rules. Login and
+  signup components, credential handling, and deployment are outside this change.
+- Verify the production build, signed-out redirects, signed-in navigation, and
+  login/signup screenshots. Confirm the removed pages and API have no active
+  references, and record the outcome in PROGRESS.md.
+- Restored the application and repository instructions to `4f07f43`. Production
+  and development builds, focused lint, browser checks and screenshot comparison
+  passed. Both frontend builds contain no references to the removed features.
+
 ## Objective and scope
 
 Modernize the existing authenticated application shell (P0): labeled desktop

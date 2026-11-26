@@ -1,0 +1,4 @@
+mlflow==3.18.0
+psycopg[binary]==3.3.9
+boto3==1.44.12
+scikit-learn==1.9.1

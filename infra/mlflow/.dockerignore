@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!requirements.lock
+!init-db.py
+!start-mlflow.sh
+!check-mlflow.py

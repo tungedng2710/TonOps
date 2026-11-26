@@ -1,5 +1,25 @@
 # UI redesign progress
 
+## 2026-11-26 — Restored signed-in project access
+
+Removed the guest Projects and Playground pages, anonymous chat, their API
+endpoints and feature tests. Restored routes, redirects, sidebar navigation,
+project visibility copy, AGENTS.md and user-facing documentation from `4f07f43`.
+All application files match that commit. The existing Public visibility setting
+continues to apply to signed-in users in the same company.
+
+- Production and development builds and focused ESLint passed. The builds
+  retain the existing markdown import and component style warnings. Both builds
+  contain no references to the removed components or API calls.
+- Chromium browser checks with API fixtures passed. Signed-out visits to `/`,
+  `/projects`, `/public/projects` and `/playground` go to sign-in without project
+  or chat requests. Signed-in Projects renders, and the former public routes
+  show 404. The authenticated shell suite passed. Login and signup screenshots
+  at 1440px and 390px are byte-identical to the pre-feature baseline.
+  Results and screenshots are in `/tmp/tonops-guest-rollback-browser/`.
+- `git diff --check` passed. Deployment and live API testing were outside this
+  rollback. Authenticated Projects remains the next UI review area in the plan.
+
 ## 2026-11-03 — P0 authenticated shell, first increment
 
 Implemented desktop navigation labels, a compact rail at widths <=1100px,
