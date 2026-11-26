@@ -1,6 +1,6 @@
 # MLflow platform implementation plan
 
-The M0 and M1 gate covers a dedicated single-user deployment. The native MLflow UI uses HTTP port **7871** on all IPv4 interfaces in the trusted-server deployment. A dedicated Gitea instance uses loopback port **7872**. [Deployment and demo instructions](mlflow-deployment.md) · [Acceptance report](acceptance-report.md)
+The M0 and M1 gate covers a dedicated single-user deployment. The native MLflow UI uses HTTP port **7871** on all IPv4 interfaces in the trusted-server deployment. The existing ClearML Gitea provides shared Git hosting on port **7864** by default. [Deployment and demo instructions](mlflow-deployment.md) · [Acceptance report](acceptance-report.md)
 
 | Milestone | Deliverable and exit gate |
 | --- | --- |

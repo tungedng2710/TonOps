@@ -82,10 +82,17 @@ def main():
     endpoint = f"{env['RUSTFS_PUBLIC_HOST']}:{env.get('RUSTFS_API_PORT', '7868')}"
     output_uri = f"s3://{endpoint}/{bucket}"
     files_root = Path(env.get("CLEARML_DATA_ROOT", "./docker-data")).resolve() / "data/fileserver"
-    mongo_host = os.getenv("RUSTFS_MONGO_HOST") or subprocess.check_output(
-        ["docker", "inspect", "-f", "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}", "clearml-local-mongo-1"],
-        text=True,
-    ).strip()
+    mongo_host = os.getenv("RUSTFS_MONGO_HOST")
+    if not mongo_host:
+        container = subprocess.check_output(
+            ["docker", "compose", "ps", "-q", "mongo"], cwd=ROOT, text=True,
+        ).strip()
+        if not container:
+            raise RuntimeError("Start the ClearML MongoDB service or set RUSTFS_MONGO_HOST")
+        mongo_host = subprocess.check_output(
+            ["docker", "inspect", "-f", "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}", container],
+            text=True,
+        ).strip()
     db = MongoClient(mongo_host, 27017, serverSelectionTimeoutMS=5000).backend
     entries = []
     for model in db.model.find({}, {"uri": 1}):

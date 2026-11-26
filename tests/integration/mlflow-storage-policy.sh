@@ -6,9 +6,11 @@ case "$fixture" in
   ''|*[!a-z0-9-]*) echo 'Invalid policy fixture name' >&2; exit 1 ;;
 esac
 directory=$(mktemp -d)
-root_key=$(cat /run/secrets/rustfs_root_key)
-root_secret=$(cat /run/secrets/rustfs_root_secret)
-export RC_HOST_core="http://$root_key:$root_secret@rustfs:9000"
+root_key=$RUSTFS_ACCESS_KEY
+root_secret=$RUSTFS_SECRET_KEY
+encoded_key=$(printf '%s' "$root_key" | jq -sRr @uri)
+encoded_secret=$(printf '%s' "$root_secret" | jq -sRr @uri)
+export RC_HOST_core="http://$encoded_key:$encoded_secret@rustfs:9000"
 export RC_CONFIG_DIR="$directory"
 key_a=$(od -An -N10 -tx1 /dev/urandom | tr -d ' \n')
 key_b=$(od -An -N10 -tx1 /dev/urandom | tr -d ' \n')

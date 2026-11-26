@@ -13,7 +13,7 @@ Usage: scripts/restart-tonops.sh [--skip-build] [--force-recreate]
 
 Build the local Docker image, start the Compose stack, and wait for readiness.
   --skip-build    Use the existing local image.
-  --force-recreate   Recreate all containers, including data services.
+  --force-recreate   Recreate the ClearML containers, including its databases.
 EOF
 }
 
@@ -51,6 +51,8 @@ if [[ "$(stat -c %u "$rustfs_data_root")" != 10001 ]]; then
   chown 10001:10001 "$rustfs_data_root"
 fi
 
+make storage-up
+
 if [[ "$SKIP_BUILD" == false ]]; then
   docker compose build apiserver
 fi
@@ -59,7 +61,7 @@ COMPOSE_ARGS=(up -d)
 if [[ "$RECREATE" == true ]]; then
   COMPOSE_ARGS+=(--force-recreate)
 fi
-docker compose "${COMPOSE_ARGS[@]}" gitea rustfs rustfs_init mongo redis elasticsearch apiserver fileserver webserver async_delete
+docker compose "${COMPOSE_ARGS[@]}" gitea rustfs_init mongo redis elasticsearch apiserver fileserver webserver async_delete
 
 wait_for_url() {
   local label=$1
@@ -79,7 +81,7 @@ wait_for_url() {
 api_port="$(docker compose port apiserver 8008 | sed 's/.*://')"
 web_port="$(docker compose port webserver 80 | sed 's/.*://')"
 files_port="$(docker compose port fileserver 8081 | sed 's/.*://')"
-rustfs_port="$(docker compose port rustfs 9000 | sed 's/.*://')"
+rustfs_port="$(docker compose -f compose.storage.yaml port rustfs 9000 | sed 's/.*://')"
 gitea_port="$(docker compose port gitea 3000 | sed 's/.*://')"
 wait_for_url "API server" "http://127.0.0.1:${api_port}/debug.ping"
 wait_for_url "web app" "http://127.0.0.1:${web_port}/"

@@ -1,7 +1,9 @@
 #!/bin/sh
 set -eu
 
-export RC_HOST_core="http://$(cat /run/secrets/rustfs_root_key):$(cat /run/secrets/rustfs_root_secret)@rustfs:9000"
+root_key=$(printf '%s' "$RUSTFS_ACCESS_KEY" | jq -sRr @uri)
+root_secret=$(printf '%s' "$RUSTFS_SECRET_KEY" | jq -sRr @uri)
+export RC_HOST_core="http://$root_key:$root_secret@rustfs:9000"
 export RC_CONFIG_DIR="$(mktemp -d)"
 trap 'rm -rf "$RC_CONFIG_DIR"' EXIT
 access_key=$(cat /run/secrets/artifact_key)

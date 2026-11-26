@@ -107,3 +107,23 @@ Initial listener startup failed on NGINX's default cache directory with a read-o
 ### Forwarded browser access
 
 Exact Host and Origin entries were added to the local deployment config. The forwarded domain served the MLflow UI and experiment search over HTTP and HTTPS. The direct IPv4 address, Tailscale address, and localhost also passed. Chromium rendered the existing model version, alias, and source run through the forwarded domain. An unlisted Host and Origin still returned HTTP 403. The post-restart model smoke test passed.
+
+## Shared RustFS and deployment names
+
+The approved live cutover kept the existing RustFS 1.0.0 image, ClearML data directory, artifact bucket, and ports. All Docker containers managed by the deployment now start with `mlops-`. The only RustFS server is `mlops-storage-rustfs-1`.
+
+| Check | Outcome | Observed evidence |
+| --- | --- | --- |
+| Isolated rehearsal | PASS | The pinned administration client bootstrapped RustFS 1.0.0 twice. Scoped list/get/put and cross-project denial passed. The rehearsal copied and verified the actual MLflow objects. |
+| Live MLflow object migration | PASS | Copied 52 objects totaling 53,555,796 bytes. A separate verification pass recalculated the SHA-256 of every source and destination object, with zero objects left to copy. The dataset and export buckets were empty. |
+| Existing ClearML data | PASS | The original artifact bucket still had 343 objects and 1,623,466,752 bytes. The before/after sample checksum matched. ClearML's API and UI returned HTTP 200. |
+| MLflow state and permissions | PASS | `make smoke` downloaded the original report and loaded demo model v3 by exact version and alias. The scoped key could read the MLflow report and was denied access to the ClearML, dataset, and export buckets. Unsigned listing was denied. The existing forwarded MLflow UI returned HTTP 200. |
+| Retirement and recovery | PASS | Retired legacy containers were removed after verification. The original MLflow RustFS volume `mlops-mlflow_object-data` was retained. |
+
+The rehearsal exposed a Boto streaming body context-manager mismatch. The verifier now closes the original streaming body explicitly. During the live switch Compose reused an MLflow container attached to the old network. The shared network now has a distinct Compose key, and recreating MLflow restored storage readiness.
+
+## Shared Gitea
+
+ClearML's existing Gitea is the only Git server and remains on port 7864. The old MLflow Gitea on port 7872 contained only three single-commit integration fixtures. Its container was retired and its Git data, configuration, and PostgreSQL database were retained for recovery.
+
+The current Gitea, its CI runner, and MLflow retained their container IDs and start times. Gitea's health API passed, and `make smoke` reloaded the original MLflow model. An isolated fresh PostgreSQL bootstrap created the MLflow tracking database without creating a Gitea role or database. Docker inspection found one Gitea and one RustFS server.

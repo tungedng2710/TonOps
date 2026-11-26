@@ -9,10 +9,6 @@ from pathlib import Path
 LENGTHS = {
     "postgres_password": 24,
     "tracking_db_password": 24,
-    "git_db_password": 24,
-    "git_admin_password": 24,
-    "rustfs_root_key": 10,
-    "rustfs_root_secret": 20,
     "artifact_key": 10,
     "artifact_secret": 20,
 }

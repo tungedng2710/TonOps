@@ -1,6 +1,6 @@
 # TonOps stack
 
-TonOps builds on a ClearML OSS fork with local user management, profile editing, and project visibility. The root [Dockerfile](Dockerfile) builds the checked-in Angular app and packages the checked-in API and fileserver code into one image. [Compose](compose.yaml) runs that image with MongoDB, Redis, Elasticsearch, RustFS, Gitea, and an async file deletion worker.
+TonOps builds on a ClearML OSS fork with local user management, profile editing, and project visibility. The root [Dockerfile](Dockerfile) builds the checked-in Angular app and packages the checked-in API and fileserver code into one image. [Compose](compose.yaml) runs that image with MongoDB, Redis, Elasticsearch, Gitea, and an async file deletion worker. ClearML and MLflow use [one RustFS deployment](docs/shared-rustfs.md) and the existing ClearML Gitea.
 
 ## Start with Docker Compose
 
@@ -17,6 +17,7 @@ read -rs CLEARML_BOOTSTRAP_PASSWORD; printf '\n'
 printf '%s' "$CLEARML_BOOTSTRAP_PASSWORD" > docker-data/config/iam-admin-password
 unset CLEARML_BOOTSTRAP_PASSWORD
 chmod 600 docker-data/config/iam-admin-password
+make storage-up
 docker compose up -d --build
 ```
 
@@ -33,9 +34,9 @@ The password file is read only by the API container. IAM creates the `admin` acc
 
 Set `CLEARML_WEB_PORT`, `CLEARML_API_PORT`, and `CLEARML_FILES_PORT` in `.env` to change host ports. Set `CLEARML_FILES_HOST` to the URL that SDK clients use for the fileserver, so artifact cleanup recognizes it. The web app proxies `/api` and `/files` to the corresponding containers.
 
-Data is stored under `CLEARML_DATA_ROOT` (default `./docker-data`) and survives `docker compose down`. For a host using the older `/opt/clearml` layout, set `CLEARML_DATA_ROOT=/opt/clearml` before starting this Compose stack. Stop the older stack first because it uses the same host ports. Do not run `docker compose down -v` when you want to retain data.
+Data is stored under `CLEARML_DATA_ROOT` (default `./docker-data`) and survives `docker compose down`. For a host using the older `/opt/clearml` layout, set `CLEARML_DATA_ROOT=/opt/clearml` before starting this Compose stack. For an existing `clearml-local` stack, follow the [shared RustFS cutover](docs/shared-rustfs.md) before starting the renamed services. Do not run `docker compose down -v` when you want to retain data.
 
-Gitea starts with the stack and stores its repositories, SQLite database, and configuration under `CLEARML_DATA_ROOT/gitea`. Open <http://localhost:7864> to finish the initial installation using SQLite3 and create a Gitea administrator account. Gitea accounts are managed separately from TonOps accounts. Git cloning and pushing use HTTP; SSH is disabled. Set `GITEA_PUBLIC_HOST` to a reachable hostname or IP for remote clients, and `GITEA_PORT` to change the host port. `GITEA_IMAGE` selects the image version. The container continues to listen on port `3000` internally. This follows the [official Gitea Docker setup](https://docs.gitea.com/installation/install-with-docker/).
+The shared Gitea instance starts with the ClearML stack and stores its repositories, SQLite database, and configuration under `CLEARML_DATA_ROOT/gitea`. Open <http://localhost:7864> to finish the initial installation using SQLite3 and create a Gitea administrator account. Gitea accounts are managed separately from TonOps accounts. Git cloning and pushing use HTTP; SSH is disabled. Set `GITEA_PUBLIC_HOST` to a reachable hostname or IP for remote clients, and `GITEA_PORT` to change the host port. `GITEA_IMAGE` selects the image version. The container continues to listen on port `3000` internally. This follows the [official Gitea Docker setup](https://docs.gitea.com/installation/install-with-docker/).
 
 To add Gitea to an already running stack without rebuilding the other services:
 
@@ -43,7 +44,7 @@ To add Gitea to an already running stack without rebuilding the other services:
 docker compose up -d gitea
 ```
 
-RustFS data is stored under `RUSTFS_DATA_ROOT` in `.env`. Set `RUSTFS_PUBLIC_HOST` to the hostname or IP that training clients and browsers can reach. The S3 endpoint is `http://RUSTFS_PUBLIC_HOST:RUSTFS_API_PORT`; the Compose stack creates `RUSTFS_BUCKET` automatically. The console uses the RustFS admin access and secret keys from `.env`. Keep `.env` private.
+The `mlops-storage` Compose project runs RustFS for both platforms. Its data is stored under `RUSTFS_DATA_ROOT` in `.env`. `make storage-up` starts it, and it continues running when either application stack stops. Set `RUSTFS_PUBLIC_HOST` to the hostname or IP that training clients and browsers can reach. The S3 endpoint is `http://RUSTFS_PUBLIC_HOST:RUSTFS_API_PORT`; the Compose stack creates `RUSTFS_BUCKET` automatically. The console uses the RustFS admin access and secret keys from `.env`. Keep `.env` private.
 
 New projects default to `s3://RUSTFS_PUBLIC_HOST:RUSTFS_API_PORT/RUSTFS_BUCKET` for model and artifact outputs. A task's explicit `output_uri` still takes precedence. Configure every ClearML SDK or Agent that uploads artifacts with the RustFS credentials and a path-style S3 connection. For example, add this to the client's private `~/clearml.conf` (substitute values from `.env`):
 

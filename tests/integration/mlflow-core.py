@@ -28,10 +28,23 @@ def check_http_listener(port: str) -> None:
     print("Direct HTTP listener served the MLflow UI and rejected an unlisted Host", flush=True)
 
 
-def main(env_file: str, project: str, docker: str) -> None:
+def check_shared_gitea(docker_command: list[str], env_file: str) -> None:
+    published = subprocess.check_output(
+        [*docker_command, "compose", "--env-file", env_file, "-f", "compose.yaml",
+         "port", "gitea", "3000"],
+        text=True, timeout=15,
+    ).strip()
+    port = published.rsplit(":", 1)[-1]
+    require(port.isdecimal(), "Could not find the shared ClearML Gitea port")
+    with urlopen(f"http://127.0.0.1:{port}/api/healthz", timeout=10) as response:
+        require(json.load(response).get("status") == "pass", "Shared Gitea failed its health check")
+    print("Existing ClearML Gitea is healthy", flush=True)
+
+
+def main(storage_env: str, env_file: str, project: str, docker: str) -> None:
     docker_command = shlex.split(docker)
     compose_command = [
-        *docker_command, "compose", "--env-file", env_file, "--project-name", project,
+        *docker_command, "compose", "--env-file", storage_env, "--env-file", env_file, "--project-name", project,
         "-f", "compose.mlflow.yaml", "-f", "versions.lock.yaml",
     ]
 
@@ -76,8 +89,6 @@ def main(env_file: str, project: str, docker: str) -> None:
         if name == "mlflow":
             require(len(bindings) == 1 and bindings[0][0] == "0.0.0.0" and bindings[0][2] == 5000,
                     "MLflow must publish its HTTP port on all IPv4 interfaces")
-        elif name == "gitea":
-            require(len(bindings) == 1 and bindings[0][0] == "127.0.0.1", "Gitea is exposed outside loopback")
         else:
             require(not bindings, f"Unexpected published port for {name}")
     port = ports["mlflow"][0][1]
@@ -86,17 +97,19 @@ def main(env_file: str, project: str, docker: str) -> None:
 
     try:
         ready()
-        run("git-init")
+        check_shared_gitea(docker_command, storage_env)
         database_perms = compose(
             "exec", "-T", "postgres", "psql", "-U", "platform_db_admin", "-d", "postgres", "-At", "-c",
-            "SELECT has_database_privilege('mlflow','gitea','CONNECT'),"
-            " has_database_privilege('gitea','mlflow','CONNECT')",
+            "SELECT rolcanlogin AND NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)"
+            " FROM pg_roles WHERE rolname = 'mlflow'",
             capture=True,
         )
-        require(database_perms == "f|f", "Service database roles can connect to each other's database")
-        print("PostgreSQL denied both cross-database connections", flush=True)
-        storage_container = container_id("rustfs")
-        storage_ip = inspect(storage_container, "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}")
+        require(database_perms == "t", "The MLflow database role is missing or has unexpected privileges")
+        print("PostgreSQL verified the restricted MLflow database role", flush=True)
+        storage_ip = compose(
+            "run", "--rm", "--no-deps", "-T", "--entrypoint", "python", "storage-test",
+            "-c", "import socket; print(socket.gethostbyname('rustfs'))", capture=True,
+        )
         require(bool(storage_ip), "Could not resolve RustFS container IP for isolation test")
         run("client", "check-isolation", "--storage-ip", storage_ip)
         check_http_listener(port)
@@ -104,31 +117,27 @@ def main(env_file: str, project: str, docker: str) -> None:
         run("client", "verify", "--reference", reference)
         run("storage-test", "write", reference)
         run("storage-policy-test", name)
-        commit = run("git-test", "write", name, capture=True)
-        print(f"Verified private Git repository {name} at {commit}", flush=True)
 
         tracking_container = container_id("mlflow")
-        for dependency in ("rustfs", "postgres"):
-            compose("stop", dependency)
-            try:
-                wait_health(tracking_container, "unhealthy")
-                print(f"MLflow became unhealthy with {dependency} stopped", flush=True)
-            finally:
-                compose("start", dependency)
-                wait_health(tracking_container, "healthy")
-                print(f"MLflow recovered after {dependency} restarted", flush=True)
+        compose("stop", "postgres")
+        try:
+            wait_health(tracking_container, "unhealthy")
+            print("MLflow became unhealthy with PostgreSQL stopped", flush=True)
+        finally:
+            compose("start", "postgres")
+            wait_health(tracking_container, "healthy")
+            print("MLflow recovered after PostgreSQL restarted", flush=True)
 
         compose("down")
         ready()
-        run("git-init")
+        check_shared_gitea(docker_command, storage_env)
         run("client", "verify", "--reference", reference)
         run("storage-test", "read", reference)
-        run("git-test", "read", name, commit)
         check_http_listener(port)
-        print("PASS: run, report, model, RustFS multipart object, and Git commit survived container recreation")
+        print("PASS: run, report, model, and RustFS multipart object survived container recreation")
     except (RuntimeError, subprocess.SubprocessError, OSError):
         compose("ps", "--all")
-        compose("logs", "--tail=35", "db-init", "storage-init", "mlflow", "gitea", "postgres", "rustfs")
+        compose("logs", "--tail=35", "db-init", "storage-init", "mlflow", "postgres")
         raise
 
 

@@ -67,7 +67,7 @@ def check(reference: Path, action: str) -> None:
     denied(anonymous.get_object, Bucket=BUCKET, Key=result["run_artifact_key"])
     denied(anonymous.put_object, Bucket=BUCKET, Key=f"core-checks/{result['run_id']}/unsigned", Body=b"denied")
     # An S3 identity for MLflow cannot list or read/write known keys in other buckets.
-    for bucket in ("ml-datasets", "ml-exports"):
+    for bucket in ("ml-datasets", "ml-exports", os.environ["CLEARML_ARTIFACT_BUCKET"]):
         denied(s3.list_objects_v2, Bucket=bucket)
         denied(s3.get_object, Bucket=bucket, Key="forbidden")
         denied(s3.put_object, Bucket=bucket, Key="forbidden", Body=b"denied")

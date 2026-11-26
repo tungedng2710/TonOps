@@ -1,4 +1,4 @@
-name: clearml-local
+name: mlops-clearml
 
 x-api-environment: &api-environment
   CLEARML_ELASTIC_SERVICE_HOST: elasticsearch
@@ -11,6 +11,7 @@ x-api-environment: &api-environment
 
 services:
   gitea:
+    container_name: mlops-gitea
     image: ${GITEA_IMAGE:-docker.gitea.com/gitea:28.1.0}
     restart: unless-stopped
     environment:
@@ -34,33 +35,10 @@ services:
       retries: 10
       start_period: 30s
 
-  rustfs:
-    image: ${RUSTFS_IMAGE:-rustfs/rustfs:latest}
-    restart: unless-stopped
-    environment:
-      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Set RUSTFS_ACCESS_KEY in .env}
-      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Set RUSTFS_SECRET_KEY in .env}
-      RUSTFS_ADDRESS: ":9000"
-      RUSTFS_CONSOLE_ADDRESS: ":9001"
-      RUSTFS_CONSOLE_ENABLE: "true"
-      RUSTFS_VOLUMES: /data
-    volumes:
-      - ${RUSTFS_DATA_ROOT:?Set RUSTFS_DATA_ROOT in .env}:/data
-    ports:
-      - ${RUSTFS_API_PORT:-7868}:9000
-      - ${RUSTFS_CONSOLE_PORT:-7869}:9001
-    healthcheck:
-      test: [CMD, curl, -fsS, http://127.0.0.1:9000/health]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 20s
-
   rustfs_init:
     image: clearml/local-server:dev
     restart: "no"
-    depends_on:
-      rustfs: {condition: service_healthy}
+    networks: [artifacts]
     environment:
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Set RUSTFS_ACCESS_KEY in .env}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Set RUSTFS_SECRET_KEY in .env}
@@ -112,6 +90,7 @@ services:
       start_period: 30s
 
   apiserver:
+    networks: [default, artifacts]
     image: clearml/local-server:dev
     build:
       context: .
@@ -205,12 +184,12 @@ services:
       retries: 10
 
   async_delete:
+    networks: [default, artifacts]
     image: clearml/local-server:dev
     restart: unless-stopped
     depends_on:
       apiserver: {condition: service_healthy}
       fileserver: {condition: service_healthy}
-      rustfs: {condition: service_healthy}
     environment:
       <<: *api-environment
       PYTHONPATH: /opt/clearml/apiserver
@@ -224,3 +203,8 @@ services:
     volumes:
       - ${CLEARML_DATA_ROOT:-./docker-data}/config:/opt/clearml/config
       - ${CLEARML_DATA_ROOT:-./docker-data}/logs:/var/log/clearml
+
+networks:
+  artifacts:
+    external: true
+    name: ${MLOPS_ARTIFACT_NETWORK:-mlops-artifacts}

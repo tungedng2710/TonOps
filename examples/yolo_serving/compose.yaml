@@ -1,4 +1,4 @@
-name: tonops-yolo-serving
+name: mlops-yolo-serving
 services:
   inference:
     image: tonops/yolo-serving:local

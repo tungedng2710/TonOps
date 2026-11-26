@@ -1,4 +1,4 @@
-"""Create the two core databases and restricted owners over PostgreSQL TCP."""
+"""Create the MLflow tracking database and its restricted owner over PostgreSQL TCP."""
 
 from pathlib import Path
 
@@ -51,4 +51,3 @@ def provision(connection: psycopg.Connection, name: str, password: str) -> None:
 with connect("platform_db_admin", "postgres", secret("postgres_password")) as admin:
     admin.execute("SELECT pg_advisory_lock(7871)")
     provision(admin, "mlflow", secret("tracking_db_password"))
-    provision(admin, "gitea", secret("git_db_password"))
